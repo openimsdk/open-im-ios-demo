@@ -14,7 +14,7 @@ class LoginVC: BaseViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        textField.text = DBModule.shared.get(key: LoginVC.cacheKey)
+//        textField.text = DBModule.shared.get(key: LoginVC.cacheKey)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -39,8 +39,6 @@ class LoginVC: BaseViewController {
     @IBOutlet var agreementView: AgreementView!
     
     @IBAction func registerAction() {
-        if agreementView.agree {
-            RegisterVC.show()
-        }
+        RegisterVC.show()
     }
 }

@@ -72,7 +72,11 @@ public class OUIKit: NSObject {
             OpenIMiOSSDK.shared().getUsersInfo([uid], onSuccess: { result in
                 self.requestUids.remove(uid)
                 let user = result.first
-                self.users[(user! as AnyObject).uid] = user as? UserInfo
+                if(user == nil) {
+                    callback?(nil)
+                    return;
+                }
+                self.users[(user as AnyObject).uid] = user
                 callback?(user as? UserInfo)
             }, onError: { code, msg in
                 callback?(nil)

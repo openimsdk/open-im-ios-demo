@@ -26,7 +26,7 @@ class RegisterVC: BaseViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        navigationController?.setNavigationBarHidden(true, animated: false)
+        //navigationController?.setNavigationBarHidden(true, animated: false)
     }
     
     private lazy var mnemonic: String = {
@@ -35,25 +35,25 @@ class RegisterVC: BaseViewController {
     }()
     
     private func bindAction() {
-        mnemonicLabel.text = mnemonic
-    
-        collectionView.rx.setDelegate(self)
-            .disposed(by: disposeBag)
-        
-        collectionView.eec.autoHeight()
-            .disposed(by: disposeBag)
-        
-        collectionView.collectionViewLayout = EECCollectionViewAutolayout(layout: collectionView.collectionViewLayout,
-                                                                          align: .center)
-        
-        Single.just(mnemonic.split(separator: " ").map{ String($0) })
-            .asObservable()
-            .bind(to: collectionView.rx.items(cellIdentifier: "cell", cellType: UICollectionViewCell.self))
-            { row, element, cell in
-                let label = cell.contentView.viewWithTag(1) as! UILabel
-                label.text = "\(row).\(element)"
-            }
-            .disposed(by: disposeBag)
+//        mnemonicLabel.text = mnemonic
+//    
+//        collectionView.rx.setDelegate(self)
+//            .disposed(by: disposeBag)
+//        
+//        collectionView.eec.autoHeight()
+//            .disposed(by: disposeBag)
+//        
+//        collectionView.collectionViewLayout = EECCollectionViewAutolayout(layout: collectionView.collectionViewLayout,
+//                                                                          align: .center)
+//        
+//        Single.just(mnemonic.split(separator: " ").map{ String($0) })
+//            .asObservable()
+//            .bind(to: collectionView.rx.items(cellIdentifier: "cell", cellType: UICollectionViewCell.self))
+//            { row, element, cell in
+//                let label = cell.contentView.viewWithTag(1) as! UILabel
+//                label.text = "\(row).\(element)"
+//            }
+//            .disposed(by: disposeBag)
     }
     
     @IBAction func copyAction() {
