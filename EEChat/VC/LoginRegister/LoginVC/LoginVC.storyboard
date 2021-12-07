@@ -120,6 +120,9 @@
                                     <fontDescription key="titleFontDescription" type="system" pointSize="0.0"/>
                                     <color key="baseForegroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                                 </buttonConfiguration>
+                                <connections>
+                                    <action selector="loginAction" destination="Z7y-1U-tGM" eventType="touchUpInside" id="d24-CD-Hbk"/>
+                                </connections>
                             </button>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" fixedFrame="YES" image="选中" translatesAutoresizingMaskIntoConstraints="NO" id="aNv-U2-Qlv">
                                 <rect key="frame" x="36" y="560" width="15" height="15"/>
@@ -162,6 +165,10 @@
                             <constraint firstItem="AuA-wr-q2P" firstAttribute="leading" secondItem="iQO-kk-1EN" secondAttribute="leading" id="xcW-l8-CfX"/>
                         </constraints>
                     </view>
+                    <connections>
+                        <outlet property="passwordTextField" destination="kDm-kS-pY6" id="itF-G8-RiH"/>
+                        <outlet property="phoneTextField" destination="6Mr-5g-v8p" id="jFx-Y6-2SI"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Fuz-IE-NTI" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>

@@ -116,6 +116,6 @@ class RegisterNextVC: BaseViewController {
             return
         }
         
-        ApiUserLogin.login(mnemonic: self.mnemonic)
+//        ApiUserLogin.login(mnemonic: self.mnemonic)
     }
 }

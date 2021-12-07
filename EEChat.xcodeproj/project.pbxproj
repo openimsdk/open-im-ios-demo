@@ -122,6 +122,9 @@
 		80F88F57269D33CE00061410 /* GroupListVC.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 80F88F56269D33CE00061410 /* GroupListVC.storyboard */; };
 		80F88F59269D354400061410 /* GroupListCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80F88F58269D354400061410 /* GroupListCell.swift */; };
 		EE3F3EA4275DF3EC00B98D1A /* LoginSwiftUIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE3F3EA3275DF3EC00B98D1A /* LoginSwiftUIView.swift */; };
+		EEE21D1C275F0A4600C6909C /* VerifyPhoneLogicViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEE21D1B275F0A4600C6909C /* VerifyPhoneLogicViewController.swift */; };
+		EEE21D1E275F0A6200C6909C /* SetupPwdLogicViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEE21D1D275F0A6200C6909C /* SetupPwdLogicViewController.swift */; };
+		EEE21D20275F0A7C00C6909C /* SetupSelfInfoLogicViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEE21D1F275F0A7C00C6909C /* SetupSelfInfoLogicViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -247,6 +250,9 @@
 		80F88F56269D33CE00061410 /* GroupListVC.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = GroupListVC.storyboard; sourceTree = "<group>"; };
 		80F88F58269D354400061410 /* GroupListCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupListCell.swift; sourceTree = "<group>"; };
 		EE3F3EA3275DF3EC00B98D1A /* LoginSwiftUIView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginSwiftUIView.swift; sourceTree = "<group>"; };
+		EEE21D1B275F0A4600C6909C /* VerifyPhoneLogicViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerifyPhoneLogicViewController.swift; sourceTree = "<group>"; };
+		EEE21D1D275F0A6200C6909C /* SetupPwdLogicViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupPwdLogicViewController.swift; sourceTree = "<group>"; };
+		EEE21D1F275F0A7C00C6909C /* SetupSelfInfoLogicViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupSelfInfoLogicViewController.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -562,6 +568,9 @@
 				807F6D7B26722D1D0025370B /* RegisterNextVC.swift */,
 				807F6D7C26722D1D0025370B /* RegisterNextVC.storyboard */,
 				807F6D7E26722D1D0025370B /* RegisterVC.storyboard */,
+				EEE21D1B275F0A4600C6909C /* VerifyPhoneLogicViewController.swift */,
+				EEE21D1D275F0A6200C6909C /* SetupPwdLogicViewController.swift */,
+				EEE21D1F275F0A7C00C6909C /* SetupSelfInfoLogicViewController.swift */,
 			);
 			path = RegisterVC;
 			sourceTree = "<group>";
@@ -908,6 +917,7 @@
 				807B3A212680290A00C36249 /* MenuWindow.swift in Sources */,
 				EE3F3EA4275DF3EC00B98D1A /* LoginSwiftUIView.swift in Sources */,
 				80B55B1E269547E5004C8D3A /* GroupSettingVC.swift in Sources */,
+				EEE21D20275F0A7C00C6909C /* SetupSelfInfoLogicViewController.swift in Sources */,
 				807B3A2526802E9400C36249 /* LocalSearchUserCell.swift in Sources */,
 				80F88F52269853AF00061410 /* GroupNoticeCell.swift in Sources */,
 				807F6D322671F2530025370B /* EECCollectionViewAutolayout.swift in Sources */,
@@ -921,6 +931,7 @@
 				807F6D342671F2530025370B /* BaseViewController.swift in Sources */,
 				807F6D2B2671F2530025370B /* PhotoModule.swift in Sources */,
 				807F6DBC2672350C0025370B /* SearchNextUserVC.swift in Sources */,
+				EEE21D1E275F0A6200C6909C /* SetupPwdLogicViewController.swift in Sources */,
 				807F6D2D2671F2530025370B /* NavigationModule.swift in Sources */,
 				80B55B1926947B68004C8D3A /* GroupMemberCell.swift in Sources */,
 				807F6D302671F2530025370B /* EECPopupVC.swift in Sources */,
@@ -964,6 +975,7 @@
 				807F6D6B267229E20025370B /* NotificationSettingVC.swift in Sources */,
 				807F6DAC2672310F0025370B /* AddressBookHeaderView.swift in Sources */,
 				807F6D262671F2530025370B /* UIColor+EEC.swift in Sources */,
+				EEE21D1C275F0A4600C6909C /* VerifyPhoneLogicViewController.swift in Sources */,
 				807F6D4B2671F2E70025370B /* ApiModule.swift in Sources */,
 				807F6D362671F2530025370B /* Namespace.swift in Sources */,
 				807F6D272671F2530025370B /* DispatchQueue+EEC.swift in Sources */,

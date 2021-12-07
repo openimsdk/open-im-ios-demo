@@ -86,7 +86,7 @@ public struct AuthModel: Codable {
 }
 
 struct ApiUserLogin: ApiType {
-    let apiTarget: ApiTarget = ApiInfo(path: "auth/user_token")
+    let apiTarget: ApiTarget = ApiInfo(path: "auth/login")
     
     var param = Param()
     
@@ -95,8 +95,9 @@ struct ApiUserLogin: ApiType {
     struct Param: Encodable {
         let platform = 1
         let operationID = OperationID()
-        var uid = ""
-        var secret = ""
+        var phoneNumber = ""
+        var password = ""
+        var areaCode = "86"
     }
     
     struct ToeknModel: Codable {
@@ -137,7 +138,7 @@ struct ApiUserLogin: ApiType {
             }
     }
     
-    static func login(mnemonic: String) {
+    static func login(mnemonic: String,phone: String,password: String) {
         MessageModule.showHUD(text: LocalizedString("Generating..."))
         DispatchQueue.global().async {
             let keystore = try? BIP32Keystore(
@@ -148,14 +149,14 @@ struct ApiUserLogin: ApiType {
             
             DispatchQueue.main.async {
                 MessageModule.hideHUD()
-                guard let address = keystore?.addresses?.first?.address else {
-                    MessageModule.showMessage(LocalizedString("Mnemonic word error."))
-                    return
-                }
+//                guard let address = keystore?.addresses?.first?.address else {
+//                    MessageModule.showMessage(LocalizedString("Mnemonic word error."))
+//                    return
+//                }
                 
                 var api = ApiUserLogin()
-                api.param.uid = "openIM123456"
-                api.param.secret = "tuoyun"
+                api.param.phoneNumber = phone//"openIM123456"
+                api.param.password = password.md5()//"tuoyun"
                 _ = api.request(showLoading: true)
                     //.map(type: ApiUserLogin.Model.self)
                     .subscribe(onSuccess: { model in

@@ -11,6 +11,8 @@ import web3swift
 
 class RegisterVC: BaseViewController {
     
+    @IBOutlet weak var phoneTextField: UITextField!
+    
     override class func show(param: Any? = nil, callback: BaseViewController.Callback? = nil) {
         let mnemonics = try! BIP39.generateMnemonics(bitsOfEntropy: 128)!
         super.show(param: mnemonics, callback: callback)
@@ -33,6 +35,23 @@ class RegisterVC: BaseViewController {
         assert(self.param is String)
         return self.param as! String
     }()
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        // Get the new view controller using segue.destination.
+        // Pass the selected object to the new view controller.
+        if(segue.destination is VerifyPhoneLogicViewController){
+            let vc = segue.destination as! VerifyPhoneLogicViewController
+            vc.phone = phoneTextField.text ?? ""
+        }
+    }
+    
+    @IBAction func action() {
+        if(phoneTextField.text?.isEmpty != false) {
+            MessageModule.showMessage("请输入手机号")
+            return
+        }
+        performSegue(withIdentifier: "reg", sender: nil)
+    }
     
     private func bindAction() {
 //        mnemonicLabel.text = mnemonic
