@@ -70,14 +70,16 @@ public class OUIKit: NSObject {
             requestUids.insert(uid)
             
             OpenIMiOSSDK.shared().getUsersInfo([uid], onSuccess: { result in
-                self.requestUids.remove(uid)
-                let user = result.first
-                if(user == nil) {
-                    callback?(nil)
-                    return;
+                DispatchQueue.main.async{
+                    self.requestUids.remove(uid)
+                    let user = result.first
+                    if(user == nil) {
+                        callback?(nil)
+                        return;
+                    }
+                    self.users[(user as AnyObject).uid] = user
+                    callback?(user as? UserInfo)
                 }
-                self.users[(user as AnyObject).uid] = user
-                callback?(user as? UserInfo)
             }, onError: { code, msg in
                 callback?(nil)
             })
@@ -87,11 +89,13 @@ public class OUIKit: NSObject {
     
     public func getUsers(_ uids: [String], callback: ((Result<[UserInfo], Error>) -> Void)? = nil ) {
         OpenIMiOSSDK.shared().getUsersInfo(uids) { result in
-            result.forEach { user in
-                self.users[(user as AnyObject).uid] = user as? UserInfo
+            DispatchQueue.main.async{
+                result.forEach { user in
+                    self.users[(user as AnyObject).uid] = user as? UserInfo
+                }
+                let res:[UserInfo] = result as! [UserInfo];
+                callback?(.success(res))
             }
-            let res:[UserInfo] = result as! [UserInfo];
-            callback?(.success(res))
         } onError: { code, errMsg in
             callback?(.failure(NullError.null))
         }

@@ -122,9 +122,11 @@ class AddressBookVC: BaseViewController {
 //            })
 //            .disposed(by: disposeBag)
         OpenIMiOSSDK.shared().getFriendApplicationList { array in
-            let filter = (array as! [UserInfo]).filter{ $0.flag == 0 }
-            self.redLabel.text = filter.count.description
-            self.redLabel.superview?.isHidden = filter.isEmpty
+            DispatchQueue.main.async {
+                let filter = (array as! [UserInfo]).filter{ $0.flag == 0 }
+                self.redLabel.text = filter.count.description
+                self.redLabel.superview?.isHidden = filter.isEmpty
+            }
         } onError: { code, msg in
             
         }

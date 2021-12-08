@@ -49,8 +49,10 @@ class GroupNoticeCell: UITableViewCell {
 //                self.refreshUI()
 //            })
         OpenIMiOSSDK.shared().acceptGroupApplication(self.model, reason: "") { msg in
-            self.model.flag = 2
-            self.refreshUI()
+            DispatchQueue.main.async {
+                self.model.flag = 2
+                self.refreshUI()
+            }
         } onError: { code, msg in
             
         }

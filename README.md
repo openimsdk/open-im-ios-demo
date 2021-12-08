@@ -26,10 +26,9 @@ Status: beta. Usable and mostly stable but bugs may happen.
 * Muting/un-muting conversations and other permission management.
 * Push notifications.
 * Attachments and inline images.
+* Group chats.
 
 ### Not Done Yet
-
-* Group chats.
 
 * Previews not generated for videos, audio, links or docs.
 * Typing indicators.
@@ -42,6 +41,7 @@ Status: beta. Usable and mostly stable but bugs may happen.
 
 ## Screenshots
 
+<img src="Images/WeChatbe74367e0622fdb7b1a8752d0bdcc2e2.png" alt="App screenshot - chat list" width="207" /><img src="Images/WeChatbdc24c86849233001c4bb4839153feae.png" alt="App screenshot - conversation" width="207" /><img src="Images/WeChat4a1c519392b338bf83aae0f98a1fe27d.png" alt="App screenshot - account settings" width="207" />
 <img src="Images/1.jpeg" alt="App screenshot - chat list" width="207" /><img src="Images/2.jpeg" alt="App screenshot - conversation" width="207" /><img src="Images/3.jpeg" alt="App screenshot - account settings" width="207" />
 
 
