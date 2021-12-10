@@ -76,7 +76,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, JPUSHRegisterDelegate {
         
             #if DEBUG // DEBUG || BETA
                 JPUSHService.setup(withOption: launchOptions, appKey: "cf47465a368f24c659608e7e", channel: "channel", apsForProduction: false)
-            #elseif
+            #else
                 JPUSHService.setup(withOption: launchOptions, appKey: "cf47465a368f24c659608e7e", channel: "channel", apsForProduction: true)
             #endif
             
