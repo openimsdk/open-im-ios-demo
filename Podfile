@@ -1,16 +1,16 @@
-platform :ios, '11'
+platform :ios, '13'
 use_frameworks!
 use_modular_headers!
 
 workspace 'EEChat.xcworkspace'
 
 def sharedUILibs()
-  pod 'Kingfisher', '~> 6.0'
+  pod 'Kingfisher', '~> 7.1.2'
 end
 
 def sharedLibs()
-  pod 'GRDB.swift', '~> 5.7.3'
-  pod 'RxSwift', '~> 6.1.0'
+  pod 'GRDB.swift', '~> 5.12.0'
+  pod 'RxSwift', '~> 6.2.0'
   pod 'Alamofire', '~> 5.2'
 end
 
@@ -26,13 +26,13 @@ target 'EEChat' do
   
   pod 'MBProgressHUD', '~> 1.2.0'
   
-  pod 'RxCocoa', '~> 6.1.0'
+  pod 'RxCocoa', '~> 6.2.0'
   pod 'RxGesture', '~> 4.0.2'
   pod 'RxDataSources', '~> 5.0.0'
 
   pod 'SnapKit', '~> 5.0.0'
   
-  pod 'IQKeyboardManagerSwift', '~> 6.5.0'
+  pod 'IQKeyboardManagerSwift', '~> 6.5.9'
   
 #  pod 'MBProgressHUD', :git => 'https://github.com/jdg/MBProgressHUD.git', :commit => '8df5e8ca98a89473385cd66543435de114f166bd'
 
@@ -53,9 +53,12 @@ target 'EEChat' do
   
   pod 'QMUIKit', '~> 4.2.3'
   
+  pod 'JCore', '2.1.4-noidfa'
+  pod 'JPush', '3.2.4-noidfa'
+  
   pod 'Bugly', '~> 2.5.90'
   pod 'Reveal-SDK', '~> 21', :configurations => ['Debug']
-  pod 'PgyUpdate', :configurations => ['Debug', 'Beta']
+#  pod 'PgyUpdate', :configurations => ['Debug', 'Beta']
 end
 
 #post_install do |installer|

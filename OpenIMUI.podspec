@@ -23,7 +23,7 @@ Pod::Spec.new do |s|
   # CocoaPods requires us to specify the root deployment targets
   # even though for us it is nonsense. Our root spec has no
   # sources.
-  s.ios.deployment_target = '11.0'
+  s.ios.deployment_target = '13.0'
   s.osx.deployment_target = '10.10'
   s.watchos.deployment_target = '2.0'
   s.tvos.deployment_target = '9.0'
@@ -42,7 +42,7 @@ Pod::Spec.new do |s|
     ],
   }
   
-  s.dependency 'Kingfisher', '>= 6.0'
+  s.dependency 'Kingfisher', '~> 7.1.2'
   s.dependency 'OpenIMSDKiOS', '1.0.16'
-  s.ios.deployment_target = '11.0'
+  s.ios.deployment_target = '13.0'
 end

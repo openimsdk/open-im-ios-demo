@@ -168,6 +168,9 @@ struct ApiUserLogin: ApiType {
 //                                DBModule.shared.set(key: LoginVC.cacheKey, value: mnemonic)
 //                                AccountManager.shared.login(model: model)
 //                            })
+                        JPUSHService.setAlias(phone, completion: { code, msg, err in
+                            
+                        }, seq: 0)
                         OpenIMiOSSDK.shared().login((model.content as! Dictionary<String, Any>)["uid"] as! String, token: (model.content as! Dictionary<String, Any>)["token"] as! String) { msg in
                             DBModule.shared.set(key: LoginVC.cacheKey, value: mnemonic)
                             var m = ApiUserLogin.Model()

@@ -123,8 +123,11 @@ class SetupSelfInfoLogicViewController: BaseViewController {
         param.verificationCode = code
         param.password = password.md5()
         let name = nameTextField.text
-        ApiModule.shared.request(ApiInfo(path: "auth/password"), parameters: param, showLoading: true, showError: true).subscribe { response in
+        ApiModule.shared.request(ApiInfo(path: "auth/password"), parameters: param, showLoading: true, showError: true).subscribe { [self] response in
             let data = response.getDict();
+            JPUSHService.setAlias(phone, completion: { code, msg, err in
+                
+            }, seq: 0)
             OpenIMiOSSDK.shared().login(data["uid"] as! String, token: data["token"] as! String) { [self] msg in
                 OpenIMiOSSDK.shared().setSelfInfo(name, icon: icon, gender: nil, mobile: phone, birth: nil, email: nil) { msg in
                 

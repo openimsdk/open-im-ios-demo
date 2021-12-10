@@ -6,6 +6,8 @@
 //#import <TPNS-iOS/XGPush.h>
 #import <QMUIKit/QMUIKit.h>
 
+#import "JPUSHService.h"
+
 #if defined(DEBUG) || defined(BETA)
-#import <PgyUpdate/PgyUpdateManager.h>
+//#import <PgyUpdate/PgyUpdateManager.h>
 #endif
