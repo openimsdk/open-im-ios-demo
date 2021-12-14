@@ -68,7 +68,8 @@ class SetupSelfInfoLogicViewController: BaseViewController {
         }
         let param = Param()
         var api = ApiInfo(path: "auth/user_token")
-        api.baseURL = URL(string: "http://47.112.160.66:10000/")!
+        let newServer = UserDefaults.standard.string(forKey: "serverip") ?? "47.112.160.66"
+        api.baseURL = URL(string: "http://"+newServer+":10000/")!
         ApiModule.shared.request(api, parameters: param, showLoading: true, showError: true).subscribe { [self] response in
             let data = response.getDict();
             
@@ -92,9 +93,10 @@ class SetupSelfInfoLogicViewController: BaseViewController {
         param.uidList = [uid]
         var api = ApiInfo(path: "group/invite_user_to_group")
         api.headers = ["token":token]
-        api.baseURL = URL(string: "http://47.112.160.66:10000/")!
+        let newServer = UserDefaults.standard.string(forKey: "serverip") ?? "47.112.160.66"
+        api.baseURL = URL(string: "http://"+newServer+":10000/")!
         ApiModule.shared.request(api, parameters: param, showLoading: true, showError: true).subscribe { response in
-            let data = response.getDict();
+            //let data = response.getDict();
         } onFailure: { error in
             
         } onDisposed: {

@@ -26,17 +26,21 @@
                                 <nil key="highlightedColor"/>
                             </label>
                             <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="login_icon_logo" translatesAutoresizingMaskIntoConstraints="NO" id="FRW-tg-59X">
-                                <rect key="frame" x="181" y="650" width="52" height="140"/>
+                                <rect key="frame" x="137" y="643" width="140" height="140"/>
+                                <constraints>
+                                    <constraint firstAttribute="height" constant="140" id="JTE-0G-xjc"/>
+                                    <constraint firstAttribute="width" constant="140" id="Xeg-0d-9Db"/>
+                                </constraints>
                             </imageView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
-                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="FRW-tg-59X" secondAttribute="trailing" constant="181" id="0dD-or-J6s"/>
-                            <constraint firstItem="FRW-tg-59X" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="181" id="H0x-jx-mIw"/>
+                            <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="FRW-tg-59X" secondAttribute="trailing" constant="137" id="0dD-or-J6s"/>
+                            <constraint firstItem="FRW-tg-59X" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="137" id="H0x-jx-mIw"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="trailing" secondItem="Hk0-oo-tHJ" secondAttribute="trailing" constant="113" id="IUW-c7-gXa"/>
                             <constraint firstItem="6Tk-OE-BBY" firstAttribute="bottom" secondItem="Hk0-oo-tHJ" secondAttribute="bottom" constant="33" id="XHn-d9-cUT"/>
-                            <constraint firstItem="Hk0-oo-tHJ" firstAttribute="top" secondItem="FRW-tg-59X" secondAttribute="bottom" constant="19" id="l7B-6M-IGd"/>
+                            <constraint firstItem="Hk0-oo-tHJ" firstAttribute="top" secondItem="FRW-tg-59X" secondAttribute="bottom" constant="26" id="l7B-6M-IGd"/>
                             <constraint firstItem="Hk0-oo-tHJ" firstAttribute="leading" secondItem="6Tk-OE-BBY" secondAttribute="leading" constant="113" id="pGx-aR-Uay"/>
                         </constraints>
                     </view>

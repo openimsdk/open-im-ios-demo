@@ -13,6 +13,8 @@ public struct ApiInfo: ApiTarget {
     
     public init(path: String) {
         self.path = path
+        let newServer = UserDefaults.standard.string(forKey: "serverip") ?? "47.112.160.66"
+        self.baseURL = URL(string: "http://"+newServer+":42233/")!
     }
     
     public var baseURL: URL = URL(string: "http://47.112.160.66:42233/")!

@@ -30,8 +30,9 @@ public class OUIKit: NSObject {
 //        OIMManager.initSDK()
 //        OIMManager.setConversationListener(self)
 //        OIMManager.setFriendListener(self)
+        let newServer = UserDefaults.standard.string(forKey: "serverip") ?? "47.112.160.66"
         let documentsPath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
-        OpenIMiOSSDK.shared().initSDK(IOS, ipApi: "http://47.112.160.66:10000", ipWs: "ws://47.112.160.66:17778", dbPath: documentsPath+"/") {
+        OpenIMiOSSDK.shared().initSDK(IOS, ipApi: "http://"+newServer+":10000", ipWs: "ws://"+newServer+":17778", dbPath: documentsPath+"/") {
             
         } onConnectFailed: { errCode, errMsg in
             

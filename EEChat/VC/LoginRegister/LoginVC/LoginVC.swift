@@ -36,10 +36,20 @@ class LoginVC: BaseViewController {
     
     @IBOutlet weak var phoneTextField: UITextField!
     @IBOutlet weak var passwordTextField: UITextField!
+    
+    
+    @IBOutlet weak var welcomeLabel: UILabel!
 
     override func viewDidLoad() {
         super.viewDidLoad()
 //        textField.text = DBModule.shared.get(key: LoginVC.cacheKey)
+        let tap = UITapGestureRecognizer(target: self, action: #selector(doubleTapped))
+        tap.numberOfTapsRequired = 2
+        welcomeLabel.addGestureRecognizer(tap)
+    }
+    
+    @objc func doubleTapped() {
+        performSegue(withIdentifier: "sip", sender: nil)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -70,6 +80,10 @@ class LoginVC: BaseViewController {
     @IBOutlet var agreementView: AgreementView!
     
     @IBAction func registerAction() { 
+        RegisterVC.show()
+    }
+    
+    @IBAction func doubleTapAction() {
         RegisterVC.show()
     }
 }

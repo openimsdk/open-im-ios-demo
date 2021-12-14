@@ -122,6 +122,7 @@
 		80F88F57269D33CE00061410 /* GroupListVC.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 80F88F56269D33CE00061410 /* GroupListVC.storyboard */; };
 		80F88F59269D354400061410 /* GroupListCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80F88F58269D354400061410 /* GroupListCell.swift */; };
 		EE3F3EA4275DF3EC00B98D1A /* LoginSwiftUIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE3F3EA3275DF3EC00B98D1A /* LoginSwiftUIView.swift */; };
+		EE7C5AA527674A2A0075BA60 /* SwitchIPViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EE7C5AA427674A290075BA60 /* SwitchIPViewController.swift */; };
 		EEE21D1C275F0A4600C6909C /* VerifyPhoneLogicViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEE21D1B275F0A4600C6909C /* VerifyPhoneLogicViewController.swift */; };
 		EEE21D1E275F0A6200C6909C /* SetupPwdLogicViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEE21D1D275F0A6200C6909C /* SetupPwdLogicViewController.swift */; };
 		EEE21D20275F0A7C00C6909C /* SetupSelfInfoLogicViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEE21D1F275F0A7C00C6909C /* SetupSelfInfoLogicViewController.swift */; };
@@ -250,6 +251,7 @@
 		80F88F56269D33CE00061410 /* GroupListVC.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = GroupListVC.storyboard; sourceTree = "<group>"; };
 		80F88F58269D354400061410 /* GroupListCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupListCell.swift; sourceTree = "<group>"; };
 		EE3F3EA3275DF3EC00B98D1A /* LoginSwiftUIView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginSwiftUIView.swift; sourceTree = "<group>"; };
+		EE7C5AA427674A290075BA60 /* SwitchIPViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwitchIPViewController.swift; sourceTree = "<group>"; };
 		EEE21D1B275F0A4600C6909C /* VerifyPhoneLogicViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerifyPhoneLogicViewController.swift; sourceTree = "<group>"; };
 		EEE21D1D275F0A6200C6909C /* SetupPwdLogicViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupPwdLogicViewController.swift; sourceTree = "<group>"; };
 		EEE21D1F275F0A7C00C6909C /* SetupSelfInfoLogicViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupSelfInfoLogicViewController.swift; sourceTree = "<group>"; };
@@ -414,6 +416,7 @@
 				807F6CFC2671F2170025370B /* LoginVC.swift */,
 				807F6CFE2671F21E0025370B /* LoginVC.storyboard */,
 				EE3F3EA3275DF3EC00B98D1A /* LoginSwiftUIView.swift */,
+				EE7C5AA427674A290075BA60 /* SwitchIPViewController.swift */,
 			);
 			path = LoginVC;
 			sourceTree = "<group>";
@@ -938,6 +941,7 @@
 				807F6D4E2671F2E70025370B /* ApiResult.swift in Sources */,
 				80EDCC962685D46600532366 /* QMUIConfigurationTemplate.swift in Sources */,
 				805EB956267300740071035E /* SearchUserDetailsVC.swift in Sources */,
+				EE7C5AA527674A2A0075BA60 /* SwitchIPViewController.swift in Sources */,
 				807F6D242671F2530025370B /* String+EEC.swift in Sources */,
 				80B55B462695AEEE004C8D3A /* ReportVC.swift in Sources */,
 				807F6D2A2671F2530025370B /* UIView+EEC.swift in Sources */,
