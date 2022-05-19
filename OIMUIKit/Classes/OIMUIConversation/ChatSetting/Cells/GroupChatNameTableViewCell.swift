@@ -1,0 +1,49 @@
+//
+
+
+
+
+
+
+import UIKit
+
+class GroupChatNameTableViewCell: UITableViewCell {
+    
+    let avatarImageView: UIImageView = {
+        let v = UIImageView()
+        v.layer.cornerRadius = 4
+        v.clipsToBounds = true
+        v.backgroundColor = .orange
+        return v
+    }()
+    
+    let titleLabel: UILabel = {
+        let v = UILabel()
+        v.font = UIFont.systemFont(ofSize: 18, weight: .medium)
+        v.textColor = StandardUI.color_333333
+        return v
+    }()
+
+    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
+        super.init(style: style, reuseIdentifier: reuseIdentifier)
+        self.selectionStyle = .none
+        contentView.addSubview(avatarImageView)
+        avatarImageView.snp.makeConstraints { make in
+            make.size.equalTo(48)
+            make.left.equalToSuperview().offset(StandardUI.margin_22)
+            make.top.bottom.equalToSuperview().inset(20)
+        }
+        
+        contentView.addSubview(titleLabel)
+        titleLabel.snp.makeConstraints { make in
+            make.left.equalTo(avatarImageView.snp.right).offset(20)
+            make.centerY.equalToSuperview()
+            make.right.equalToSuperview().offset(-20)
+        }
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+    
+}

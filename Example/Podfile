@@ -1,0 +1,16 @@
+use_frameworks!
+inhibit_all_warnings!
+
+target 'OpenIMSDKUIKit_Example' do
+  pod 'OIMUIKit', :path => '../'
+  pod 'JNFoundation', '0.2.1'
+  pod 'Alamofire', '4.9.1'
+  
+  post_install do |installer|
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        config.build_settings.delete 'IPHONEOS_DEPLOYMENT_TARGET'
+      end
+    end
+  end
+end
