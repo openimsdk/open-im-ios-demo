@@ -3,6 +3,8 @@ import UIKit
 import OIMUIKit
 import RxSwift
 import SVProgressHUD
+import Localize_Swift
+import OpenIMSDK
 
 class MainTabViewController: UITabBarController {
     private let _disposeBag = DisposeBag()
@@ -19,11 +21,19 @@ class MainTabViewController: UITabBarController {
         chatNav.tabBarItem.selectedImage = UIImage.init(named: "tab_home_icon_selected")?.withRenderingMode(.alwaysOriginal)
         controllers.append(chatNav)
         
-        let nav = UINavigationController.init(rootViewController: ContactsViewController())
-        nav.tabBarItem.title = "通讯录"
-        nav.tabBarItem.image = UIImage.init(named: "tab_contact_icon_normal")?.withRenderingMode(.alwaysOriginal)
-        nav.tabBarItem.selectedImage = UIImage.init(named: "tab_contact_icon_selected")?.withRenderingMode(.alwaysOriginal)
-        controllers.append(nav)
+        let contactVC = ContactsViewController()
+        contactVC.viewModel.dataSource = self
+        let contactNav = UINavigationController.init(rootViewController: contactVC)
+        contactNav.tabBarItem.title = "通讯录".localized()
+        contactNav.tabBarItem.image = UIImage.init(named: "tab_contact_icon_normal")?.withRenderingMode(.alwaysOriginal)
+        contactNav.tabBarItem.selectedImage = UIImage.init(named: "tab_contact_icon_selected")?.withRenderingMode(.alwaysOriginal)
+        controllers.append(contactNav)
+        
+        let mineNav = UINavigationController.init(rootViewController: MineViewController())
+        mineNav.tabBarItem.title = "我的".localized()
+        mineNav.tabBarItem.image = UIImage.init(named: "tab_me_icon_normal")?.withRenderingMode(.alwaysOriginal)
+        mineNav.tabBarItem.selectedImage = UIImage.init(named: "tab_me_icon_selected")?.withRenderingMode(.alwaysOriginal)
+        controllers.append(mineNav)
         
         self.viewControllers = controllers
         self.tabBar.isTranslucent = false
@@ -38,12 +48,18 @@ class MainTabViewController: UITabBarController {
         self.tabBar.shadowImage = UIImage.init()
         
         if let uid = UserDefaults.standard.object(forKey: imUidKey) as? String, let token = UserDefaults.standard.object(forKey: imTokenKey) as? String {
+            SVProgressHUD.show()
             loginIM(uid: uid, token: token, completion: nil)
         } else {
             DispatchQueue.main.async {
                 self.presentLoginController()
             }
         }
+        
+        JNNotificationCenter.shared.observeEvent { [weak self] (event: OIMUIKit.EventLogout) in
+            self?.save(uid: nil, token: nil)
+            self?.presentLoginController()
+        }.disposed(by: _disposeBag)
     }
     
     private func presentLoginController() {
@@ -82,9 +98,22 @@ class MainTabViewController: UITabBarController {
         }
     }
     
-    private func save(uid: String, token: String) {
+    private func save(uid: String?, token: String?) {
         UserDefaults.standard.set(uid, forKey: imUidKey)
         UserDefaults.standard.set(token, forKey: imTokenKey)
         UserDefaults.standard.synchronize()
+    }
+}
+
+extension MainTabViewController: ContactsDataSource {
+    func getFrequentUsers() -> [OIMUserInfo] {
+        let items: [OIMUserInfo] = DemoPlugin.shared.getMf().getModel(UserModel.self).getAllItems().compactMap {$0.toItem()}
+        return items
+    }
+    
+    func setFrequentUsers(_ users: [OIMUserInfo]) {
+        if !users.isEmpty {
+            DemoPlugin.shared.getMf().getModel(UserModel.self).setItems(users)
+        }
     }
 }

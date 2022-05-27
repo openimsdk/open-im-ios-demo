@@ -1,4 +1,4 @@
-//
+
 
 
 
@@ -98,7 +98,7 @@ struct MessageHelper {
         if offset <= 0 {
             let now = Date().timeIntervalSince1970;
             if fabs(now - current) < 3 * 60 {
-                desc = "刚刚";
+                desc = "刚刚".innerLocalized();
             }else {
                 desc = formatter.string(from: date);
             }
@@ -107,7 +107,7 @@ struct MessageHelper {
         
         if offset <= 1 * secondsPerDay {
             let m = formatter.string(from: date);
-            desc = "昨天 \(m)";
+            desc = "昨天".innerLocalized() + " " + "\(m)";
             return desc;
         }
         
@@ -119,13 +119,13 @@ struct MessageHelper {
                 return desc;
             }
             switch week {
-            case 1: desc = "星期日";break;
-            case 2: desc = "星期一";break;
-            case 3: desc = "星期二";break;
-            case 4: desc = "星期三";break;
-            case 5: desc = "星期四";break;
-            case 6: desc = "星期五";break;
-            case 7: desc = "星期日";break;
+            case 1: desc = "星期日".innerLocalized()
+            case 2: desc = "星期一".innerLocalized()
+            case 3: desc = "星期二".innerLocalized()
+            case 4: desc = "星期三".innerLocalized()
+            case 5: desc = "星期四".innerLocalized()
+            case 6: desc = "星期五".innerLocalized()
+            case 7: desc = "星期日".innerLocalized()
             default:
                 break;
             }
@@ -133,54 +133,6 @@ struct MessageHelper {
         }
         
         formatter.dateFormat = "yyyy/MM/dd";
-        desc = formatter.string(from: date);
-        return desc;
-    }
-    
-    static func convertDetail(timestamp_ms: Int) -> String {
-        let current = TimeInterval(timestamp_ms / 1000);
-        
-        let date = Date(timeIntervalSince1970: current);
-        let formatter = DateFormatter();
-        formatter.dateFormat = "HH:mm";
-        let zero = MessageHelper.getMidnightOf(date: Date());
-        let offset = zero - current;
-        let secondsPerDay: Double = 24 * 60 * 60;
-        let hhmm = formatter.string(from: date);
-        
-        var desc = "";
-        if offset <= 0 {
-            desc = hhmm;
-            return desc;
-        }
-        
-        if offset <= 1 * secondsPerDay {
-            desc = "昨天 \(hhmm)";
-            return desc;
-        }
-        
-        let calendar = Calendar.current;
-        if offset <= 7 * secondsPerDay {
-            let flag = Calendar.Component.weekday;
-            let currentCompo = calendar.dateComponents([flag], from: date);
-            guard let week = currentCompo.weekday else {
-                return desc;
-            }
-            switch week {
-            case 1: desc = "星期日 \(hhmm)";break;
-            case 2: desc = "星期一 \(hhmm)";break;
-            case 3: desc = "星期二 \(hhmm)";break;
-            case 4: desc = "星期三 \(hhmm)";break;
-            case 5: desc = "星期四 \(hhmm)";break;
-            case 6: desc = "星期五 \(hhmm)";break;
-            case 7: desc = "星期日 \(hhmm)";break;
-            default:
-                break;
-            }
-            return desc;
-        }
-        
-        formatter.dateFormat = "yyyy/MM/dd HH:mm";
         desc = formatter.string(from: date);
         return desc;
     }
@@ -236,7 +188,7 @@ struct MessageHelper {
             var ret = NSMutableAttributedString()
             if let opUser = message.notificationElem?.opUser {
                 if opUser.userID == IMController.shared.uid {
-                    ret.append(NSAttributedString.init(string: "你", attributes: contentAttributes))
+                    ret.append(NSAttributedString.init(string: "你".innerLocalized(), attributes: contentAttributes))
                 } else {
                     let name = NSAttributedString.init(string: opUser.nickname ?? "", attributes: nameAttributes)
                     ret.append(name)
@@ -247,12 +199,12 @@ struct MessageHelper {
         }
         switch message.contentType {
         case .friendAdded:
-            let content = NSAttributedString.init(string: "你们已成功加为好友", attributes: contentAttributes)
+            let content = NSAttributedString.init(string: "你们已成功加为好友".innerLocalized(), attributes: contentAttributes)
             return content
         case .memberQuit:
             if let elem = message.notificationElem?.quitUser {
                 let name = NSMutableAttributedString.init(string: elem.nickname ?? "", attributes: nameAttributes)
-                let content = NSAttributedString.init(string: "已退出群聊", attributes: contentAttributes)
+                let content = NSAttributedString.init(string: "已退出群聊".innerLocalized(), attributes: contentAttributes)
                 name.append(getSpaceString())
                 name.append(content)
                 return name
@@ -261,13 +213,13 @@ struct MessageHelper {
             if let elem = message.notificationElem?.entrantUser {
                 var ret = NSMutableAttributedString()
                 if elem.userID == IMController.shared.uid {
-                    let name = NSAttributedString.init(string: "你", attributes: contentAttributes)
+                    let name = NSAttributedString.init(string: "你".innerLocalized(), attributes: contentAttributes)
                     ret.append(name)
                 } else {
                     ret.append(getSpaceString())
                     ret.append(NSAttributedString.init(string: elem.nickname ?? "", attributes: nameAttributes))
                     ret.append(getSpaceString())
-                    ret.append(NSAttributedString.init(string: "已加入群聊", attributes: contentAttributes))
+                    ret.append(NSAttributedString.init(string: "已加入群聊".innerLocalized(), attributes: contentAttributes))
                 }
                 return ret
             }
@@ -293,7 +245,7 @@ struct MessageHelper {
         case .memberInvited:
             let ret = NSMutableAttributedString.init()
             ret.append(getOpUserName(message: message))
-            ret.append(NSAttributedString.init(string: "邀请", attributes: contentAttributes))
+            ret.append(NSAttributedString.init(string: "邀请".innerLocalized(), attributes: contentAttributes))
             if let invitedUser = message.notificationElem?.invitedUserList {
                 for user in invitedUser {
                     let name = NSAttributedString.init(string: user.nickname ?? "", attributes: nameAttributes)
@@ -301,37 +253,37 @@ struct MessageHelper {
                     ret.append(getSpaceString())
                 }
             }
-            ret.append(NSAttributedString.init(string: "加入群聊", attributes: contentAttributes))
+            ret.append(NSAttributedString.init(string: "加入群聊".innerLocalized(), attributes: contentAttributes))
             return ret
         case .groupCreated:
             let ret = NSMutableAttributedString.init()
             ret.append(getOpUserName(message: message))
-            ret.append(NSAttributedString.init(string: "创建了群聊", attributes: contentAttributes))
+            ret.append(NSAttributedString.init(string: "创建了群聊".innerLocalized(), attributes: contentAttributes))
             return ret
         case .groupInfoSet:
             let ret = NSMutableAttributedString.init()
             ret.append(getOpUserName(message: message))
-            ret.append(NSAttributedString.init(string: "更新了群信息", attributes: contentAttributes))
+            ret.append(NSAttributedString.init(string: "更新了群信息".innerLocalized(), attributes: contentAttributes))
             return ret
         case .revokeReciept:
             let ret = NSMutableAttributedString.init()
             ret.append(NSAttributedString.init(string: message.senderNickname ?? "", attributes: contentAttributes))
             ret.append(getSpaceString())
-            ret.append(NSAttributedString.init(string: "撤回了一条消息", attributes: contentAttributes))
+            ret.append(NSAttributedString.init(string: "撤回了一条消息".innerLocalized(), attributes: contentAttributes))
             return ret
         case .conversationNotification:
-            let content = NSAttributedString.init(string: isSingleChat ? "你已开启此会话消息免打扰" : "你已解除屏蔽该群聊", attributes: contentAttributes)
+            let content = NSAttributedString.init(string: isSingleChat ? "你已开启此会话消息免打扰".innerLocalized() : "你已解除屏蔽该群聊".innerLocalized(), attributes: contentAttributes)
             return content
         case .conversationNotNotification:
-            let content = NSAttributedString.init(string: isSingleChat ? "你已关闭此会话消息免打扰" : "你已屏蔽该群聊", attributes: contentAttributes)
+            let content = NSAttributedString.init(string: isSingleChat ? "你已关闭此会话消息免打扰".innerLocalized() : "你已屏蔽该群聊".innerLocalized(), attributes: contentAttributes)
             return content
         case .dismissGroup:
             let ret = NSMutableAttributedString.init()
             ret.append(getOpUserName(message: message))
-            ret.append(NSAttributedString.init(string: "解散了群聊", attributes: contentAttributes))
+            ret.append(NSAttributedString.init(string: "解散了群聊".innerLocalized(), attributes: contentAttributes))
             return ret
         default:
-            let content = NSAttributedString.init(string: "不支持的消息类型", attributes: contentAttributes)
+            let content = NSAttributedString.init(string: "不支持的消息类型".innerLocalized(), attributes: contentAttributes)
             return content
         }
         return nil

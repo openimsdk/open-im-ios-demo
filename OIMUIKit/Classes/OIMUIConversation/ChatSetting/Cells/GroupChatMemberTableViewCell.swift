@@ -1,4 +1,3 @@
-//
 
 
 
@@ -6,30 +5,33 @@
 
 
 import UIKit
+import RxSwift
 
 class GroupChatMemberTableViewCell: UITableViewCell {
-    
+    var disposeBag = DisposeBag()
     let titleLabel: UILabel = {
         let v = UILabel()
         v.font = UIFont.systemFont(ofSize: 13)
         return v
     }()
     
-    private let countLabel: UILabel = {
+    let countLabel: UILabel = {
         let v = UILabel()
         v.font = UIFont.systemFont(ofSize: 13)
         v.textColor = StandardUI.color_999999
         return v
     }()
-    
-    private lazy var memberCollectionView: UICollectionView = {
+        
+    lazy var memberCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
-        layout.itemSize = CGSize.init(width: StandardUI.avatar_42, height: StandardUI.avatar_42)
+        let maxCount: CGFloat = 7
+        let itemWidth: CGFloat = (kScreenWidth - StandardUI.margin_22 * 2 - 10 * (maxCount - 1)) / maxCount
+        layout.itemSize = CGSize.init(width: itemWidth, height: itemWidth)
         layout.scrollDirection = .horizontal
         layout.minimumInteritemSpacing = 6
         let v = UICollectionView.init(frame: .zero, collectionViewLayout: layout)
-        v.contentInset = UIEdgeInsets.init(top: 0, left: StandardUI.margin_22, bottom: 0, right: 0)
-        v.backgroundColor = .purple
+        v.register(ImageCollectionViewCell.self, forCellWithReuseIdentifier: ImageCollectionViewCell.className)
+        v.contentInset = UIEdgeInsets.init(top: 0, left: StandardUI.margin_22, bottom: 0, right: StandardUI.margin_22)
         return v
     }()
 
@@ -68,4 +70,29 @@ class GroupChatMemberTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+    class ImageCollectionViewCell: UICollectionViewCell {
+        let imageView: UIImageView = {
+            let v = UIImageView()
+            v.layer.cornerRadius = 4
+            v.clipsToBounds = true
+            return v
+        }()
+        override init(frame: CGRect) {
+            super.init(frame: frame)
+            
+            contentView.addSubview(imageView)
+            imageView.snp.makeConstraints { make in
+                make.edges.equalToSuperview()
+            }
+        }
+        
+        required init?(coder: NSCoder) {
+            fatalError("init(coder:) has not been implemented")
+        }
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        disposeBag = DisposeBag()
+    }
 }

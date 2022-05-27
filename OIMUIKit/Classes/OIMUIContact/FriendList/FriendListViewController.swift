@@ -1,7 +1,5 @@
-//
 
 
-//
 
 
 
@@ -48,7 +46,7 @@ open class FriendListViewController: UIViewController {
     
     open override func viewDidLoad() {
         super.viewDidLoad()
-        self.navigationItem.title = "我的好友"
+        self.navigationItem.title = "我的好友".innerLocalized()
         initView()
         bindData()
         _viewModel.getMyFriendList()
@@ -58,7 +56,7 @@ open class FriendListViewController: UIViewController {
         let searchC: UISearchController = {
             let v = UISearchController.init(searchResultsController: resultC)
             v.searchResultsUpdater = resultC
-            v.searchBar.placeholder = "搜索好友"
+            v.searchBar.placeholder = "搜索好友".innerLocalized()
             v.obscuresBackgroundDuringPresentation = false
             return v
         }()

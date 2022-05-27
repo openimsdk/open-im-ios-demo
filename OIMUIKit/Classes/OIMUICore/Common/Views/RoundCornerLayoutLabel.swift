@@ -1,7 +1,5 @@
-//
 
 
-//
 
 
 
@@ -11,7 +9,6 @@ import SnapKit
 
 class RoundCornerLayoutLabel: UIView {
 
-    
     public var contentInset: UIEdgeInsets = .zero {
         didSet {
             _hStack.snp.remakeConstraints { make in
@@ -87,9 +84,6 @@ class RoundCornerLayoutLabel: UIView {
         return v
     }()
     
-    
-    
-    
     init(roundCorners: UIRectCorner, radius: CGFloat?) {
         corners_ = roundCorners
         radius_ = radius
@@ -100,11 +94,6 @@ class RoundCornerLayoutLabel: UIView {
         }
         checkValue()
     }
-
-    
-    
-    
-    
     
     init(icon: UIImage?, roundCorners: UIRectCorner, radius: CGFloat?) {
         _iconImage = icon

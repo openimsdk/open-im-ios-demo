@@ -1,4 +1,3 @@
-//
 
 
 
@@ -6,14 +5,14 @@
 
 
 import UIKit
+import RxSwift
 
 class GroupChatNameTableViewCell: UITableViewCell {
-    
+    var disposeBag = DisposeBag()
     let avatarImageView: UIImageView = {
         let v = UIImageView()
         v.layer.cornerRadius = 4
         v.clipsToBounds = true
-        v.backgroundColor = .orange
         return v
     }()
     
@@ -31,7 +30,8 @@ class GroupChatNameTableViewCell: UITableViewCell {
         avatarImageView.snp.makeConstraints { make in
             make.size.equalTo(48)
             make.left.equalToSuperview().offset(StandardUI.margin_22)
-            make.top.bottom.equalToSuperview().inset(20)
+            make.top.equalToSuperview().inset(20)
+            make.bottom.equalToSuperview().inset(20).priority(.low)
         }
         
         contentView.addSubview(titleLabel)
@@ -46,4 +46,8 @@ class GroupChatNameTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        disposeBag = DisposeBag()
+    }
 }

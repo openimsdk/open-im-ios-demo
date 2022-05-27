@@ -1,7 +1,5 @@
-//
 
 
-//
 
 
 
@@ -9,9 +7,9 @@
 import Foundation
 import RxSwift
 
-class JNNotificationCenter {
+final public class JNNotificationCenter {
     
-    static let shared: JNNotificationCenter = JNNotificationCenter()
+    public static let shared: JNNotificationCenter = JNNotificationCenter()
 
     private static let EventKey = "event"
 
@@ -41,6 +39,6 @@ class JNNotificationCenter {
     private let _nc: NotificationCenter = NotificationCenter()
 }
 
-class Event {
+open class Event {
     init() {}
 }

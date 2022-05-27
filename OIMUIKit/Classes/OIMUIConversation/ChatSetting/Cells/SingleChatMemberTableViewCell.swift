@@ -1,4 +1,3 @@
-//
 
 
 
@@ -31,7 +30,7 @@ class SingleChatMemberTableViewCell: UITableViewCell {
             make.top.equalToSuperview().offset(20)
             make.left.right.equalToSuperview()
             make.height.equalTo(90)
-            make.bottom.equalToSuperview().offset(-10)
+            make.bottom.equalToSuperview().offset(-10).priority(.low)
         }
     }
     

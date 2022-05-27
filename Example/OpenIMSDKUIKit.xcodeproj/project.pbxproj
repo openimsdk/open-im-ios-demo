@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		150948FFF7FA303B566E0701 /* Pods_OpenIMSDKUIKit_Example.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 86375D8F5D4B22736AEE6D61 /* Pods_OpenIMSDKUIKit_Example.framework */; };
 		1786AD50283623EA00CE2A92 /* DemoPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1786AD4F283623EA00CE2A92 /* DemoPlugin.swift */; };
 		607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 607FACD51AFB9204008FA782 /* AppDelegate.swift */; };
 		607FACDB1AFB9204008FA782 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 607FACD91AFB9204008FA782 /* Main.storyboard */; };
@@ -19,23 +18,30 @@
 		DC0B7DF6282DFA85003896C1 /* DemoUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC0B7DF5282DFA85003896C1 /* DemoUI.swift */; };
 		DC1FAF0C27FE8E7600B529B9 /* StringExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC1FAF0B27FE8E7600B529B9 /* StringExtension.swift */; };
 		DC28F0EC27EE1C9D0068B545 /* MainTabViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC28F0EB27EE1C9D0068B545 /* MainTabViewController.swift */; };
+		DC2D9CA9283F7C24004CA8DB /* UserModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC2D9CA8283F7C24004CA8DB /* UserModel.swift */; };
+		DC2D9CAC283F7C41004CA8DB /* FrequentUserTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC2D9CAB283F7C41004CA8DB /* FrequentUserTable.swift */; };
 		DCA0D2C927EF235500CA5410 /* StubConnect.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCA0D2C827EF235500CA5410 /* StubConnect.swift */; };
 		DCA0D2CB27EF6B7D00CA5410 /* LoginAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCA0D2CA27EF6B7D00CA5410 /* LoginAPI.swift */; };
 		DCA0D2CD27EF6D2B00CA5410 /* DemoAPIable.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCA0D2CC27EF6D2B00CA5410 /* DemoAPIable.swift */; };
+		DCE04171283E5BD30095874E /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = DCE04173283E5BD30095874E /* Localizable.strings */; };
+		E9C34A04DAE4FF414143C11C /* Pods_OpenIMSDKUIKit_Example.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7DB6D99ED833786D324D60E9 /* Pods_OpenIMSDKUIKit_Example.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		1786AD4F283623EA00CE2A92 /* DemoPlugin.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DemoPlugin.swift; sourceTree = "<group>"; };
 		30B41583F79ADA41AF68AA85 /* LICENSE */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text; name = LICENSE; path = ../LICENSE; sourceTree = "<group>"; };
-		4372425F53727879EA3B67ED /* Pods-OpenIMSDKUIKit_Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OpenIMSDKUIKit_Example.debug.xcconfig"; path = "Target Support Files/Pods-OpenIMSDKUIKit_Example/Pods-OpenIMSDKUIKit_Example.debug.xcconfig"; sourceTree = "<group>"; };
+		3323CB10E879EF986E548BDA /* Pods-OpenIMSDKUIKit_Example.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OpenIMSDKUIKit_Example.debug.xcconfig"; path = "Target Support Files/Pods-OpenIMSDKUIKit_Example/Pods-OpenIMSDKUIKit_Example.debug.xcconfig"; sourceTree = "<group>"; };
 		607FACD01AFB9204008FA782 /* OpenIMSDKUIKit_Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OpenIMSDKUIKit_Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		607FACD41AFB9204008FA782 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		607FACD51AFB9204008FA782 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		607FACDA1AFB9204008FA782 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		607FACDC1AFB9204008FA782 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
 		607FACDF1AFB9204008FA782 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
-		86375D8F5D4B22736AEE6D61 /* Pods_OpenIMSDKUIKit_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_OpenIMSDKUIKit_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		BCD2524E9211A59B1762CBD7 /* Pods-OpenIMSDKUIKit_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OpenIMSDKUIKit_Example.release.xcconfig"; path = "Target Support Files/Pods-OpenIMSDKUIKit_Example/Pods-OpenIMSDKUIKit_Example.release.xcconfig"; sourceTree = "<group>"; };
+		7DB6D99ED833786D324D60E9 /* Pods_OpenIMSDKUIKit_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_OpenIMSDKUIKit_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		84AFF5E17778D45363745CCC /* Pods-OpenIMSDKUIKit_Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OpenIMSDKUIKit_Example.release.xcconfig"; path = "Target Support Files/Pods-OpenIMSDKUIKit_Example/Pods-OpenIMSDKUIKit_Example.release.xcconfig"; sourceTree = "<group>"; };
+		DC05D4CF283E153400CC3974 /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Main.strings"; sourceTree = "<group>"; };
+		DC05D4D0283E156300CC3974 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Main.strings; sourceTree = "<group>"; };
+		DC05D4D1283E156300CC3974 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/LaunchScreen.strings; sourceTree = "<group>"; };
 		DC0B7DEB282DF953003896C1 /* LoginViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
 		DC0B7DF1282DFA09003896C1 /* UnderlineButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnderlineButton.swift; sourceTree = "<group>"; };
 		DC0B7DF3282DFA23003896C1 /* UnderlineTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UnderlineTextField.swift; sourceTree = "<group>"; };
@@ -43,9 +49,13 @@
 		DC1FAF0B27FE8E7600B529B9 /* StringExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StringExtension.swift; sourceTree = "<group>"; };
 		DC1FAF0F27FF04D000B529B9 /* OpenIMSDKUIKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = OpenIMSDKUIKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		DC28F0EB27EE1C9D0068B545 /* MainTabViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainTabViewController.swift; sourceTree = "<group>"; };
+		DC2D9CA8283F7C24004CA8DB /* UserModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserModel.swift; sourceTree = "<group>"; };
+		DC2D9CAB283F7C41004CA8DB /* FrequentUserTable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FrequentUserTable.swift; sourceTree = "<group>"; };
 		DCA0D2C827EF235500CA5410 /* StubConnect.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StubConnect.swift; sourceTree = "<group>"; };
 		DCA0D2CA27EF6B7D00CA5410 /* LoginAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginAPI.swift; sourceTree = "<group>"; };
 		DCA0D2CC27EF6D2B00CA5410 /* DemoAPIable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DemoAPIable.swift; sourceTree = "<group>"; };
+		DCE04172283E5BD30095874E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		DCE04174283E5BD70095874E /* zh-Hans */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = "zh-Hans"; path = "zh-Hans.lproj/Localizable.strings"; sourceTree = "<group>"; };
 		EED869B95C353B3B8D5FE5BE /* README.md */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = net.daringfireball.markdown; name = README.md; path = ../README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -54,7 +64,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				150948FFF7FA303B566E0701 /* Pods_OpenIMSDKUIKit_Example.framework in Frameworks */,
+				E9C34A04DAE4FF414143C11C /* Pods_OpenIMSDKUIKit_Example.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -83,6 +93,8 @@
 		607FACD21AFB9204008FA782 /* Example for OpenIMSDKUIKit */ = {
 			isa = PBXGroup;
 			children = (
+				DC2D9CAA283F7C3A004CA8DB /* DB */,
+				DC2D9CA7283F7C12004CA8DB /* Model */,
 				DC0B7DEF282DF9F4003896C1 /* Common */,
 				DC1FAF0A27FE8E6B00B529B9 /* Utils */,
 				DCA0D2C527EF1DB800CA5410 /* API */,
@@ -92,6 +104,7 @@
 				607FACDC1AFB9204008FA782 /* Images.xcassets */,
 				607FACDE1AFB9204008FA782 /* LaunchScreen.xib */,
 				607FACD31AFB9204008FA782 /* Supporting Files */,
+				DCE04173283E5BD30095874E /* Localizable.strings */,
 			);
 			name = "Example for OpenIMSDKUIKit";
 			path = OpenIMSDKUIKit;
@@ -118,7 +131,7 @@
 			isa = PBXGroup;
 			children = (
 				DC1FAF0F27FF04D000B529B9 /* OpenIMSDKUIKit.framework */,
-				86375D8F5D4B22736AEE6D61 /* Pods_OpenIMSDKUIKit_Example.framework */,
+				7DB6D99ED833786D324D60E9 /* Pods_OpenIMSDKUIKit_Example.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -126,8 +139,8 @@
 		CAC64E6711B5A6903B4FCC8D /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				4372425F53727879EA3B67ED /* Pods-OpenIMSDKUIKit_Example.debug.xcconfig */,
-				BCD2524E9211A59B1762CBD7 /* Pods-OpenIMSDKUIKit_Example.release.xcconfig */,
+				3323CB10E879EF986E548BDA /* Pods-OpenIMSDKUIKit_Example.debug.xcconfig */,
+				84AFF5E17778D45363745CCC /* Pods-OpenIMSDKUIKit_Example.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -167,6 +180,22 @@
 			path = Pages;
 			sourceTree = "<group>";
 		};
+		DC2D9CA7283F7C12004CA8DB /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				DC2D9CA8283F7C24004CA8DB /* UserModel.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		DC2D9CAA283F7C3A004CA8DB /* DB */ = {
+			isa = PBXGroup;
+			children = (
+				DC2D9CAB283F7C41004CA8DB /* FrequentUserTable.swift */,
+			);
+			path = DB;
+			sourceTree = "<group>";
+		};
 		DCA0D2C527EF1DB800CA5410 /* API */ = {
 			isa = PBXGroup;
 			children = (
@@ -185,13 +214,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 607FACEF1AFB9204008FA782 /* Build configuration list for PBXNativeTarget "OpenIMSDKUIKit_Example" */;
 			buildPhases = (
-				F06181EF2B287865611E6EDF /* [CP] Check Pods Manifest.lock */,
+				F97E6C79CBEE84AF148C006A /* [CP] Check Pods Manifest.lock */,
 				DCBD4C0227F07EE7003AFE6A /* Run Lint */,
 				607FACCC1AFB9204008FA782 /* Sources */,
 				607FACCD1AFB9204008FA782 /* Frameworks */,
 				607FACCE1AFB9204008FA782 /* Resources */,
-				70BA719D98778818AD720AA8 /* [CP] Embed Pods Frameworks */,
-				C51706C10273C9C2E4E348B3 /* [CP] Copy Pods Resources */,
+				DFB0D2204A15D8D3FCEE94A6 /* [CP] Embed Pods Frameworks */,
+				8F33648398A235F970475D02 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -225,8 +254,9 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				English,
-				en,
 				Base,
+				"zh-Hans",
+				en,
 			);
 			mainGroup = 607FACC71AFB9204008FA782;
 			productRefGroup = 607FACD11AFB9204008FA782 /* Products */;
@@ -244,6 +274,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				607FACDB1AFB9204008FA782 /* Main.storyboard in Resources */,
+				DCE04171283E5BD30095874E /* Localizable.strings in Resources */,
 				607FACE01AFB9204008FA782 /* LaunchScreen.xib in Resources */,
 				607FACDD1AFB9204008FA782 /* Images.xcassets in Resources */,
 			);
@@ -252,61 +283,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		70BA719D98778818AD720AA8 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-OpenIMSDKUIKit_Example/Pods-OpenIMSDKUIKit_Example-frameworks.sh",
-				"${BUILT_PRODUCTS_DIR}/Alamofire/Alamofire.framework",
-				"${BUILT_PRODUCTS_DIR}/CleanJSON/CleanJSON.framework",
-				"${BUILT_PRODUCTS_DIR}/Differentiator/Differentiator.framework",
-				"${BUILT_PRODUCTS_DIR}/IQKeyboardManagerSwift/IQKeyboardManagerSwift.framework",
-				"${BUILT_PRODUCTS_DIR}/JNFoundation/JNFoundation.framework",
-				"${BUILT_PRODUCTS_DIR}/Kingfisher/Kingfisher.framework",
-				"${BUILT_PRODUCTS_DIR}/MJExtension/MJExtension.framework",
-				"${BUILT_PRODUCTS_DIR}/RxCocoa/RxCocoa.framework",
-				"${BUILT_PRODUCTS_DIR}/RxDataSources/RxDataSources.framework",
-				"${BUILT_PRODUCTS_DIR}/RxKeyboard/RxKeyboard.framework",
-				"${BUILT_PRODUCTS_DIR}/RxRelay/RxRelay.framework",
-				"${BUILT_PRODUCTS_DIR}/RxSwift/RxSwift.framework",
-				"${BUILT_PRODUCTS_DIR}/SQLiteRepairKit/sqliterk.framework",
-				"${BUILT_PRODUCTS_DIR}/SVProgressHUD/SVProgressHUD.framework",
-				"${BUILT_PRODUCTS_DIR}/SnapKit/SnapKit.framework",
-				"${BUILT_PRODUCTS_DIR}/WCDB.swift/WCDBSwift.framework",
-				"${BUILT_PRODUCTS_DIR}/WCDBOptimizedSQLCipher/sqlcipher.framework",
-				"${BUILT_PRODUCTS_DIR}/ZLPhotoBrowser/ZLPhotoBrowser.framework",
-				"${BUILT_PRODUCTS_DIR}/lottie-ios/Lottie.framework",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Alamofire.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CleanJSON.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Differentiator.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/IQKeyboardManagerSwift.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/JNFoundation.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Kingfisher.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/MJExtension.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxCocoa.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxDataSources.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxKeyboard.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxRelay.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxSwift.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/sqliterk.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SVProgressHUD.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SnapKit.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/WCDBSwift.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/sqlcipher.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ZLPhotoBrowser.framework",
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Lottie.framework",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-OpenIMSDKUIKit_Example/Pods-OpenIMSDKUIKit_Example-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		C51706C10273C9C2E4E348B3 /* [CP] Copy Pods Resources */ = {
+		8F33648398A235F970475D02 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -344,7 +321,63 @@
 			shellPath = /bin/sh;
 			shellScript = "# 格式自动调整\nif which swiftlint >/dev/null; then\nswiftlint autocorrect\necho \"格式调整完成\"\nfi\n";
 		};
-		F06181EF2B287865611E6EDF /* [CP] Check Pods Manifest.lock */ = {
+		DFB0D2204A15D8D3FCEE94A6 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-OpenIMSDKUIKit_Example/Pods-OpenIMSDKUIKit_Example-frameworks.sh",
+				"${BUILT_PRODUCTS_DIR}/Alamofire/Alamofire.framework",
+				"${BUILT_PRODUCTS_DIR}/CleanJSON/CleanJSON.framework",
+				"${BUILT_PRODUCTS_DIR}/Differentiator/Differentiator.framework",
+				"${BUILT_PRODUCTS_DIR}/IQKeyboardManagerSwift/IQKeyboardManagerSwift.framework",
+				"${BUILT_PRODUCTS_DIR}/JNFoundation/JNFoundation.framework",
+				"${BUILT_PRODUCTS_DIR}/Kingfisher/Kingfisher.framework",
+				"${BUILT_PRODUCTS_DIR}/Localize-Swift/Localize_Swift.framework",
+				"${BUILT_PRODUCTS_DIR}/MJExtension/MJExtension.framework",
+				"${BUILT_PRODUCTS_DIR}/RxCocoa/RxCocoa.framework",
+				"${BUILT_PRODUCTS_DIR}/RxDataSources/RxDataSources.framework",
+				"${BUILT_PRODUCTS_DIR}/RxKeyboard/RxKeyboard.framework",
+				"${BUILT_PRODUCTS_DIR}/RxRelay/RxRelay.framework",
+				"${BUILT_PRODUCTS_DIR}/RxSwift/RxSwift.framework",
+				"${BUILT_PRODUCTS_DIR}/SQLiteRepairKit/sqliterk.framework",
+				"${BUILT_PRODUCTS_DIR}/SVProgressHUD/SVProgressHUD.framework",
+				"${BUILT_PRODUCTS_DIR}/SnapKit/SnapKit.framework",
+				"${BUILT_PRODUCTS_DIR}/WCDB.swift/WCDBSwift.framework",
+				"${BUILT_PRODUCTS_DIR}/WCDBOptimizedSQLCipher/sqlcipher.framework",
+				"${BUILT_PRODUCTS_DIR}/ZLPhotoBrowser/ZLPhotoBrowser.framework",
+				"${BUILT_PRODUCTS_DIR}/lottie-ios/Lottie.framework",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Alamofire.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CleanJSON.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Differentiator.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/IQKeyboardManagerSwift.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/JNFoundation.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Kingfisher.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Localize_Swift.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/MJExtension.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxCocoa.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxDataSources.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxKeyboard.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxRelay.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/RxSwift.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/sqliterk.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SVProgressHUD.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/SnapKit.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/WCDBSwift.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/sqlcipher.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ZLPhotoBrowser.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/Lottie.framework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-OpenIMSDKUIKit_Example/Pods-OpenIMSDKUIKit_Example-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		F97E6C79CBEE84AF148C006A /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -383,7 +416,9 @@
 				DC1FAF0C27FE8E7600B529B9 /* StringExtension.swift in Sources */,
 				DCA0D2CD27EF6D2B00CA5410 /* DemoAPIable.swift in Sources */,
 				DC0B7DEC282DF953003896C1 /* LoginViewController.swift in Sources */,
+				DC2D9CA9283F7C24004CA8DB /* UserModel.swift in Sources */,
 				DC0B7DF2282DFA09003896C1 /* UnderlineButton.swift in Sources */,
+				DC2D9CAC283F7C41004CA8DB /* FrequentUserTable.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -394,6 +429,8 @@
 			isa = PBXVariantGroup;
 			children = (
 				607FACDA1AFB9204008FA782 /* Base */,
+				DC05D4CF283E153400CC3974 /* zh-Hans */,
+				DC05D4D0283E156300CC3974 /* en */,
 			);
 			name = Main.storyboard;
 			sourceTree = "<group>";
@@ -402,8 +439,18 @@
 			isa = PBXVariantGroup;
 			children = (
 				607FACDF1AFB9204008FA782 /* Base */,
+				DC05D4D1283E156300CC3974 /* en */,
 			);
 			name = LaunchScreen.xib;
+			sourceTree = "<group>";
+		};
+		DCE04173283E5BD30095874E /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				DCE04172283E5BD30095874E /* en */,
+				DCE04174283E5BD70095874E /* zh-Hans */,
+			);
+			name = Localizable.strings;
 			sourceTree = "<group>";
 		};
 /* End PBXVariantGroup section */
@@ -512,7 +559,7 @@
 		};
 		607FACF01AFB9204008FA782 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 4372425F53727879EA3B67ED /* Pods-OpenIMSDKUIKit_Example.debug.xcconfig */;
+			baseConfigurationReference = 3323CB10E879EF986E548BDA /* Pods-OpenIMSDKUIKit_Example.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = BDLHL8GNFV;
@@ -521,7 +568,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MODULE_NAME = ExampleApp;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.demo.OpenIMSDKUIKit-Example";
+				PRODUCT_BUNDLE_IDENTIFIER = cn.rentsoft.ios.openim;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
 				SWIFT_VERSION = 5.0;
@@ -530,7 +577,7 @@
 		};
 		607FACF11AFB9204008FA782 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = BCD2524E9211A59B1762CBD7 /* Pods-OpenIMSDKUIKit_Example.release.xcconfig */;
+			baseConfigurationReference = 84AFF5E17778D45363745CCC /* Pods-OpenIMSDKUIKit_Example.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = BDLHL8GNFV;
@@ -539,7 +586,7 @@
 				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MODULE_NAME = ExampleApp;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.demo.OpenIMSDKUIKit-Example";
+				PRODUCT_BUNDLE_IDENTIFIER = cn.rentsoft.ios.openim;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_SWIFT3_OBJC_INFERENCE = Default;
 				SWIFT_VERSION = 5.0;

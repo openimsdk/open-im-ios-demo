@@ -1,7 +1,5 @@
-//
 
 
-//
 
 
 
@@ -60,6 +58,8 @@ struct StandardUI {
     static let color_B3D7FF = #colorLiteral(red: 0.7019607843, green: 0.8431372549, blue: 1, alpha: 1)
     
     static let color_F0F0F0 = #colorLiteral(red: 0.9411764706, green: 0.9411764706, blue: 0.9411764706, alpha: 1)
+    
+    static let color_D8D8D8 = #colorLiteral(red: 0.8470588235, green: 0.8470588235, blue: 0.8470588235, alpha: 1)
     
     static let margin_22: CGFloat = 22
     static let avatar_42: CGFloat = 42

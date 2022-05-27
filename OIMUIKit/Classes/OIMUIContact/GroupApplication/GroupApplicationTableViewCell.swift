@@ -1,7 +1,5 @@
-//
 
 
-//
 
 
 
@@ -42,7 +40,7 @@ class GroupApplicationTableViewCell: UITableViewCell {
     
     let agreeBtn: UIButton = {
         let v = UIButton()
-        v.setTitle("同意", for: .normal)
+        v.setTitle("同意".innerLocalized(), for: .normal)
         v.titleLabel?.font = .systemFont(ofSize: 12)
         return v
     }()
@@ -96,21 +94,21 @@ class GroupApplicationTableViewCell: UITableViewCell {
     func setApplyState(_ state: ApplyState) {
         switch state {
         case .uncertain:
-            agreeBtn.setTitle("同意", for: .normal)
+            agreeBtn.setTitle("同意".innerLocalized(), for: .normal)
             agreeBtn.layer.cornerRadius = 3
             agreeBtn.layer.borderColor = StandardUI.color_1B72EC.cgColor
             agreeBtn.layer.borderWidth = 1
             agreeBtn.setTitleColor(StandardUI.color_418AE5, for: .normal)
             agreeBtn.isUserInteractionEnabled = true
         case .agreed:
-            agreeBtn.setTitle("已同意", for: .normal)
+            agreeBtn.setTitle("已同意".innerLocalized(), for: .normal)
             agreeBtn.isUserInteractionEnabled = false
             agreeBtn.layer.cornerRadius = 0
             agreeBtn.layer.borderWidth = 0
             agreeBtn.layer.borderColor = UIColor.white.cgColor
             agreeBtn.setTitleColor(StandardUI.color_418AE5, for: .normal)
         case .rejected:
-            agreeBtn.setTitle("已拒绝", for: .normal)
+            agreeBtn.setTitle("已拒绝".innerLocalized(), for: .normal)
             agreeBtn.isUserInteractionEnabled = false
             agreeBtn.layer.cornerRadius = 0
             agreeBtn.layer.borderWidth = 0
@@ -120,7 +118,7 @@ class GroupApplicationTableViewCell: UITableViewCell {
     }
     
     func setCompanyName(_ name: String) {
-        let attr = NSMutableAttributedString.init(string: "申请加入 ")
+        let attr = NSMutableAttributedString.init(string: "申请加入".innerLocalized() + " ")
         let companyAttrName = NSAttributedString.init(string: name, attributes: [.foregroundColor: StandardUI.color_418AE5])
         attr.append(companyAttrName)
         applyInfoLabel.attributedText = attr
@@ -128,7 +126,7 @@ class GroupApplicationTableViewCell: UITableViewCell {
     }
     
     func setApply(reason: String) {
-        applyReasonLabel.text = "申请理由:\n \(reason)"
+        applyReasonLabel.text = "申请理由".innerLocalized() + ":\n \(reason)"
     }
     
     enum ApplyState: Int {

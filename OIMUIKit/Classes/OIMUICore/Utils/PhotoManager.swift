@@ -1,4 +1,4 @@
-//
+
 
 
 
@@ -19,6 +19,10 @@ class PhotoHelper {
     var didCameraFinished: ((UIImage?, URL?) -> Void)?
     
     init() {
+        resetConfigToSendMedia();
+    }
+    
+    func resetConfigToSendMedia() {
         let editConfig = ZLPhotoConfiguration.default().editImageConfiguration
         editConfig.tools([.draw, .clip, .textSticker, .mosaic])
         ZLPhotoConfiguration.default().editImageConfiguration(editConfig)
@@ -35,6 +39,40 @@ class PhotoHelper {
                 }
             }
         ZLPhotoConfiguration.default().cameraConfiguration.videoExportType = .mp4
+    }
+    
+    func setConfigToPickAvatar() {
+        let editConfig = ZLPhotoConfiguration.default().editImageConfiguration
+        editConfig.tools([.clip])
+            .clipRatios([ZLImageClipRatio.wh1x1])
+        ZLPhotoConfiguration.default().maxSelectCount(1)
+            .allowRecordVideo(false)
+            .allowMixSelect(false)
+            .allowSelectGif(false)
+            .allowSelectVideo(false)
+            .allowSelectLivePhoto(false)
+            .allowSelectOriginal(false)
+            .editImageConfiguration(editConfig)
+            .showClipDirectlyIfOnlyHasClipTool(true)
+            .canSelectAsset({_ in false})
+            .navCancelButtonStyle(.text)
+            .noAuthorityCallback { (authType: ZLNoAuthorityType) in
+                switch authType {
+                case .library:
+                    debugPrint("No library authority")
+                case .camera:
+                    debugPrint("No camera authority")
+                case .microphone:
+                    debugPrint("No microphone authority")
+                }
+            }
+    }
+    
+    func presentPhotoLibraryOnlyEdit(byController: UIViewController) {
+        let sheet = ZLPhotoPreviewSheet.init(selectedAssets: nil)
+        sheet.selectImageBlock = didPhotoSelected
+        sheet.cancelBlock = didPhotoSelectedCancel
+        sheet.showPhotoLibrary(sender: byController)
     }
     
     func presentPhotoLibrary(byController: UIViewController) {
@@ -75,7 +113,7 @@ class PhotoHelper {
                 let cgImage = try assetGen.copyCGImage(at: time, actualTime: &actualTime)
                 let thumbnail = UIImage.init(cgImage: cgImage)
                 let result = FileHelper.shared.saveImage(image: thumbnail)
-                let thumbnailPath = result.filePath
+                let thumbnailPath = result.relativeFilePath
                 messageSender?.sendVideo(path: url, thumbnailPath: thumbnailPath, duration: Int(asset.duration.seconds))
             } catch {
                 #if DEBUG
@@ -85,12 +123,71 @@ class PhotoHelper {
         }
     }
     
+    func preview(message: MessageInfo, from controller: UIViewController) {
+        switch message.contentType {
+        case .image:
+            var tmpURL: URL?
+            if let imageUrl = message.pictureElem?.sourcePicture?.url, let url = URL.init(string: imageUrl) {
+                tmpURL = url
+            } else if let imageUrl = message.pictureElem?.sourcePath {
+                let url = URL.init(fileURLWithPath: imageUrl)
+                if FileManager.default.fileExists(atPath: url.path) {
+                    tmpURL = url
+                }
+            }
+            
+            if let tmpURL = tmpURL {
+                let previewController = ZLImagePreviewController.init(datas: [tmpURL], index: 0, showSelectBtn: false, showBottomView: false) { _ in
+                    return .image
+                } urlImageLoader: { (url, imageView, progress, loadFinish) in
+                    imageView.kf.setImage(with: url) { (receivedSize, totalSize) in
+                        let percentage = (CGFloat(receivedSize) / CGFloat(totalSize))
+                        debugPrint("\(percentage)")
+                        progress(percentage)
+                    } completionHandler: { (_) in
+                        loadFinish()
+                    }
+                }
+                previewController.modalPresentationStyle = .fullScreen
+                controller.showDetailViewController(previewController, sender: nil)
+            }
+        case .video:
+            var tmpURL: URL?
+            if let videoUrl = message.videoElem?.videoUrl, let url = URL.init(string: videoUrl) {
+                tmpURL = url
+            } else if let videoUrl = message.videoElem?.videoPath {
+                let url = URL.init(fileURLWithPath: videoUrl)
+                if FileManager.default.fileExists(atPath: url.path) {
+                    tmpURL = url
+                }
+            }
+            
+            if let tmpURL = tmpURL {
+                let previewController = ZLImagePreviewController.init(datas: [tmpURL], index: 0, showSelectBtn: false, showBottomView: false) { _ in
+                    return .video
+                } urlImageLoader: { (url, imageView, progress, loadFinish) in
+                    imageView.kf.setImage(with: url) { (receivedSize, totalSize) in
+                        let percentage = (CGFloat(receivedSize) / CGFloat(totalSize))
+                        debugPrint("\(percentage)")
+                        progress(percentage)
+                    } completionHandler: { (_) in
+                        loadFinish()
+                    }
+                }
+                previewController.modalPresentationStyle = .fullScreen
+                controller.showDetailViewController(previewController, sender: nil)
+            }
+        default:
+            break
+        }
+    }
+    
     private func compressAndSendMp4(asset: PHAsset, thumbnail: UIImage?, messageSender: MessageListViewModel) {
         let fileHelper = FileHelper.shared
         var thumbnailPath: String = ""
         if let thumbnail = thumbnail {
             let result = fileHelper.saveImage(image: thumbnail)
-            thumbnailPath = result.filePath
+            thumbnailPath = result.relativeFilePath
         }
         ZLVideoManager.exportVideo(for: asset, exportType: .mp4) { [weak messageSender] (url: URL?, error: Error?) in
             guard let url = url else { return }

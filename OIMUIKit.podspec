@@ -46,4 +46,5 @@ Pod::Spec.new do |s|
   s.dependency 'SVProgressHUD', '~> 2.2.5'
   s.dependency 'JNFoundation', '0.2.1'
   s.dependency 'IQKeyboardManagerSwift'
+  s.dependency 'Localize-Swift', '~> 3.2'
 end

@@ -1,4 +1,3 @@
-//
 
 
 
@@ -7,6 +6,7 @@
 
 import UIKit
 import RxSwift
+import SVProgressHUD
 
 open class ChatListViewController: UIViewController, UITableViewDelegate {
     
@@ -45,23 +45,42 @@ open class ChatListViewController: UIViewController, UITableViewDelegate {
     
     private lazy var _menuView: ChatMenuView = {
         let v = ChatMenuView()
-        let scanItem: ChatMenuView.MenuItem = ChatMenuView.MenuItem.init(title: "扫一扫", icon: UIImage.init(nameInBundle: "chat_menu_scan_icon")) { [weak self] in
+        let scanItem: ChatMenuView.MenuItem = ChatMenuView.MenuItem.init(title: "扫一扫".innerLocalized(), icon: UIImage.init(nameInBundle: "chat_menu_scan_icon")) { [weak self] in
             let vc = ScanViewController()
+            vc.scanDidComplete = { (result: String) in
+                SVProgressHUD.showInfo(withStatus: result)
+            }
             vc.modalPresentationStyle = .fullScreen
             self?.present(vc, animated: true, completion: nil)
         }
-        let addFriendItem = ChatMenuView.MenuItem.init(title: "添加好友", icon: UIImage.init(nameInBundle: "chat_menu_add_friend_icon")) {
-            print("跳转添加好友界面")
+        let addFriendItem = ChatMenuView.MenuItem.init(title: "添加好友".innerLocalized(), icon: UIImage.init(nameInBundle: "chat_menu_add_friend_icon")) { [weak self] in
+            let vc = SearchFriendViewController()
+            vc.hidesBottomBarWhenPushed = true
+            self?.navigationController?.pushViewController(vc, animated: true)
         }
         
-        let addGroupItem = ChatMenuView.MenuItem.init(title: "添加群聊", icon: UIImage.init(nameInBundle: "chat_menu_add_group_icon")) {
-            print("跳转添加群聊页面")
-        }
-        let createGroupItem = ChatMenuView.MenuItem.init(title: "发起群聊", icon: UIImage.init(nameInBundle: "chat_menu_create_group_icon")) {
-            print("跳转到发起群聊界面")
-            let vc = SelectContactsViewController()
+        let addGroupItem = ChatMenuView.MenuItem.init(title: "添加群聊".innerLocalized(), icon: UIImage.init(nameInBundle: "chat_menu_add_group_icon")) { [weak self] in
+            let vc = SearchGroupViewController()
             vc.hidesBottomBarWhenPushed = true
-            self.navigationController?.pushViewController(vc, animated: true)
+            self?.navigationController?.pushViewController(vc, animated: true)
+        }
+        let createGroupItem = ChatMenuView.MenuItem.init(title: "发起群聊".innerLocalized(), icon: UIImage.init(nameInBundle: "chat_menu_create_group_icon")) { [weak self] in
+            let vc = SelectContactsViewController()
+            vc.selectedContactsBlock = { [weak vc, weak self] (users: [UserInfo]) in
+                guard let sself = self else { return }
+                IMController.shared.createConversation(users: users) { (groupInfo: GroupInfo?) in
+                    guard let groupInfo = groupInfo else { return }
+                    IMController.shared.getConversation(sessionType: groupInfo.groupType, sourceId: groupInfo.groupID) { (conversation: ConversationInfo?) in
+                        guard let conversation = conversation else { return }
+
+                        let viewModel: MessageListViewModel = MessageListViewModel.init(groupId: groupInfo.groupID, conversation: conversation)
+                        let chatVC = MessageListViewController.init(viewModel: viewModel)
+                        self?.navigationController?.pushViewController(chatVC, animated: false)
+                    }
+                }
+            }
+            vc.hidesBottomBarWhenPushed = true
+            self?.navigationController?.pushViewController(vc, animated: true)
         }
         v.setItems([scanItem, addFriendItem, addGroupItem, createGroupItem])
         return v
@@ -145,7 +164,7 @@ open class ChatListViewController: UIViewController, UITableViewDelegate {
         _viewModel.loginUserPublish.subscribe(onNext: { [weak self] (userInfo: UserInfo?) in
             self?._headerView.avatarImageView.setImage(with: userInfo?.faceURL, placeHolder: nil)
             self?._headerView.nameLabel.text = userInfo?.nickname
-            self?._headerView.statusLabel.titleLabel.text = "手机在线"
+            self?._headerView.statusLabel.titleLabel.text = "手机在线".innerLocalized()
             self?._headerView.statusLabel.statusView.backgroundColor = StandardUI.color_10CC64
         }).disposed(by: _disposeBag)
     }
@@ -153,7 +172,7 @@ open class ChatListViewController: UIViewController, UITableViewDelegate {
     public func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         let item = _viewModel.conversationsRelay.value[indexPath.row]
         
-        let pinActionTitle = item.isPinned ? "取消置顶" : "置顶"
+        let pinActionTitle = item.isPinned ? "取消置顶".innerLocalized() : "置顶".innerLocalized()
         let setTopAction: UIContextualAction = UIContextualAction.init(style: .normal, title: pinActionTitle) { [weak self] action, actionView, completion in
             self?._viewModel.pinConversation(id: item.conversationID, isPinned: item.isPinned, onSuccess: { _ in
                 completion(true)
@@ -161,7 +180,7 @@ open class ChatListViewController: UIViewController, UITableViewDelegate {
         }
         setTopAction.backgroundColor = StandardUI.color_1B72EC
         
-        let deleteAction: UIContextualAction = UIContextualAction.init(style: .destructive, title: "移除") { [weak self] action, actionView, completion in
+        let deleteAction: UIContextualAction = UIContextualAction.init(style: .destructive, title: "移除".innerLocalized()) { [weak self] action, actionView, completion in
             self?._viewModel.deleteConversationFromLocalStorage(conversationId: item.conversationID, completion: { _ in
                 completion(true)
             })

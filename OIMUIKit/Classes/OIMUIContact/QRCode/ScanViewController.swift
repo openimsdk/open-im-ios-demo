@@ -1,4 +1,3 @@
-//
 
 
 
@@ -9,7 +8,7 @@ import UIKit
 import RxSwift
 
 class ScanViewController: UIViewController {
-    
+    var scanDidComplete: ((String) -> Void)?
     override func viewDidLoad() {
         super.viewDidLoad()
         defer {
@@ -29,9 +28,9 @@ class ScanViewController: UIViewController {
         _scanView.snp.makeConstraints { (make) in
             make.edges.equalToSuperview()
         }
-        _scanView.startScanning().subscribe { (result: ScanResult?) in
+        _scanView.startScanning().subscribe { [weak self] (result: ScanResult?) in
             guard let str = result?.strScanned else { return }
-            print(str)
+            self?.scanDidComplete?(str)
         }.disposed(by: _disposeBag)
     }
     

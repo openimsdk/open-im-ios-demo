@@ -1,4 +1,3 @@
-//
 
 
 
@@ -44,7 +43,8 @@ class ContactsEntranceTableViewCell: UITableViewCell {
         avatarImageView.snp.makeConstraints { make in
             make.size.equalTo(StandardUI.avatar_42)
             make.left.equalTo(StandardUI.margin_22)
-            make.centerY.equalToSuperview()
+            make.top.equalToSuperview().offset(10)
+            make.bottom.equalToSuperview().offset(-10)
         }
         contentView.addSubview(titleLabel)
         titleLabel.snp.makeConstraints { make in

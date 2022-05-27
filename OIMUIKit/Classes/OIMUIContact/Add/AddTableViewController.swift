@@ -1,19 +1,18 @@
-//
 
 
-//
 
 
 
 
 import UIKit
+import SVProgressHUD
 
 open class AddTableViewController: UITableViewController {
 
     open override func viewDidLoad() {
         super.viewDidLoad()
         configureTableView()
-        self.navigationItem.title = "添加"
+        self.navigationItem.title = "添加".innerLocalized()
     }
     
     private func configureTableView() {
@@ -27,8 +26,8 @@ open class AddTableViewController: UITableViewController {
     }
     
     private let sectionItems: [SectionModel] = [
-        SectionModel.init(name: "创建和加入群聊", items: [EntranceType.createGroup, EntranceType.joinGroup]),
-        SectionModel.init(name: "添加好友", items: [EntranceType.searchUser, EntranceType.scanQrcode])
+        SectionModel.init(name: "创建和加入群聊".innerLocalized(), items: [EntranceType.createGroup, EntranceType.joinGroup]),
+        SectionModel.init(name: "添加好友".innerLocalized(), items: [EntranceType.searchUser, EntranceType.scanQrcode])
     ]
     open override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let item = sectionItems[section]
@@ -67,6 +66,18 @@ open class AddTableViewController: UITableViewController {
         switch item {
         case .createGroup:
             let vc = SelectContactsViewController()
+            vc.selectedContactsBlock = { [weak vc, weak self] (users: [UserInfo]) in
+                IMController.shared.createConversation(users: users) { (groupInfo: GroupInfo?) in
+                    guard let groupInfo = groupInfo else { return }
+                    IMController.shared.getConversation(sessionType: groupInfo.groupType, sourceId: groupInfo.groupID) { (conversation: ConversationInfo?) in
+                        guard let conversation = conversation else { return }
+
+                        let viewModel: MessageListViewModel = MessageListViewModel.init(groupId: groupInfo.groupID, conversation: conversation)
+                        let chatVC = MessageListViewController.init(viewModel: viewModel)
+                        self?.navigationController?.pushViewController(chatVC, animated: false)
+                    }
+                }
+            }
             self.navigationController?.pushViewController(vc, animated: true)
         case .joinGroup:
             let vc = SearchGroupViewController()
@@ -76,6 +87,9 @@ open class AddTableViewController: UITableViewController {
             self.navigationController?.pushViewController(vc, animated: true)
         case .scanQrcode:
             let vc = ScanViewController()
+            vc.scanDidComplete = { (result: String) in
+                SVProgressHUD.showInfo(withStatus: result)
+            }
             vc.modalPresentationStyle = .fullScreen
             self.present(vc, animated: true)
         }
@@ -108,26 +122,26 @@ open class AddTableViewController: UITableViewController {
         var title: String {
             switch self {
             case .createGroup:
-                return "创建群聊"
+                return "创建群聊".innerLocalized()
             case .joinGroup:
-                return "加入群聊"
+                return "加入群聊".innerLocalized()
             case .searchUser:
-                return "搜索"
+                return "搜索".innerLocalized()
             case .scanQrcode:
-                return "扫一扫"
+                return "扫一扫".innerLocalized()
             }
         }
         
         var subtitle: String {
             switch self {
             case .createGroup:
-                return "创建群聊，全面使用OpenIM"
+                return "创建群聊，全面使用OpenIM".innerLocalized()
             case .joinGroup:
-                return "与成员一起沟通协作"
+                return "与成员一起沟通协作".innerLocalized()
             case .searchUser:
-                return "通过用户ID号搜索添加"
+                return "通过用户ID号搜索添加".innerLocalized()
             case .scanQrcode:
-                return "扫描二维码名片"
+                return "扫描二维码名片".innerLocalized()
             }
         }
     }

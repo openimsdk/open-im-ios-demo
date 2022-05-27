@@ -32,4 +32,4 @@ typedef enum {
 - (void)restoreDefault;
 @end
 
-#endif // _HanyuPinyinOutputFormat_H_
+#endif 

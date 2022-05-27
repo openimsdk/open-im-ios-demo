@@ -89,8 +89,8 @@ class ChatToolBar: UIView {
     
     lazy var voiceInputBtn: NoIntrinsicSizeButton = {
         let v = NoIntrinsicSizeButton()
-        v.setTitle("按住开始说话", for: .normal)
-        v.setTitle("正在说话", for: .highlighted)
+        v.setTitle("按住开始说话".innerLocalized(), for: .normal)
+        v.setTitle("正在说话".innerLocalized(), for: .highlighted)
         v.titleLabel?.font = .systemFont(ofSize: 15)
         v.setTitleColor(.white, for: .normal)
         v.backgroundColor = StandardUI.color_1D6BED
@@ -394,7 +394,7 @@ class ChatToolBar: UIView {
     
     private lazy var sendBtn: UIButton = {
         let v = UIButton()
-        v.setTitle("发送", for: .normal)
+        v.setTitle("发送".innerLocalized(), for: .normal)
         v.backgroundColor = StandardUI.color_1B72EC
         v.layer.cornerRadius = 4
         v.clipsToBounds = true

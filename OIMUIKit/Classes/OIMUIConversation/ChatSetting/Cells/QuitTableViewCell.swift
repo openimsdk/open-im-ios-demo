@@ -1,4 +1,3 @@
-//
 
 
 
@@ -6,8 +5,12 @@
 
 
 import UIKit
+import RxSwift
 
 class QuitTableViewCell: UITableViewCell {
+
+    var disposeBag = DisposeBag()
+    
     let titleLabel: UILabel = {
         let v = UILabel()
         v.font = UIFont.systemFont(ofSize: 18, weight: .medium)
@@ -28,4 +31,8 @@ class QuitTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        disposeBag = DisposeBag()
+    }
 }

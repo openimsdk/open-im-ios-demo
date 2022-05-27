@@ -1,4 +1,3 @@
-//
 
 
 
@@ -77,12 +76,12 @@ class FileHelper {
             fileType = "png"
         }
         if imageData == nil {
-            imageData = image.jpegData(compressionQuality: 1.0)
+            imageData = image.jpegData(compressionQuality: 0.6)
             fileType = "jpg"
         }
         
         guard let imageData = imageData else {
-            return FileWriteResult.init(filePath: "", isSuccess: false)
+            return FileWriteResult.init(relativeFilePath: "", fullPath: "", isSuccess: false)
         }
         
         let data = NSData.init(data: imageData)
@@ -91,7 +90,7 @@ class FileHelper {
         
         createFileIfNotExist(path: filePath, data: imageData);
         
-        return FileWriteResult.init(filePath: imageDirectory + fileName, isSuccess: true)
+        return FileWriteResult.init(relativeFilePath: imageDirectory + fileName, fullPath: filePath, isSuccess: true)
     }
     
     func saveAudioFrom(audioPath: String) -> FileWriteResult {
@@ -99,10 +98,10 @@ class FileHelper {
         let filePath = documents + audioDirectory + fileName
         
         if !moveFile(path: audioPath, toPath: filePath) {
-            return FileWriteResult.init(filePath: "", isSuccess: false)
+            return FileWriteResult.init(relativeFilePath: "", fullPath: "", isSuccess: false)
         }
 
-        return FileWriteResult.init(filePath: audioDirectory + fileName, isSuccess: true)
+        return FileWriteResult.init(relativeFilePath: audioDirectory + fileName, fullPath: filePath, isSuccess: true)
     }
     
     func saveVideoFrom(videoPath: String) -> FileWriteResult {
@@ -111,10 +110,10 @@ class FileHelper {
         let filePath = documents + videoDirectory + fileName
         
         if !moveFile(path: videoPath, toPath: filePath) {
-            return FileWriteResult.init(filePath: "", isSuccess: false)
+            return FileWriteResult.init(relativeFilePath: "", fullPath: "", isSuccess: false)
         }
         
-        return FileWriteResult.init(filePath: videoDirectory + fileName, isSuccess: true)
+        return FileWriteResult.init(relativeFilePath: videoDirectory + fileName, fullPath: filePath, isSuccess: true)
     }
     
     func getContentTypeOf(imageData: NSData) -> String? {
@@ -158,7 +157,8 @@ class FileHelper {
     }
         
     struct FileWriteResult {
-        let filePath: String
+        let relativeFilePath: String
+        let fullPath: String
         let isSuccess: Bool
     }
 }

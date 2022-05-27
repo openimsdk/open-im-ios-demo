@@ -62,7 +62,7 @@ class ChatRecordView: UIView {
     
     lazy var cancelLabel: UILabel = {
         let v = UILabel()
-        v.text = "松开取消"
+        v.text = "松开取消".innerLocalized()
         v.font = .systemFont(ofSize: 14, weight: .medium)
         v.textColor = StandardUI.color_BEBEBE
         v.isHidden = true
@@ -87,7 +87,7 @@ class ChatRecordView: UIView {
     
     lazy var convertLabel: UILabel = {
         let v = UILabel()
-        v.text = "转文字"
+        v.text = "转文字".innerLocalized()
         v.font = .systemFont(ofSize: 14, weight: .medium)
         v.textColor = StandardUI.color_BEBEBE
         v.isHidden = true

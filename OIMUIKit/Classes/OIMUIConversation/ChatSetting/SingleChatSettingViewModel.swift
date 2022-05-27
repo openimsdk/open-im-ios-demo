@@ -1,4 +1,3 @@
-//
 
 
 
@@ -40,13 +39,26 @@ class SingleChatSettingViewModel {
                 userInfo.userID = user.userID ?? ""
                 userInfo.faceURL = user.faceURL
                 userInfo.nickname = user.showName
-                self?.membesRelay.accept([userInfo])
+                
+                let fakeUser = UserInfo()
+                fakeUser.isButton = true
+                self?.membesRelay.accept([userInfo, fakeUser])
             }
         }
     }
     
+    func clearRecord(completion: @escaping CallBack.StringOptionalReturnVoid) {
+        guard let uid = conversation.userID else { return }
+        IMController.shared.clearC2CHistoryMessages(userId: uid) { [weak self] resp in
+            guard let sself = self else { return }
+            let event = EventRecordClear.init(conversationId: sself.conversation.conversationID)
+            JNNotificationCenter.shared.post(event)
+            completion(resp)
+        }
+    }
+    
     func toggleTopContacts() {
-        IMController.shared.pinConversation(id: conversation.conversationID, isPinned: !setTopContactRelay.value, completion: { [weak self] _ in
+        IMController.shared.pinConversation(id: conversation.conversationID, isPinned: setTopContactRelay.value, completion: { [weak self] _ in
             guard let sself = self else { return }
             sself.setTopContactRelay.accept(!sself.setTopContactRelay.value)
         })
@@ -58,5 +70,19 @@ class SingleChatSettingViewModel {
             guard let sself = self else { return }
             self?.noDisturbRelay.accept(!sself.noDisturbRelay.value)
         })
+    }
+}
+
+var UserInfoExtensionKey: String? = nil
+extension UserInfo {
+    var isButton: Bool {
+        set {
+            objc_setAssociatedObject(self, &UserInfoExtensionKey, newValue, objc_AssociationPolicy.OBJC_ASSOCIATION_ASSIGN)
+        }
+        
+        get {
+            let value: Bool = objc_getAssociatedObject(self, &UserInfoExtensionKey) as? Bool ?? false
+            return value
+        }
     }
 }

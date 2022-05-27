@@ -1,4 +1,3 @@
-//
 
 
 
@@ -8,10 +7,10 @@
 import Foundation
 
 class UserDetailViewModel {
-    var user: FullUserInfo?
-    let items: [RowType] = [.remark, .identifier, .profile]
+    var userId: String?
+    
     func createSingleChat(onComplete: @escaping (MessageListViewModel) -> Void) {
-        guard let userId = user?.userID else {
+        guard let userId = userId else {
             return
         }
 
@@ -22,23 +21,6 @@ class UserDetailViewModel {
 
             let model = MessageListViewModel.init(userId: userId, conversation: conversation)
             onComplete(model)
-        }
-    }
-    
-    enum RowType {
-        case remark
-        case identifier
-        case profile
-        
-        var title: String {
-            switch self {
-            case .remark:
-                return "备注"
-            case .identifier:
-                return "ID"
-            case .profile:
-                return "个人资料"
-            }
         }
     }
 }

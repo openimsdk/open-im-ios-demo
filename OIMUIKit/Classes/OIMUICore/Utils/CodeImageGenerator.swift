@@ -1,4 +1,3 @@
-//
 
 
 
@@ -8,7 +7,6 @@
 import UIKit
 
 class CodeImageGenerator {
-    
     func createQRCodeImage(content: String, size: CGSize, foregroundColor: UIColor, backgroundColor: UIColor) -> UIImage? {
         let generatorType = CodeGeneratorType.typeQrCode
         guard let codeFilter = CIFilter.init(name: generatorType.rawValue), let data = content.data(using: .utf8) else {

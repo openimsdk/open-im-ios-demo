@@ -1,7 +1,5 @@
-//
 
 
-//
 
 
 
@@ -24,7 +22,7 @@ class GroupListViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.navigationItem.title = "我的群组"
+        self.navigationItem.title = "我的群组".innerLocalized()
         initView()
         bindData()
         _viewModel.getMyGroups()
@@ -44,7 +42,7 @@ class GroupListViewController: UIViewController {
     
     private let iCreateBtn: UnderlineButton = {
         let v = UnderlineButton.init(frame: .zero)
-        v.setTitle("我创建的", for: .normal)
+        v.setTitle("我创建的".innerLocalized(), for: .normal)
         v.setTitleColor(StandardUI.color_333333, for: .normal)
         v.titleLabel?.font = .systemFont(ofSize: 14)
         v.isSelected = true
@@ -54,7 +52,7 @@ class GroupListViewController: UIViewController {
     
     private let iJoinBtn: UnderlineButton = {
         let v = UnderlineButton.init(frame: .zero)
-        v.setTitle("我加入的", for: .normal)
+        v.setTitle("我加入的".innerLocalized(), for: .normal)
         v.setTitleColor(StandardUI.color_333333, for: .normal)
         v.titleLabel?.font = .systemFont(ofSize: 14)
         v.underLineWidth = 30
@@ -67,7 +65,7 @@ class GroupListViewController: UIViewController {
         let searchC: UISearchController = {
             let v = UISearchController.init(searchResultsController: resultC)
             v.searchResultsUpdater = resultC
-            v.searchBar.placeholder = "搜索：群组"
+            v.searchBar.placeholder = "搜索".innerLocalized() + ":" + "群组".innerLocalized()
             v.obscuresBackgroundDuringPresentation = true
             
             return v

@@ -1,4 +1,3 @@
-//
 
 
 
@@ -80,6 +79,13 @@ class MessageListViewModel {
         IMController.shared.msgRevokeReceived.subscribe(onNext: { [weak self] (messageId: String) in
             self?.removeMessage(messageId: messageId)
         }).disposed(by: _disposeBag)
+        
+        JNNotificationCenter.shared.observeEvent { [weak self] (event: EventRecordClear) in
+            guard let sself = self else { return }
+            if event.conversationId == sself.conversation.conversationID {
+                self?.messagesRelay.accept([])
+            }
+        }
     }
     
     func markAllMessageReaded() {

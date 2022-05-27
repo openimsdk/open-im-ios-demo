@@ -1,7 +1,5 @@
-//
 
 
-//
 
 
 
@@ -21,7 +19,7 @@ class SearchResultViewController: UIViewController, UISearchResultsUpdating {
         let v = UIView()
         let label: UILabel = {
             let v = UILabel()
-            v.text = "无法找到该" + _searchType.rawValue
+            v.text = "无法找到该".innerLocalized() + _searchType.title
             return v
         }()
         v.addSubview(label)
@@ -86,11 +84,20 @@ class SearchResultViewController: UIViewController, UISearchResultsUpdating {
         }).disposed(by: _disposebag)
     }
     
-    enum SearchType: String {
+    enum SearchType {
         
-        case group = "群组"
+        case group
         
-        case user = "用户"
+        case user
+        
+        var title: String {
+            switch self {
+            case .group:
+                return "群组".innerLocalized()
+            case .user:
+                return "用户".innerLocalized()
+            }
+        }
     }
     private var userInfo: FullUserInfo?
     func updateSearchResults(for searchController: UISearchController) {
@@ -100,16 +107,29 @@ class SearchResultViewController: UIViewController, UISearchResultsUpdating {
             return
         }
         
-        IMController.shared.getFriendsBy(id: keyword).subscribe { [weak self] (userInfo: FullUserInfo?) in
-            self?.userInfo = userInfo
-            let uid = userInfo?.userID
-            let shouldHideEmptyView = uid != nil
-            let shouldHideResultView = uid == nil
-            DispatchQueue.main.async {
-                self?.searchResultEmptyView.isHidden = shouldHideEmptyView
-                self?.searchResultView.isHidden = shouldHideResultView
-                self?.searchResultView.setTitle(uid)
-            }
-        }.disposed(by: _disposebag)
+        switch _searchType {
+        case .group:
+            IMController.shared.getGroupListBy(id: keyword).subscribe(onNext: { [weak self] (groupID: String?) in
+                let shouldHideEmptyView = groupID != nil
+                let shouldHideResultView = groupID == nil
+                DispatchQueue.main.async {
+                    self?.searchResultEmptyView.isHidden = shouldHideEmptyView
+                    self?.searchResultView.isHidden = shouldHideResultView
+                    self?.searchResultView.setTitle(groupID)
+                }
+            }).disposed(by: _disposebag)
+        case .user:
+            IMController.shared.getFriendsBy(id: keyword).subscribe { [weak self] (userInfo: FullUserInfo?) in
+                self?.userInfo = userInfo
+                let uid = userInfo?.userID
+                let shouldHideEmptyView = uid != nil
+                let shouldHideResultView = uid == nil
+                DispatchQueue.main.async {
+                    self?.searchResultEmptyView.isHidden = shouldHideEmptyView
+                    self?.searchResultView.isHidden = shouldHideResultView
+                    self?.searchResultView.setTitle(uid)
+                }
+            }.disposed(by: _disposebag)
+        }
     }
 }

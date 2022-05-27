@@ -1,7 +1,5 @@
-//
 
 
-//
 
 
 
@@ -12,6 +10,9 @@ class FrequentUserTableViewCell: UITableViewCell {
     
     let avatarImageView: UIImageView = {
         let v = UIImageView()
+        v.contentMode = .scaleAspectFill
+        v.layer.cornerRadius = 4
+        v.clipsToBounds = true
         return v
     }()
     
@@ -36,7 +37,7 @@ class FrequentUserTableViewCell: UITableViewCell {
             make.left.equalToSuperview().offset(StandardUI.margin_22)
             make.size.equalTo(StandardUI.avatar_42)
             make.top.equalToSuperview().inset(15)
-            make.bottom.equalToSuperview().inset(15).priority(.medium)
+            make.bottom.equalToSuperview().offset(-15).priority(.medium)
         }
         
         let textStack: UIStackView = {

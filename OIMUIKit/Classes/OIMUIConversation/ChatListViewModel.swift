@@ -1,4 +1,3 @@
-//
 
 
 
@@ -74,6 +73,10 @@ class ChatListViewModel {
                 self?.loginUserPublish.onNext(userInfo)
             })
         }.disposed(by: _disposeBag)
+        
+        JNNotificationCenter.shared.observeEvent { [weak self] (event: EventRecordClear) in
+            self?.getAllConversations()
+        }
     }
     
     private func sortConversations(_ conversations: [ConversationInfo]) {

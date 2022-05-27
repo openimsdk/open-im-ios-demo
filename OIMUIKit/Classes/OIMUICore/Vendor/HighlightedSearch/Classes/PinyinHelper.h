@@ -74,4 +74,4 @@ typedef void(^OutputArrayBlock)(NSArray *array) ;
 
 @end
 
-#endif // _PinyinHelper_H_
+#endif 

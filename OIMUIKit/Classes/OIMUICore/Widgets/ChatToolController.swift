@@ -93,19 +93,19 @@ class ChatToolController: UICollectionViewController, UIPopoverPresentationContr
         var name: String {
             switch self {
             case .copy:
-                return "复制"
+                return "复制".innerLocalized()
             case .delete:
-                return "删除"
+                return "删除".innerLocalized()
             case .forward:
-                return "转发"
+                return "转发".innerLocalized()
             case .reply:
-                return "回复"
+                return "回复".innerLocalized()
             case .revoke:
-                return "撤回"
+                return "撤回".innerLocalized()
             case .muiltSelection:
-                return "多选"
+                return "多选".innerLocalized()
             case .translate:
-                return "翻译"
+                return "翻译".innerLocalized()
             }
         }
     }

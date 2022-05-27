@@ -1,7 +1,5 @@
-//
 
 
-//
 
 
 
@@ -15,7 +13,7 @@ class NewFriendListViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.navigationItem.title = "新的好友"
+        self.navigationItem.title = "新的好友".innerLocalized()
         initView()
         bindData()
         _viewModel.getNewFriendApplications()
@@ -83,7 +81,7 @@ extension NewFriendListViewController: UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         if section == 0 {
-            let header = ViewUtil.createSectionHeaderWith(text: "新的好友请求")
+            let header = ViewUtil.createSectionHeaderWith(text: "新的好友请求".innerLocalized())
             return header
         }
         return nil

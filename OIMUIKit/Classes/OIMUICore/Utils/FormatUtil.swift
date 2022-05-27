@@ -1,4 +1,3 @@
-//
 
 
 
@@ -22,5 +21,32 @@ struct FormatUtil {
             let sec = seconds % 60 % 60
             return String.init(format: "%02d:%02d", min, sec)
         }
+    }
+    
+    static func getFormatDate(formatString: String = "yyyy/MM/dd", of seconds: Int) -> String {
+        let format = DateFormatter.init()
+        format.dateFormat = formatString
+        let date = Date.init(timeIntervalSince1970: TimeInterval.init(seconds))
+        let str = format.string(from: date)
+        return str
+    }
+    
+    static func getFileSizeDesc(fileSize: Int) -> String {
+        let formatter = ByteCountFormatter()
+        formatter.countStyle = .file
+        let ret = formatter.string(fromByteCount: Int64(fileSize))
+        return ret
+    }
+    
+    static func isWeek(seconds: Int) -> Bool {
+        let date = Date.init(timeIntervalSince1970: TimeInterval(seconds))
+        let ret = Calendar.current.isDateInWeekend(date)
+        return ret
+    }
+    
+    static func isThisMonth(seconds: Int) -> Bool {
+        let date = Date.init(timeIntervalSince1970: TimeInterval(seconds))
+        let ret = Calendar.current.isDateInMonth(date)
+        return ret
     }
 }

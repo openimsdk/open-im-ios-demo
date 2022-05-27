@@ -1,7 +1,5 @@
-//
 
 
-//
 
 
 
@@ -56,7 +54,7 @@ open class ContactsViewController: UITableViewController {
             let v = UILabel()
             v.font = .systemFont(ofSize: 22, weight: .medium)
             v.textColor = StandardUI.color_1B72EC
-            v.text = "通讯录"
+            v.text = "通讯录".innerLocalized()
             return v
         }()
         self.navigationItem.leftBarButtonItem = UIBarButtonItem.init(customView: titleLabel)
@@ -141,7 +139,7 @@ open class ContactsViewController: UITableViewController {
     
     public override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         if section == SectionName.frequentUsers.rawValue {
-            let header = ViewUtil.createSectionHeaderWith(text: "常用联系人")
+            let header = ViewUtil.createSectionHeaderWith(text: "常用联系人".innerLocalized())
             return header
         }
         
@@ -193,7 +191,7 @@ open class ContactsViewController: UITableViewController {
             let cell = tableView.dequeueReusableCell(withIdentifier: FrequentUserTableViewCell.className) as! FrequentUserTableViewCell
             cell.avatarImageView.setImage(with: item.faceURL, placeHolder: "contact_my_friend_icon")
             cell.titleLabel.text = item.nickname
-            cell.subtitleLabel.text = "[离线]"
+
             return cell
         }
         return UITableViewCell()
@@ -204,6 +202,15 @@ open class ContactsViewController: UITableViewController {
             let vc = ViewControllerFactory.getContactStoryboard().instantiateViewController(withIdentifier: "DepartmentVC")
             vc.hidesBottomBarWhenPushed = true
             self.navigationController?.pushViewController(vc, animated: true)
+        } else if indexPath.section == SectionName.frequentUsers.rawValue {
+            let user = viewModel.frequentContacts.value[indexPath.row]
+            IMController.shared.getConversation(sessionType: .c2c, sourceId: user.userID) { [weak self] (conversation: ConversationInfo?) in
+                guard let conversation = conversation else { return }
+                let viewModel = MessageListViewModel.init(userId: user.userID, conversation: conversation)
+                let controller = MessageListViewController.init(viewModel: viewModel)
+                controller.hidesBottomBarWhenPushed = true
+                self?.navigationController?.pushViewController(controller, animated: true)
+            }
         }
     }
     
@@ -213,6 +220,7 @@ open class ContactsViewController: UITableViewController {
         if #available(iOS 15.0, *) {
             tableView.sectionHeaderTopPadding = 0
         }
+        tableView.rowHeight = UITableView.automaticDimension
         tableView.separatorStyle = .none
         tableView.register(ContactsEntranceTableViewCell.self, forCellReuseIdentifier: ContactsEntranceTableViewCell.className)
         tableView.register(FrequentUserTableViewCell.self, forCellReuseIdentifier: FrequentUserTableViewCell.className)
@@ -250,13 +258,13 @@ open class ContactsViewController: UITableViewController {
         var title: String {
             switch self {
             case .newFriend:
-                return "新的好友"
+                return "新的好友".innerLocalized()
             case .groupNotification:
-                return "群通知"
+                return "群通知".innerLocalized()
             case .myFriend:
-                return "我的好友"
+                return "我的好友".innerLocalized()
             case .myGroup:
-                return "我的群组"
+                return "我的群组".innerLocalized()
             }
         }
     }

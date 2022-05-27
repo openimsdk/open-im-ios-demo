@@ -1,7 +1,5 @@
-//
 
 
-//
 
 
 
@@ -16,7 +14,7 @@ class GroupApplicationTableViewController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.navigationItem.title = "入群申请"
+        self.navigationItem.title = "入群申请".innerLocalized()
         tableView.register(GroupApplicationTableViewCell.self, forCellReuseIdentifier: GroupApplicationTableViewCell.className)
         tableView.separatorColor = StandardUI.color_F1F1F1
         tableView.separatorInset = UIEdgeInsets.init(top: 0, left: 80, bottom: 0, right: 18)

@@ -1,7 +1,5 @@
-//
 
 
-//
 
 
 
@@ -34,7 +32,7 @@ class NewFriendTableViewCell: UITableViewCell {
     
     let helloBtn: UIButton = {
         let v = UIButton.init(frame: CGRect.init(origin: .zero, size: CGSize.init(width: 44, height: 22)))
-        v.setTitle("打招呼", for: .normal)
+        v.setTitle("打招呼".innerLocalized(), for: .normal)
         v.titleLabel?.font = .systemFont(ofSize: 12)
         v.setTitleColor(StandardUI.color_1B72EC, for: .normal)
         return v
@@ -42,7 +40,7 @@ class NewFriendTableViewCell: UITableViewCell {
     
     let acceptBtn: UIButton = {
         let v = UIButton.init(frame: CGRect.init(origin: .zero, size: CGSize.init(width: 44, height: 22)))
-        v.setTitle("接受", for: .normal)
+        v.setTitle("接受".innerLocalized(), for: .normal)
         v.titleLabel?.font = .systemFont(ofSize: 12)
         v.setTitleColor(StandardUI.color_1B72EC, for: .normal)
         v.layer.cornerRadius = 3

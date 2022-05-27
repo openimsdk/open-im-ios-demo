@@ -18,4 +18,4 @@
 - (id)init;
 @end
 
-#endif // _PinyinFormatter_H_
+#endif 

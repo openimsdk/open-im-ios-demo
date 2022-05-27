@@ -1,4 +1,3 @@
-//
 
 
 
@@ -7,7 +6,6 @@
 
 import UIKit
 import RxSwift
-import ZLPhotoBrowser
 import SnapKit
 import RxKeyboard
 import Photos
@@ -103,7 +101,7 @@ class MessageListViewController: UIViewController {
                     let vc = SingleChatSettingTableViewController.init(viewModel: viewModel, style: .grouped)
                     self?.navigationController?.pushViewController(vc, animated: true)
                 case .group:
-                    let vc = GroupChatSettingTableViewController.init(groupId: sself._viewModel.conversation.groupID ?? "", style: .grouped)
+                    let vc = GroupChatSettingTableViewController.init(conversation: sself._viewModel.conversation, style: .grouped)
                     self?.navigationController?.pushViewController(vc, animated: true)
                 }
             }).disposed(by: self._disposeBag)
@@ -245,7 +243,6 @@ extension MessageListViewController: MessageDelegate {
     }
     
     func didTapMessageCell(cell: UITableViewCell, with message: MessageInfo) {
-        print("点击了消息体")
         switch message.contentType {
         case .audio:
             
@@ -271,58 +268,8 @@ extension MessageListViewController: MessageDelegate {
                 _audioPlayer.play()
                 _viewModel.markAudio(messageId: message.clientMsgID ?? "", isPlaying: true)
             }
-        case .image:
-            var tmpURL: URL?
-            if let imageUrl = message.pictureElem?.sourcePicture?.url, let url = URL.init(string: imageUrl) {
-                tmpURL = url
-            } else if let imageUrl = message.pictureElem?.sourcePath {
-                let url = URL.init(fileURLWithPath: imageUrl)
-                if FileManager.default.fileExists(atPath: url.path) {
-                    tmpURL = url
-                }
-            }
-            
-            if let tmpURL = tmpURL {
-                let previewController = ZLImagePreviewController.init(datas: [tmpURL], index: 0, showSelectBtn: false, showBottomView: false) { _ in
-                    return .image
-                } urlImageLoader: { (url, imageView, progress, loadFinish) in
-                    imageView.kf.setImage(with: url) { (receivedSize, totalSize) in
-                        let percentage = (CGFloat(receivedSize) / CGFloat(totalSize))
-                        debugPrint("\(percentage)")
-                        progress(percentage)
-                    } completionHandler: { (_) in
-                        loadFinish()
-                    }
-                }
-                previewController.modalPresentationStyle = .fullScreen
-                self.showDetailViewController(previewController, sender: nil)
-            }
-        case .video:
-            var tmpURL: URL?
-            if let videoUrl = message.videoElem?.videoUrl, let url = URL.init(string: videoUrl) {
-                tmpURL = url
-            } else if let videoUrl = message.videoElem?.videoPath {
-                let url = URL.init(fileURLWithPath: videoUrl)
-                if FileManager.default.fileExists(atPath: url.path) {
-                    tmpURL = url
-                }
-            }
-            
-            if let tmpURL = tmpURL {
-                let previewController = ZLImagePreviewController.init(datas: [tmpURL], index: 0, showSelectBtn: false, showBottomView: false) { _ in
-                    return .video
-                } urlImageLoader: { (url, imageView, progress, loadFinish) in
-                    imageView.kf.setImage(with: url) { (receivedSize, totalSize) in
-                        let percentage = (CGFloat(receivedSize) / CGFloat(totalSize))
-                        debugPrint("\(percentage)")
-                        progress(percentage)
-                    } completionHandler: { (_) in
-                        loadFinish()
-                    }
-                }
-                previewController.modalPresentationStyle = .fullScreen
-                self.showDetailViewController(previewController, sender: nil)
-            }
+        case .image, .video:
+            _photoHelper.preview(message: message, from: self)
         default:
             break
         }
@@ -360,7 +307,7 @@ extension MessageListViewController: MessageDelegate {
                 self?._viewModel.delete(message: message)
             case .copy:
                 UIPasteboard.general.string = message.content
-                SVProgressHUD.showSuccess(withStatus: "复制成功")
+                SVProgressHUD.showSuccess(withStatus: "复制成功".innerLocalized())
             default:
                 break
             }

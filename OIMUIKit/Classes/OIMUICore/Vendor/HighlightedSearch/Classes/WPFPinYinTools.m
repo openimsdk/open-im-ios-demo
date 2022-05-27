@@ -30,7 +30,7 @@
     return [pinYin substringToIndex:1];
 }
 
-// 获取格式化器
+
 + (HanyuPinyinOutputFormat *)getOutputFormat {
     HanyuPinyinOutputFormat *pinyinFormat = [[HanyuPinyinOutputFormat alloc] init];
     /** 设置大小写
@@ -54,9 +54,9 @@
 }
 
 + (NSArray *)sortingRules {
-    // 按照 matchType 顺序排列，即优先展示 中文，其次是全拼匹配，最后是拼音首字母匹配
+    
     NSSortDescriptor *desType = [NSSortDescriptor sortDescriptorWithKey:@"matchType" ascending:YES];
-    // 优先显示 高亮位置索引靠前的搜索结果
+    
     NSSortDescriptor *desLocation = [NSSortDescriptor sortDescriptorWithKey:@"highlightLoaction" ascending:YES];
     return @[desType,desLocation];
 }
@@ -75,7 +75,7 @@
         return resultModel;
 
     } else if (person.isContainPolyPhone) {
-        // 如果正常匹配没有对应结果，且该model存在多音字，则尝试多音字匹配
+        
         resultModel = [WPFPinYinTools
                        _searchEffectiveResultWithSearchString:searchStrLower
                        nameString:person.name
@@ -103,14 +103,14 @@
     NSArray *completeSpellingArray = [pinyinLocationString componentsSeparatedByString:@","];
     NSArray *pinyinFirstLetterLocationArray = [initialLocationString componentsSeparatedByString:@","];
     
-    // 完全中文匹配范围
+    
     NSRange chineseRange = [nameStrLower rangeOfString:searchStrLower];
-    // 拼音全拼匹配范围
+    
     NSRange complateRange = [completeSpelling rangeOfString:searchStrLower];
-    // 拼音首字母匹配范围
+    
     NSRange initialRange = [initialString rangeOfString:searchStrLower];
     
-    // 汉字直接匹配
+    
     if (chineseRange.length!=0) {
         searchModel.highlightedRange = chineseRange;
         searchModel.matchType = MatchTypeChinese;
@@ -119,10 +119,10 @@
     
     NSRange highlightedRange = NSMakeRange(0, 0);
     
-    // MARK: 拼音全拼匹配
+    
     if (complateRange.length != 0) {
         if (complateRange.location == 0) {
-            // 拼音首字母匹配从0开始，即搜索的关键字与该数据源第一个汉字匹配到，所以高亮范围从0开始
+            
             highlightedRange = NSMakeRange(0, [completeSpellingArray[complateRange.length-1] integerValue] +1);
             
         } else {
@@ -133,7 +133,7 @@
             NSInteger currentLocation = [completeSpellingArray[complateRange.location] integerValue];
             NSInteger lastLocation = [completeSpellingArray[complateRange.location-1] integerValue];
             if (currentLocation != lastLocation) {
-                // 高亮范围从匹配到的第一个关键字开始
+                
                 highlightedRange = NSMakeRange(currentLocation, [completeSpellingArray[complateRange.length+complateRange.location -1] integerValue] - currentLocation +1);
             }
         }
@@ -144,17 +144,17 @@
         }
     }
     
-    // MARK: 拼音首字母匹配
+    
     if (initialRange.length!=0) {
         NSInteger currentLocation = [pinyinFirstLetterLocationArray[initialRange.location] integerValue];
         NSInteger highlightedLength;
         if (initialRange.location ==0) {
             highlightedLength = [pinyinFirstLetterLocationArray[initialRange.length-1] integerValue]-currentLocation +1;
-            // 拼音首字母匹配从0开始，即搜索的关键字与该数据源第一个汉字匹配到，所以高亮范围从0开始
+            
             highlightedRange = NSMakeRange(0, highlightedLength);
         } else {
             highlightedLength = [pinyinFirstLetterLocationArray[initialRange.length+initialRange.location-1] integerValue]-currentLocation +1;
-            // 高亮范围从匹配到的第一个关键字开始
+            
             highlightedRange = NSMakeRange(currentLocation, highlightedLength);
         }
         searchModel.highlightedRange = highlightedRange;

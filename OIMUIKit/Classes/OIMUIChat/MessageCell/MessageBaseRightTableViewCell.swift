@@ -1,4 +1,3 @@
-//
 
 
 
@@ -12,7 +11,7 @@ class MessageBaseRightTableViewCell: UITableViewCell, MessageCellAble {
     weak var delegate: MessageDelegate?
     let disposeBag = DisposeBag()
     var model: MessageInfo?
-    
+
     lazy var avatarImageView: UIImageView = {
         let v = UIImageView()
         v.backgroundColor = .brown
@@ -27,14 +26,13 @@ class MessageBaseRightTableViewCell: UITableViewCell, MessageCellAble {
         v.addGestureRecognizer(tap)
         return v
     }()
-    
+
     let nameLabel: UILabel = {
         let v = UILabel()
         v.font = .systemFont(ofSize: 12)
         v.textColor = StandardUI.color_666666
         return v
     }()
-    
     
     lazy var bubbleImageView: UIImageView = {
         let v = UIImageView()
@@ -82,7 +80,7 @@ class MessageBaseRightTableViewCell: UITableViewCell, MessageCellAble {
     
     lazy var readLabel: UILabel = {
         let v = UILabel()
-        v.text = "已读"
+        v.text = "已读".innerLocalized()
         return v
     }()
     
@@ -162,11 +160,11 @@ class MessageBaseRightTableViewCell: UITableViewCell, MessageCellAble {
             readLabel.isHidden = true
         }
         readLabel.attributedText = model.isRead ?
-        NSAttributedString.init(string: "已读", attributes: [
+        NSAttributedString.init(string: "已读".innerLocalized(), attributes: [
             NSAttributedString.Key.foregroundColor: StandardUI.color_999999,
             NSAttributedString.Key.font: UIFont.systemFont(ofSize: 12)
         ]) :
-        NSAttributedString.init(string: "未读", attributes: [
+        NSAttributedString.init(string: "未读".innerLocalized(), attributes: [
             NSAttributedString.Key.foregroundColor: StandardUI.color_1B72EC,
             NSAttributedString.Key.font: UIFont.systemFont(ofSize: 12)
         ])

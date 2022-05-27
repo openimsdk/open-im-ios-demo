@@ -1,7 +1,5 @@
-//
 
 
-//
 
 
 
@@ -10,10 +8,6 @@ import Foundation
 import RxSwift
 import RxCocoa
 
-public protocol ContactsDataSource: AnyObject {
-    func setFrequentUsers(_ users: [UserInfo])
-    func getFrequentUsers() -> [UserInfo]
-}
 public class ContactsViewModel {
     let newFriendCountRelay: BehaviorRelay<Int> = .init(value: 0)
     let newGroupCountRelay: BehaviorRelay<Int> = .init(value: 0)
@@ -46,7 +40,7 @@ public class ContactsViewModel {
                 }
             }
             if !uList.isEmpty {
-                self?.dataSource?.setFrequentUsers(uList)
+                self?.dataSource?.setFrequentUsers(uList.compactMap{$0.toOIMUserInfo()})
                 self?.getFrequentUsers()
             }
         }).disposed(by: _disposeBag)
@@ -84,7 +78,7 @@ public class ContactsViewModel {
         }
 
         let items = dataSource.getFrequentUsers()
-        frequentContacts.accept(items)
+        frequentContacts.accept(items.compactMap{$0.toUserInfo()})
     }
 
     @objc private func applicationCountChangedHandler() {

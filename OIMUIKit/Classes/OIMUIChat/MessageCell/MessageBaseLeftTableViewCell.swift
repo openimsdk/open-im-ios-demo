@@ -1,4 +1,3 @@
-//
 
 
 
@@ -33,8 +32,7 @@ class MessageBaseLeftTableViewCell: UITableViewCell, MessageCellAble {
         v.textColor = StandardUI.color_666666
         return v
     }()
-    
-    
+
     lazy var bubbleImageView: UIImageView = {
         let v = UIImageView()
         v.isUserInteractionEnabled = true
@@ -55,7 +53,6 @@ class MessageBaseLeftTableViewCell: UITableViewCell, MessageCellAble {
         v.addGestureRecognizer(longPress)
         return v
     }()
-    
     
     let containerView: UIView = {
         let v = UIView()
@@ -79,7 +76,7 @@ class MessageBaseLeftTableViewCell: UITableViewCell, MessageCellAble {
     
     lazy var readLabel: UILabel = {
         let v = UILabel()
-        v.text = "已读"
+        v.text = "已读".innerLocalized()
         return v
     }()
     
@@ -159,11 +156,11 @@ class MessageBaseLeftTableViewCell: UITableViewCell, MessageCellAble {
             indicatorView.stopAnimating()
         }
         readLabel.attributedText = model.isRead ?
-        NSAttributedString.init(string: "已读", attributes: [
+        NSAttributedString.init(string: "已读".innerLocalized(), attributes: [
             NSAttributedString.Key.foregroundColor: StandardUI.color_999999,
             NSAttributedString.Key.font: UIFont.systemFont(ofSize: 12)
         ]) :
-        NSAttributedString.init(string: "未读", attributes: [
+        NSAttributedString.init(string: "未读".innerLocalized(), attributes: [
             NSAttributedString.Key.foregroundColor: StandardUI.color_1B72EC,
             NSAttributedString.Key.font: UIFont.systemFont(ofSize: 12)
         ])

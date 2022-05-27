@@ -14,7 +14,7 @@
     NSString* _directory;
     NSDictionary *_unicodeToHanyuPinyinTable;
 }
-//@property(nonatomic, strong)NSDictionary *unicodeToHanyuPinyinTable;
+
 
 - (id)init;
 - (void)initializeResource;
@@ -27,4 +27,4 @@
 
 
 
-#endif // _ChineseToPinyinResource_H_
+#endif 

@@ -1,4 +1,3 @@
-//
 
 
 
@@ -9,6 +8,8 @@ import UIKit
 import RxSwift
 
 class SelectContactsViewController: UIViewController {
+    
+    var selectedContactsBlock: (([UserInfo]) -> Void)?
     
     private let maxCount = 1000
     
@@ -71,9 +72,7 @@ class SelectContactsViewController: UIViewController {
         bottomBar.completeBtn.rx.tap.subscribe(onNext: { [weak self] in
             guard let sself = self, let selectedIndexs = sself._tableView.indexPathsForSelectedRows else { return }
             let users = sself._viewModel.getUsersAt(indexPaths: selectedIndexs)
-            self?._viewModel.createConversationWith(users: users, onSuccess: {
-                self?.navigationController?.popViewController(animated: true)
-            })
+            self?.selectedContactsBlock?(users)
         }).disposed(by: _disposeBag)
     }
     

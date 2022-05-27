@@ -1,4 +1,3 @@
-//
 
 
 
@@ -16,7 +15,12 @@ class OptionImageTableViewCell: UITableViewCell {
         return v
     }()
     
-    let iconImageView = UIImageView()
+    let iconImageView: UIImageView = {
+        let v = UIImageView()
+        v.clipsToBounds = true
+        v.contentMode = .scaleAspectFill
+        return v
+    }()
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -32,6 +36,7 @@ class OptionImageTableViewCell: UITableViewCell {
         iconImageView.snp.makeConstraints { make in
             make.right.equalToSuperview().offset(-5)
             make.centerY.equalToSuperview()
+            make.size.lessThanOrEqualTo(StandardUI.avatar_42)
         }
     }
     
@@ -39,4 +44,8 @@ class OptionImageTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
 
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        iconImageView.layer.cornerRadius = 0
+    }
 }

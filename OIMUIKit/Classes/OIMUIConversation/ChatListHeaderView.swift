@@ -1,4 +1,3 @@
-//
 
 
 
@@ -54,7 +53,7 @@ class ChatListHeaderView: UIView {
         let margin: CGFloat = 14
         let v = UISearchBar.init(frame: CGRect.init(x: margin, y: 10, width: kScreenWidth - 2 * margin, height: 44))
         v.searchBarStyle = .minimal
-        v.placeholder = "搜索"
+        v.placeholder = "搜索".innerLocalized()
         return v
     }()
     

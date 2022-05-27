@@ -127,19 +127,17 @@ public enum PluginType: CaseIterable {
     case album
     case camera
 
-
     case businessCard
-
 
     
     var name: String {
         switch self {
         case .album:
-            return "相册"
+            return "相册".innerLocalized()
         case .camera:
-            return "拍摄"
+            return "拍摄".innerLocalized()
         case .businessCard:
-            return "名片"
+            return "名片".innerLocalized()
         }
     }
     var image: UIImage? {

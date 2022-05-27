@@ -1,4 +1,3 @@
-//
 
 
 
@@ -65,7 +64,7 @@ class MemberListViewController: UIViewController {
     
     open override func viewDidLoad() {
         super.viewDidLoad()
-        self.navigationItem.title = "群成员"
+        self.navigationItem.title = "群成员".innerLocalized()
         initView()
         bindData()
         _viewModel.getMemberList()
@@ -75,7 +74,7 @@ class MemberListViewController: UIViewController {
         let searchC: UISearchController = {
             let v = UISearchController.init(searchResultsController: resultC)
             v.searchResultsUpdater = resultC
-            v.searchBar.placeholder = "搜索成员"
+            v.searchBar.placeholder = "搜索成员".innerLocalized()
             v.obscuresBackgroundDuringPresentation = false
             return v
         }()
@@ -122,6 +121,13 @@ extension MemberListViewController: UITableViewDataSource, UITableViewDelegate {
         cell.titleLabel.text = user.nickname
         cell.avatarImageView.setImage(with: user.faceURL, placeHolder: "contact_my_friend_icon")
         return cell
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let member: GroupMemberInfo = _viewModel.contactSections[indexPath.section][indexPath.row]
+        let vc = UserDetailTableViewController.init()
+        vc.setMemberInfo(member: member)
+        self.navigationController?.pushViewController(vc, animated: true)
     }
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {

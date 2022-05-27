@@ -1,4 +1,3 @@
-//
 
 
 
@@ -89,7 +88,7 @@ class MessageBusinessCardView: UIView {
         
         let iconLabel: UILabel = {
             let v = UILabel()
-            v.text = "名片"
+            v.text = "名片".innerLocalized()
             v.font = .systemFont(ofSize: 11)
             v.textColor = StandardUI.color_999999
             return v

@@ -1,4 +1,3 @@
-//
 
 
 
@@ -25,21 +24,22 @@ class QRCodeViewController: UIViewController {
         return v
     }()
 
-    private let avatarImageView: UIImageView = {
+    let avatarImageView: UIImageView = {
         let v = UIImageView()
         v.layer.cornerRadius = 6
-        v.backgroundColor = .purple
+        v.contentMode = .scaleAspectFill
         return v
     }()
     
-    private let nameLabel: UILabel = {
+    let nameLabel: UILabel = {
         let v = UILabel()
         v.font = UIFont.systemFont(ofSize: 20)
         v.textColor = .black
+        v.numberOfLines = 2
         return v
     }()
     
-    private let tipLabel: UILabel = {
+    let tipLabel: UILabel = {
         let v = UILabel()
         v.font = UIFont.systemFont(ofSize: 14)
         v.textColor = StandardUI.color_999999
@@ -54,11 +54,8 @@ class QRCodeViewController: UIViewController {
     
     private let codeContentImageView: UIImageView = UIImageView()
     
-    init(faceUrl: String?, nickName: String, idString: String) {
+    init(idString: String) {
         super.init(nibName: nil, bundle: nil)
-        avatarImageView.setImage(with: faceUrl, placeHolder: nil)
-        nameLabel.text = nickName
-        tipLabel.text = "扫一扫群二维码，立刻加入该群。"
         DispatchQueue.global().async {
             let image = CodeImageGenerator().createQRCodeImage(content: idString, size: CGSize.init(width: 140, height: 140), foregroundColor: UIColor.black, backgroundColor: UIColor.clear)
             DispatchQueue.main.async {
@@ -74,7 +71,7 @@ class QRCodeViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
-        self.navigationItem.title = "群二维码"
+        self.navigationItem.title = "群二维码".innerLocalized()
         initView()
         bindData()
     }
@@ -94,6 +91,7 @@ class QRCodeViewController: UIViewController {
         backgroundView.addSubview(nameLabel)
         nameLabel.snp.makeConstraints { make in
             make.left.equalTo(avatarImageView.snp.right).offset(13)
+            make.right.equalToSuperview().offset(-20)
             make.centerY.equalTo(avatarImageView)
         }
         
