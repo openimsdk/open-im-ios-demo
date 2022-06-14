@@ -1,9 +1,4 @@
 
-
-
-
-
-
 import Foundation
 import RxSwift
 import RxCocoa
@@ -18,6 +13,7 @@ class GroupChatSettingViewModel {
     let isSelfRelay: BehaviorRelay<Bool> = .init(value: false)
     let groupInfoRelay: BehaviorRelay<GroupInfo?> = .init(value: nil)
     let myInfoInGroup: BehaviorRelay<GroupMemberInfo?> = .init(value: nil)
+    private(set) var allMembers: [String] = []
     
     init(conversation: ConversationInfo) {
         self.conversation = conversation
@@ -30,7 +26,7 @@ class GroupChatSettingViewModel {
             guard let sself = self else { return }
             if let chat = chat {
                 self?.conversation = chat
-                self?.noDisturbRelay.accept(sself.conversation.recvMsgOpt == .notNotify)
+                self?.noDisturbRelay.accept(sself.conversation.recvMsgOpt != .receive)
                 self?.setTopContactRelay.accept(sself.conversation.isPinned)
             }
         }
@@ -49,8 +45,11 @@ class GroupChatSettingViewModel {
             self?.groupInfoRelay.accept(groupInfo)
             self?.membersCountRelay.accept(groupInfo.memberCount)
             self?.isSelfRelay.accept(groupInfo.isSelf)
+            IMController.shared.getGroupMemberList(groupId: groupInfo.groupID, offset: 0, count: groupInfo.memberCount) { (members: [GroupMemberInfo]) in
+                self?.allMembers = members.compactMap{$0.userID}
+            }
         }
-        
+        //获取自己的组内信息
         IMController.shared.getGroupMembersInfo(groupId: gid, uids: [IMController.shared.uid]) { [weak self] (members: [GroupMemberInfo]) in
             for member in members {
                 if member.isSelf {
@@ -70,8 +69,8 @@ class GroupChatSettingViewModel {
     }
     
     func clearRecord(completion: @escaping CallBack.StringOptionalReturnVoid) {
-        guard let uid = conversation.userID else { return }
-        IMController.shared.clearC2CHistoryMessages(userId: uid) { [weak self] resp in
+        guard let groupID = conversation.groupID else { return }
+        IMController.shared.clearGroupHistoryMessages(groupId: groupID) { [weak self] resp in
             guard let sself = self else { return }
             let event = EventRecordClear.init(conversationId: sself.conversation.conversationID)
             JNNotificationCenter.shared.post(event)
@@ -86,25 +85,44 @@ class GroupChatSettingViewModel {
         })
     }
     
-    func toggleNoDisturb() {
-        let receiveOpt: ReceiveMessageOpt = !noDisturbRelay.value == true ? .notNotify : .receive
-        IMController.shared.setConversationRecvMessageOpt(conversationIds: [conversation.conversationID], status: receiveOpt, completion: { [weak self] _ in
+    func setNoDisturbWithNotRecieve() {
+        IMController.shared.setConversationRecvMessageOpt(conversationIds: [conversation.conversationID], status: .notReceive, completion: { [weak self] _ in
             guard let sself = self else { return }
-            self?.noDisturbRelay.accept(!sself.noDisturbRelay.value)
+            self?.noDisturbRelay.accept(true)
         })
     }
     
-    func dismissGroup() {
+    func setNoDisturbWithNotNotify() {
+        IMController.shared.setConversationRecvMessageOpt(conversationIds: [conversation.conversationID], status: .notNotify, completion: { [weak self] _ in
+            guard let sself = self else { return }
+            self?.noDisturbRelay.accept(true)
+        })
+    }
+    
+    func setNoDisturbOff() {
+        IMController.shared.setConversationRecvMessageOpt(conversationIds: [conversation.conversationID], status: .receive, completion: { [weak self] _ in
+            guard let sself = self else { return }
+            self?.noDisturbRelay.accept(false)
+        })
+    }
+    
+    func dismissGroup(onSuccess: @escaping CallBack.VoidReturnVoid) {
         guard let groupId = conversation.groupID else { return }
-        IMController.shared.dismissGroup(id: groupId) { _ in
-            
+        IMController.shared.dismissGroup(id: groupId) { [weak self] _ in
+            guard let sself = self else { return }
+            let event = EventGroupDismissed.init(conversationId: sself.conversation.conversationID)
+            JNNotificationCenter.shared.post(event)
+            onSuccess()
         }
     }
     
-    func quitGroup() {
+    func quitGroup(onSuccess: @escaping CallBack.VoidReturnVoid) {
         guard let groupId = conversation.groupID else { return }
-        IMController.shared.quitGroup(id: groupId) { _ in
-            
+        IMController.shared.quitGroup(id: groupId) { [weak self] _ in
+            guard let sself = self else { return }
+            let event = EventGroupDismissed.init(conversationId: sself.conversation.conversationID)
+            JNNotificationCenter.shared.post(event)
+            onSuccess()
         }
     }
     

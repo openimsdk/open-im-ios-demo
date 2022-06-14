@@ -1,14 +1,9 @@
 
-
-
-
-
-
 import UIKit
 import RxSwift
 
 open class FriendListViewController: UIViewController {
-    
+    var selectCallBack: ((UserInfo) -> Void)?
     private lazy var _tableView: UITableView = {
         let v = UITableView()
         let config = SCIndexViewConfiguration.init(indexViewStyle: SCIndexViewStyle.default)!
@@ -98,6 +93,21 @@ extension FriendListViewController: UITableViewDataSource, UITableViewDelegate {
         cell.titleLabel.text = user.nickname
         cell.avatarImageView.setImage(with: user.faceURL, placeHolder: "contact_my_friend_icon")
         return cell
+    }
+    
+    public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        let user: UserInfo = _viewModel.contactSections[indexPath.section][indexPath.row]
+        if let callBack = selectCallBack {
+            callBack(user)
+            return
+        }
+        IMController.shared.getConversation(sessionType: .c2c, sourceId: user.userID) { [weak self] (conversation: ConversationInfo?) in
+            guard let conversation = conversation else { return }
+            let viewModel = MessageListViewModel.init(userId: user.userID, conversation: conversation)
+            let controller = MessageListViewController.init(viewModel: viewModel)
+            controller.hidesBottomBarWhenPushed = true
+            self?.navigationController?.pushViewController(controller, animated: true)
+        }
     }
     
     public func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {

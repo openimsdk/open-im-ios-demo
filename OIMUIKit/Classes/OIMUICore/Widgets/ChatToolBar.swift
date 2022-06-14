@@ -283,11 +283,11 @@ class ChatToolBar: UIView {
             }
         }).disposed(by: _disposeBag)
         
-        RxKeyboard.instance.visibleHeight
-            .drive(onNext: { [weak self] keyboardVisibleHeight in
-                let offset = keyboardVisibleHeight > 0 ? (kSafeAreaBottomHeight - keyboardVisibleHeight) : (-keyboardVisibleHeight)
-                self?.bottomConstraint?.update(offset: offset)
-            }).disposed(by: _disposeBag)
+//        RxKeyboard.instance.visibleHeight
+//            .drive(onNext: { [weak self] keyboardVisibleHeight in
+//                let offset = keyboardVisibleHeight > 0 ? (kSafeAreaBottomHeight - keyboardVisibleHeight) : (-keyboardVisibleHeight)
+//                self?.bottomConstraint?.update(offset: offset)
+//            }).disposed(by: _disposeBag)
         
         let textCoverTap: UITapGestureRecognizer = UITapGestureRecognizer()
         textInputCover.addGestureRecognizer(textCoverTap)
@@ -451,7 +451,7 @@ class ChatToolBar: UIView {
         return v
     }()
         
-    private var bottomConstraint: Constraint?
+    var bottomConstraint: Constraint?
     private var textHeightConstraint: Constraint?
     
     private lazy var _recorder: AVAudioRecorder = {
@@ -465,7 +465,7 @@ class ChatToolBar: UIView {
         do {
             let v = try AVAudioRecorder.init(url: fileUrl, settings: settings)
             v.delegate = self
-    
+    //        v.isMeteringEnabled = true
             return v
         } catch {
             print("初始化Recorder失败：\(error.localizedDescription)")
@@ -485,17 +485,17 @@ class ChatToolBar: UIView {
     }
     
     private func sendAndClearText() {
-        delegate?.tb_didTouchSend(text: textInputView.textStorage.string)
-        textInputView.text = nil
+        let plainText = EmojiHelper.shared.getPlainTextIn(attributedString: textInputView.attributedText, atRange: NSRange.init(location: 0, length: textInputView.attributedText.length))
+        delegate?.tb_didTouchSend(text: plainText as String)
+        textInputView.attributedText = nil
         quoteMessage = nil
-        textInputView.resignFirstResponder()
     }
     
     private func startRecord() {
         AVAudioSession.sharedInstance().requestRecordPermission { [weak self] granted in
             guard let sself = self else { return }
             if !granted {
-                
+                //TODO: Toast弹窗提示开启权限
                 return
             }
             let session = AVAudioSession.sharedInstance()
@@ -542,25 +542,43 @@ class ChatToolBar: UIView {
 
 extension ChatToolBar: ChatEmojiViewDelegate {
     func emojiViewDidSelect(emojiStr: String) {
+        let selectedRange = self.textInputView.selectedRange
+        let emojiAttrString = NSMutableAttributedString.init(string: emojiStr)
+        EmojiHelper.shared.markReplaceableRange(inAttributedString: emojiAttrString, withString: emojiStr)
+        
+        let attrText = NSMutableAttributedString.init(attributedString: self.textInputView.attributedText)
+        attrText.replaceCharacters(in: selectedRange, with: emojiAttrString)
+        self.textInputView.attributedText = attrText
+        self.textInputView.selectedRange = NSRange.init(location: selectedRange.location + emojiAttrString.length, length: 0)
+        refreshDisplayText()
+        self.sendBtn.isHidden = false
+    }
+    
+    private func refreshDisplayText() {
+        if self.textInputView.text.isEmpty {
+            return
+        }
+        
+        if let markedRange = self.textInputView.markedTextRange {
+            let position = self.textInputView.position(from: markedRange.start, offset: 0)
+            if position == nil {
+                //处于输入拼音还未确定的中间状态
+                return
+            }
+        }
+        
+        let selectedRange = self.textInputView.selectedRange
+        let plainText = EmojiHelper.shared.getPlainTextIn(attributedString: self.textInputView.attributedText, atRange: NSRange.init(location: 0, length: self.textInputView.attributedText.length))
+        
         let attr: [NSAttributedString.Key: Any] = [
             NSAttributedString.Key.font: UIFont.systemFont(ofSize: 14),
             NSAttributedString.Key.foregroundColor: StandardUI.color_333333
         ]
-        let attrStr = NSAttributedString.init(string: emojiStr, attributes: attr)
+        let attributedContent = EmojiHelper.shared.replaceTextWithEmojiIn(attributedString: NSAttributedString.init(string: plainText as String, attributes: attr))
         
-        var cursorPosition: Int = 0
-        if textInputView.selectedTextRange != nil {
-            cursorPosition = textInputView.selectedRange.location
-        }
-        
-        if(cursorPosition > self.textInputView.textStorage.length) {
-            cursorPosition = self.textInputView.textStorage.length;
-        }
-        self.textInputView.textStorage.insert(attrStr, at: cursorPosition)
-        
-        let range = NSRange.init(location: self.textInputView.selectedRange.location + emojiStr.count, length: 1)
-        self.textInputView.selectedRange = range;
-        self.sendBtn.isHidden = false
+        let offset = self.textInputView.attributedText.length - attributedContent.length
+        self.textInputView.attributedText = attributedContent
+        self.textInputView.selectedRange = NSRange.init(location: selectedRange.location - offset, length: 0)
     }
 }
 
@@ -583,13 +601,17 @@ extension ChatToolBar: UITextViewDelegate {
         }
         return true
     }
+    
+    func textViewDidChange(_ textView: UITextView) {
+        refreshDisplayText()
+    }
 }
-
+//MARK: - AVAudioRecorderDelegate
 extension ChatToolBar: AVAudioRecorderDelegate {
     func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
         if !flag { return }
         if _seconds < 1 {
-            
+            //TODO: Toast提示录音时间太短
             return
         }
         let path = NSHomeDirectory() + "/Documents/audio.m4a"

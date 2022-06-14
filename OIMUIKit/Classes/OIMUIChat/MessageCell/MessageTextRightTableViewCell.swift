@@ -28,7 +28,7 @@ class MessageTextRightTableViewCell: MessageBaseRightTableViewCell {
     override func setMessage(model: MessageInfo, extraInfo: ExtraInfo?) {
         super.setMessage(model: model, extraInfo: extraInfo)
         if let content = model.content {
-            contentLabel.attributedText = MessageHelper.getEmojiReplaced(string: content)
+            contentLabel.attributedText = EmojiHelper.shared.replaceTextWithEmojiIn(attributedString: NSAttributedString.init(string: content))
         }
     }
 }

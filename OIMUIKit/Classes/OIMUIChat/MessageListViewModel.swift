@@ -13,6 +13,8 @@ class MessageListViewModel {
     
     let scrollsToBottom: PublishSubject<Void> = .init()
     
+    let shouldHideSettingBtnSubject: PublishSubject<Bool> = .init()
+    
     let conversation: ConversationInfo
     
     private let _disposeBag = DisposeBag()
@@ -25,6 +27,7 @@ class MessageListViewModel {
     }
     
     private var groupId: String?
+    private let ignoreStateMessageTypes: [MessageContentType] = [.typing]
     init(groupId: String, conversation: ConversationInfo) {
         self.groupId = groupId
         self.conversation = conversation
@@ -35,6 +38,10 @@ class MessageListViewModel {
         IMController.shared.newMsgReceivedSubject.subscribe(onNext: { [weak self] (message: MessageInfo) in
             guard let sself = self else { return }
             if let userId = sself.userId, userId == message.sendID {
+                //TODO: - 正在键入状态提醒
+                if sself.ignoreStateMessageTypes.contains(message.contentType) {
+                    return
+                }
                 sself.addMessage(message)
                 sself.updateMessage(message)
                 let msgIdList = [message.clientMsgID ?? ""]
@@ -84,6 +91,13 @@ class MessageListViewModel {
             guard let sself = self else { return }
             if event.conversationId == sself.conversation.conversationID {
                 self?.messagesRelay.accept([])
+            }
+        }
+        
+        JNNotificationCenter.shared.observeEvent { [weak self] (event: EventGroupDismissed) in
+            guard let sself = self else { return }
+            if event.conversationId == sself.conversation.conversationID {
+                self?.shouldHideSettingBtnSubject.onNext(true)
             }
         }
     }
@@ -147,7 +161,18 @@ class MessageListViewModel {
         }
     }
     
+    func sendCard(user: UserInfo) {
+        let card = BusinessCard.init(faceURL: user.faceURL, nickname: user.nickname, userID: user.userID)
+        IMController.shared.sendCardMessage(card: card, to: self.conversation) { [weak self] (model: MessageInfo) in
+            self?.addMessage(model)
+        } onComplete: { [weak self] (model: MessageInfo) in
+            self?.updateMessage(model)
+        }
+    }
+    
     func resend(message: MessageInfo) {
+        message.status = .sending
+        updateMessage(message)
         IMController.shared.send(message: message, to: conversation) { [weak self] (model: MessageInfo) in
             self?.updateMessage(model)
         }

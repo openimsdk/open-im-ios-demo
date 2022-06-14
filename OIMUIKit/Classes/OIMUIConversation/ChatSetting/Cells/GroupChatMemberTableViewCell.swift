@@ -32,6 +32,7 @@ class GroupChatMemberTableViewCell: UITableViewCell {
         let v = UICollectionView.init(frame: .zero, collectionViewLayout: layout)
         v.register(ImageCollectionViewCell.self, forCellWithReuseIdentifier: ImageCollectionViewCell.className)
         v.contentInset = UIEdgeInsets.init(top: 0, left: StandardUI.margin_22, bottom: 0, right: StandardUI.margin_22)
+        v.backgroundColor = .white
         return v
     }()
 

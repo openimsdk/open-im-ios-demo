@@ -1,9 +1,4 @@
 
-
-
-
-
-
 import UIKit
 import RxSwift
 import RxCocoa
@@ -48,7 +43,13 @@ class UserDetailTableViewController: UIViewController {
         v.tap.rx.event.subscribe(onNext: { [weak self] _ in
             self?._viewModel.createSingleChat(onComplete: { (viewModel: MessageListViewModel) in
                 let vc = MessageListViewController.init(viewModel: viewModel)
+                vc.hidesBottomBarWhenPushed = true
                 self?.navigationController?.pushViewController(vc, animated: true)
+                if let root = self?.navigationController?.viewControllers.first {
+                    self?.navigationController?.viewControllers.removeAll(where: { controller in
+                        return controller != root && controller != vc
+                    })
+                }
             })
         }).disposed(by: _disposeBag)
         return v
@@ -62,17 +63,21 @@ class UserDetailTableViewController: UIViewController {
         v.titleLabel.font = UIFont.systemFont(ofSize: 12)
         v.tap.rx.event.subscribe(onNext: { [weak self] _ in
             print("跳转添加好友页面")
+            self?._viewModel.addFriend(onSuccess: { _ in
+                SVProgressHUD.showSuccess(withStatus: "加好友请求已发送".innerLocalized())
+            })
         }).disposed(by: _disposeBag)
         return v
     }()
     
     private let _disposeBag = DisposeBag()
-    private let _viewModel = UserDetailViewModel()
+    private let _viewModel: UserDetailViewModel
     
     private lazy var _tableView: UITableView = {
         let v = UITableView()
         v.backgroundColor = StandardUI.color_F1F1F1
         v.rowHeight = 55
+        v.separatorStyle = .none
         let headerView: UIView = {
             let v = UIView.init(frame: CGRect.init(x: 0, y: 0, width: kScreenWidth, height: 96 + 12))
             v.backgroundColor = .white
@@ -111,16 +116,27 @@ class UserDetailTableViewController: UIViewController {
         v.register(OptionTableViewCell.self, forCellReuseIdentifier: OptionTableViewCell.className)
         v.delegate = self
         v.dataSource = self
+        v.tableFooterView = UIView()
         return v
     }()
     
     private var rowItems: [RowType] = [.identifier]
+    
+    init(userId: String, groupId: String?) {
+        _viewModel = UserDetailViewModel.init(userId: userId, groupId: groupId)
+        super.init(nibName: nil, bundle: nil)
+    }
+    
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
         initView()
         bindData()
+        _viewModel.getUserOrMemberInfo()
     }
     
     private func initView() {
@@ -145,27 +161,24 @@ class UserDetailTableViewController: UIViewController {
     }
     
     private func bindData() {
+        _viewModel.userInfoRelay.subscribe(onNext: { [weak self] (userInfo: FullUserInfo?) in
+            self?.avatarImageView.setImage(with: userInfo?.faceURL, placeHolder: "contact_my_friend_icon")
+            self?.nameLabel.text = userInfo?.showName
+            self?.addFriendBtn.isHidden = userInfo?.friendInfo != nil
+        }).disposed(by: _disposeBag)
         
+        _viewModel.memberInfoRelay.subscribe(onNext: { [weak self] (memberInfo: GroupMemberInfo?) in
+            guard let memberInfo = memberInfo else { return }
+            self?.avatarImageView.setImage(with: memberInfo.faceURL, placeHolder: "contact_my_friend_icon")
+            self?.nameLabel.text = memberInfo.nickname
+            self?.nicknameLabel.isHidden = true
+            self?.joinTimeLabel.text = FormatUtil.getFormatDate(formatString: "yyyy年MM月dd日", of: memberInfo.joinTime / 1000) + "加入该群聊".innerLocalized()
+            self?.addFriendBtn.isHidden = true
+            self?.rowItems = [.identifier]
+            self?._tableView.reloadData()
+        }).disposed(by: _disposeBag)
     }
 
-    private var user: FullUserInfo?
-    func setUser(_ user: FullUserInfo?) {
-        _viewModel.userId = user?.userID
-        avatarImageView.setImage(with: user?.faceURL, placeHolder: "contact_my_friend_icon")
-        nameLabel.text = user?.showName
-        addFriendBtn.isHidden = user?.friendInfo != nil
-    }
-    
-    func setMemberInfo(member: GroupMemberInfo) {
-        _viewModel.userId = member.userID
-        avatarImageView.setImage(with: member.faceURL, placeHolder: "contact_my_friend_icon")
-        nameLabel.text = member.nickname
-        nicknameLabel.isHidden = true
-        joinTimeLabel.text = FormatUtil.getFormatDate(formatString: "yyyy年MM月dd日", of: member.joinTime / 1000) + "加入该群聊".innerLocalized()
-        addFriendBtn.isHidden = true
-        rowItems = [.identifier]
-        _tableView.reloadData()
-    }
 }
 
 extension UserDetailTableViewController: UITableViewDataSource, UITableViewDelegate {

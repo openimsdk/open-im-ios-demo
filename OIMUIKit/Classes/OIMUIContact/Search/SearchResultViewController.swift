@@ -1,9 +1,4 @@
 
-
-
-
-
-
 import UIKit
 import RxSwift
 
@@ -73,21 +68,21 @@ class SearchResultViewController: UIViewController, UISearchResultsUpdating {
             guard let sself = self else { return }
             switch sself._searchType {
             case .user:
-                print("跳转到用户详情")
-                let vc = UserDetailTableViewController()
-                vc.setUser(sself.userInfo)
+                let vc = UserDetailTableViewController.init(userId: sself.keyword, groupId: nil)
                 sself.presentingViewController?.navigationController?.pushViewController(vc, animated: true)
                 self?.dismiss(animated: true, completion: nil)
             case .group:
-                print("跳转到群组详情")
+                let vc = GroupDetailViewController.init(groupId: sself.keyword)
+                sself.presentingViewController?.navigationController?.pushViewController(vc, animated: true)
+                self?.dismiss(animated: true, completion: nil)
             }
         }).disposed(by: _disposebag)
     }
     
     enum SearchType {
-        
+        ///群组
         case group
-        
+        ///用户
         case user
         
         var title: String {
@@ -100,13 +95,14 @@ class SearchResultViewController: UIViewController, UISearchResultsUpdating {
         }
     }
     private var userInfo: FullUserInfo?
+    private var keyword: String = ""
     func updateSearchResults(for searchController: UISearchController) {
         
         let keyword = searchController.searchBar.text
         guard let keyword = keyword, !keyword.isEmpty else {
             return
         }
-        
+        self.keyword = keyword
         switch _searchType {
         case .group:
             IMController.shared.getGroupListBy(id: keyword).subscribe(onNext: { [weak self] (groupID: String?) in

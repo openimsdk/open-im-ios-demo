@@ -39,6 +39,7 @@ class ContactsEntranceTableViewCell: UITableViewCell {
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         self.selectionStyle = .none
+        self.backgroundColor = .white
         contentView.addSubview(avatarImageView)
         avatarImageView.snp.makeConstraints { make in
             make.size.equalTo(StandardUI.avatar_42)

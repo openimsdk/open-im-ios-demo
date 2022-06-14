@@ -1,10 +1,4 @@
 
-
-
-
-
-
-
 import UIKit
 
 class UpImageButton: UIView {
@@ -26,6 +20,7 @@ class UpImageButton: UIView {
         imageView.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
             make.top.equalToSuperview()
+            make.width.lessThanOrEqualToSuperview()
         }
         
         self.addSubview(titleLabel)
@@ -33,6 +28,7 @@ class UpImageButton: UIView {
             make.top.equalTo(imageView.snp.bottom).offset(8)
             make.centerX.equalToSuperview()
             make.bottom.equalToSuperview()
+            make.width.lessThanOrEqualToSuperview()
         }
         
         self.addGestureRecognizer(tap)

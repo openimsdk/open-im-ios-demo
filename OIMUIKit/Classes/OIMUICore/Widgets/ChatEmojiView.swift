@@ -116,7 +116,7 @@ extension ChatEmojiView: UICollectionViewDataSource, UICollectionViewDelegate {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: EmojiCell.className, for: indexPath) as! EmojiCell
         let key = emojis[indexPath.row]
-        if let emojiName = ChatEmojiHelper.emojiMap[key] {
+        if let emojiName = EmojiHelper.emojiMap[key] {
             cell.imageView.image = UIImage.init(nameInEmoji: emojiName)
         }
         return cell
@@ -126,25 +126,4 @@ extension ChatEmojiView: UICollectionViewDataSource, UICollectionViewDelegate {
         let emojiName = emojis[indexPath.row]
         delegate?.emojiViewDidSelect(emojiStr: emojiName)
     }
-}
-
-class ChatEmojiHelper {
-    static let emojiMap: [String: String] = [
-        "[亲亲]": "ic_face_01",
-        "[看穿]": "ic_face_02",
-        "[色]": "ic_face_03",
-        "[吓哭]": "ic_face_04",
-        "[笑脸]": "ic_face_05",
-        "[眨眼]": "ic_face_06",
-        "[搞怪]": "ic_face_07",
-        "[龇牙]": "ic_face_08",
-        "[无语]": "ic_face_09",
-        "[可怜]": "ic_face_10",
-        "[咒骂]": "ic_face_11",
-        "[晕]": "ic_face_12",
-        "[尴尬]": "ic_face_13",
-        "[暴怒]": "ic_face_14",
-        "[可爱]": "ic_face_15",
-        "[哭泣]": "ic_face_16",
-    ]
 }

@@ -123,20 +123,28 @@ class SingleChatSettingTableViewController: UITableViewController {
             }.disposed(by: cell.disposeBag)
             
             cell.memberCollectionView.rx.modelSelected(UserInfo.self).subscribe(onNext: { [weak self] (userInfo: UserInfo) in
+                guard let sself = self else { return }
                 if userInfo.isButton {
                     let vc = SelectContactsViewController()
+                    vc.blockedUsers = [sself._viewModel.conversation.userID ?? ""]
                     vc.selectedContactsBlock = { [weak vc, weak self] (users: [UserInfo]) in
                         guard let sself = self else { return }
                         var allUsers: [UserInfo] = sself._viewModel.membesRelay.value
                         allUsers.append(contentsOf: users)
-                        IMController.shared.createConversation(users: allUsers) { (groupInfo: GroupInfo?) in
+                        IMController.shared.createGroupConversation(users: allUsers) { (groupInfo: GroupInfo?) in
                             guard let groupInfo = groupInfo else { return }
                             IMController.shared.getConversation(sessionType: groupInfo.groupType, sourceId: groupInfo.groupID) { (conversation: ConversationInfo?) in
                                 guard let conversation = conversation else { return }
 
                                 let viewModel: MessageListViewModel = MessageListViewModel.init(groupId: groupInfo.groupID, conversation: conversation)
                                 let chatVC = MessageListViewController.init(viewModel: viewModel)
-                                self?.navigationController?.pushViewController(chatVC, animated: false)
+                                chatVC.hidesBottomBarWhenPushed = true
+                                self?.navigationController?.pushViewController(chatVC, animated: true)
+                                if let root = self?.navigationController?.viewControllers.first {
+                                    self?.navigationController?.viewControllers.removeAll(where: { controller in
+                                        return controller != root && controller != chatVC
+                                    })
+                                }
                             }
                         }
                     }
@@ -206,6 +214,7 @@ class SingleChatSettingTableViewController: UITableViewController {
         let rowType: RowType = sectionItems[indexPath.section][indexPath.row]
         switch rowType {
         case .complaint:
+            SVProgressHUD.showInfo(withStatus: "参考商业版本".innerLocalized())
             print("跳转投诉页面")
         case .clearRecord:
             AlertView.show(onWindowOf: self.view, alertTitle: "确认清空所有聊天记录吗？".innerLocalized(), confirmTitle: "确认".innerLocalized()) { [weak self] in

@@ -1,9 +1,4 @@
 
-
-
-
-
-
 import UIKit
 import SnapKit
 import RxSwift
@@ -15,7 +10,6 @@ class GroupAnnounceViewController: UIViewController {
         let v = UIImageView()
         v.layer.cornerRadius = 4
         v.clipsToBounds = true
-        v.backgroundColor = .purple
         return v
     }()
     
@@ -38,6 +32,7 @@ class GroupAnnounceViewController: UIViewController {
         v.font = UIFont.systemFont(ofSize: 16)
         v.textColor = StandardUI.color_333333
         v.contentInset = UIEdgeInsets.init(top: 0, left: StandardUI.margin_22, bottom: 0, right: StandardUI.margin_22)
+        v.isEditable = false
         return v
     }()
     
@@ -103,7 +98,7 @@ class GroupAnnounceViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
-        if memberInfo.roleLevel == .super {
+        if memberInfo.roleLevel == .super || memberInfo.roleLevel == .admin {
             self.navigationItem.rightBarButtonItem = editBtn
         } else {
             tipsView.isHidden = true
@@ -135,6 +130,7 @@ class GroupAnnounceViewController: UIViewController {
         timeLabel.text = FormatUtil.getFormatDate(formatString: "yyyy-MM-dd", of: memberInfo.joinTime / 1000)
         contentTextView.text = groupInfo.introduction
         editBtn.rx.tap.subscribe(onNext: { [weak self] in
+            self?.contentTextView.isEditable = true
             guard let sself = self, let announce = sself.contentTextView.text, announce.isEmpty == false else {
                 self?.contentTextView.becomeFirstResponder()
                 return

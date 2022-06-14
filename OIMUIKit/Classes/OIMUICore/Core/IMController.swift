@@ -1,22 +1,20 @@
 
-
-
-
-
-
 import Foundation
 import OpenIMSDK
 import RxSwift
 import RxCocoa
 import SVProgressHUD
 import UIKit
+import IQKeyboardManagerSwift
 
 public class IMController: NSObject {
+    static let addFriendPrefix = "io.openim.app/addFriend/"
+    static let joinGroupPrefix = "io.openim.app/joinGroup/"
     public static let shared: IMController = IMController()
     private(set) var imManager: OpenIMSDK.OIMManager!
-    
+    ///好友申请列表新增
     let friendApplicationChangedSubject: PublishSubject<FriendApplication> = .init()
-    
+    ///组申请信息更新
     let groupApplicationChangedSubject: PublishSubject<GroupApplicationInfo> = .init()
     
     let conversationChangedSubject: BehaviorSubject<[ConversationInfo]> = .init(value: [])
@@ -50,7 +48,7 @@ public class IMController: NSObject {
             print("onUserTokenExpired")
         })
         Self.shared.imManager = manager
-        
+        // Set listener
         OpenIMSDK.OIMManager.callbacker.addFriendListener(listener: self)
         OpenIMSDK.OIMManager.callbacker.addGroupListener(listener: self)
         OpenIMSDK.OIMManager.callbacker.addConversationListener(listener: self)
@@ -74,6 +72,21 @@ public class IMController: NSObject {
             UINavigationBar.appearance().scrollEdgeAppearance = app
             UINavigationBar.appearance().standardAppearance = app
         }
+        
+        IQKeyboardManager.shared.enable = true
+        IQKeyboardManager.shared.enableAutoToolbar = false
+        IQKeyboardManager.shared.shouldResignOnTouchOutside = true
+        IQKeyboardManager.shared.disabledDistanceHandlingClasses = [
+            MessageListViewController.self
+        ]
+        IQKeyboardManager.shared.disabledToolbarClasses = [
+            MessageListViewController.self
+        ]
+        IQKeyboardManager.shared.disabledTouchResignedClasses = [
+            SearchResultViewController.self,
+            SearchFriendViewController.self,
+            SearchGroupViewController.self
+        ]
     }
     
     public func login(uid: String, token: String, onSuccess: @escaping (String?) -> Void, onFail: @escaping (Int, String?) -> Void) {
@@ -95,13 +108,16 @@ public class IMController: NSObject {
     typealias MessagesCallBack = (([MessageInfo]) -> Void)
 }
 
-
+//MARK: - 对外协议
 public protocol ContactsDataSource: AnyObject {
     func setFrequentUsers(_ users: [OIMUserInfo])
     func getFrequentUsers() -> [OIMUserInfo]
 }
-
+//MARK: - 联系人方法
 extension IMController {
+    /// 根据id查找群
+    /// - Parameter ids: 群id
+    /// - Returns: 第一个群的id
     func getGroupListBy(id: String) -> Observable<String?> {
         return Observable<String?>.create { observer in
             Self.shared.imManager.getGroupsInfo([id], onSuccess: { (groups: [OIMGroupInfo]?) in
@@ -129,6 +145,9 @@ extension IMController {
         }
     }
     
+    /// 根据id查找用户
+    /// - Parameter ids: 用户id
+    /// - Returns: 第一个用户id
     func getFriendsBy(id: String) -> Observable<FullUserInfo?> {
         return Observable<FullUserInfo?>.create { observer in
             Self.shared.imManager.getUsersInfo([id]) { (users: [OIMFullUserInfo]?) in
@@ -140,7 +159,9 @@ extension IMController {
             return Disposables.create()
         }
     }
-
+    
+    /// 获取好友申请列表
+    /// - Parameter completion: 申请数组
     func getFriendApplicationList(completion: @escaping ([FriendApplication]) -> Void) {
         Self.shared.imManager.getFriendApplicationListWith { (applications: [OIMFriendApplication]?) in
             let arr = applications ?? []
@@ -149,6 +170,11 @@ extension IMController {
         }
     }
     
+    /// 接受好友申请
+    /// - Parameters:
+    ///   - uid: 指定好友ID
+    ///   - handleMsg: 处理理由
+    ///   - completion: 响应消息
     func acceptFriendApplication(uid: String, handleMsg: String, completion: @escaping (String?) -> Void) {
         Self.shared.imManager.acceptFriendApplication(uid, handleMsg: handleMsg) { (resp: String?) in
             completion(resp)
@@ -233,8 +259,12 @@ extension IMController {
             print("邀请好友加入失败：\(code), \(msg)")
         }
     }
+    
+    func addFriend(uid: String, reqMsg: String?, onSuccess: @escaping CallBack.StringOptionalReturnVoid) {
+        Self.shared.imManager.addFriend(uid, reqMessage: reqMsg, onSuccess: onSuccess)
+    }
 }
-
+//MARK: - 消息方法
 extension IMController {
     func getAllConversationList(completion: @escaping ([ConversationInfo]) -> Void) {
         Self.shared.imManager.getAllConversationListWith { (conversations: [OIMConversationInfo]?) in
@@ -243,11 +273,11 @@ extension IMController {
             completion(ret)
         }
     }
-    
+    ///删除指定会话（本地删除）
     func deleteConversationFromLocalStorage(conversationId: String, completion: ((String?) -> Void)?) {
         Self.shared.imManager.deleteConversation(fromLocalStorage: conversationId, onSuccess: completion)
     }
-    
+    ///删除指定会话（服务器和本地均删除）
     func deleteConversation(conversationId: String, completion: ((String?) -> Void)?) {
         Self.shared.imManager.deleteConversation(conversationId, onSuccess: completion)
     }
@@ -375,6 +405,14 @@ extension IMController {
         }
     }
     
+    func sendCardMessage(card: BusinessCard, to conversation: ConversationInfo, sending: CallBack.MessageReturnVoid, onComplete: @escaping CallBack.MessageReturnVoid) {
+        let json = JsonTool.toJson(fromObject: card)
+        let message = OIMMessageInfo.createCardMessage(json)
+        message.status = .sending
+        sending(message.toMessageInfo())
+        send(message: message, to: conversation, onComplete: onComplete)
+    }
+    
     func revokeMessage(_ message: MessageInfo, onSuccess: @escaping CallBack.StringOptionalReturnVoid) {
         let oMessage = message.toOIMMessageInfo()
         Self.shared.imManager.revokeMessage(oMessage, onSuccess: onSuccess) { code, msg in
@@ -397,7 +435,7 @@ extension IMController {
         Self.shared.imManager.markGroupMessage(asRead: groupId, msgIDList: msgIdList, onSuccess: nil)
     }
     
-    func createConversation(users: [UserInfo], onSuccess: @escaping CallBack.GroupInfoOptionalReturnVoid) {
+    func createGroupConversation(users: [UserInfo], onSuccess: @escaping CallBack.GroupInfoOptionalReturnVoid) {
         var members: [OIMGroupMemberInfo] = []
         let users = users.filter { (user: UserInfo) in
             return user.userID != IMController.shared.uid
@@ -418,8 +456,8 @@ extension IMController {
         
         let createInfo = OIMGroupCreateInfo.init()
         createInfo.groupName = me.nickname?.append(string: "创建的群聊".innerLocalized())
-        
-        createInfo.groupType = users.count > 1 ? 2 : 1
+        //1是单聊，2是群聊，等待SDK更新为枚举类型
+        createInfo.groupType = 2
         Self.shared.imManager.createGroup(createInfo, memberList: members) { (groupInfo: OIMGroupInfo?) in
             print("创建群聊成功")
             onSuccess(groupInfo?.toGroupInfo())
@@ -429,6 +467,12 @@ extension IMController {
     func clearC2CHistoryMessages(userId: String, onSuccess: @escaping CallBack.StringOptionalReturnVoid) {
         Self.shared.imManager.clearC2CHistoryMessage(userId, onSuccess: onSuccess) { (code, msg) in
             print("清空C2C聊天记录失败:\(code), \(msg)")
+        }
+    }
+    
+    func clearGroupHistoryMessages(groupId: String, onSuccess: @escaping CallBack.StringOptionalReturnVoid) {
+        Self.shared.imManager.clearGroupHistoryMessage(groupId, onSuccess: onSuccess) { (code, msg) in
+            print("清空群聊天记录失败:\(code), \(msg)")
         }
     }
     
@@ -445,7 +489,7 @@ extension IMController {
     }
 }
 
-
+//MARK: - 会话方法
 extension IMController {
     func getConversation(sessionType: ConversationType, sourceId: String, onSuccess: @escaping CallBack.ConversationInfoOptionalReturnVoid) {
         let conversationType = OIMConversationType.init(rawValue: sessionType.rawValue) ?? OIMConversationType.undefine
@@ -457,9 +501,9 @@ extension IMController {
     }
 }
 
-
+//MARK: - User方法
 extension IMController {
-    
+    ///获取当前登录用户信息
     func getSelfInfo(onSuccess: @escaping CallBack.UserInfoOptionalReturnVoid) {
         Self.shared.imManager.getSelfInfoWith { [weak self] (userInfo: OIMUserInfo?) in
             let user = userInfo?.toUserInfo()
@@ -490,19 +534,19 @@ extension IMController {
     }
 }
 
-
+// MARK: - Listener
 extension IMController: OIMFriendshipListener {
-    public func onFriendApplicationAdded(_ application: FriendApplication) {
+    @objc public func onFriendApplicationAdded(_ application: FriendApplication) {
         friendApplicationChangedSubject.onNext(application)
     }
 }
-
+//MARK:  OIMGroupListener
 extension IMController: OIMGroupListener {
     public func onGroupApplicationAdded(_ groupApplication: GroupApplicationInfo) {
         groupApplicationChangedSubject.onNext(groupApplication)
     }
 }
-
+//MARK:  OIMConversationListener
 extension IMController: OIMConversationListener {
     public func onConversationChanged(_ conversations: [OIMConversationInfo]) {
         let conversations: [ConversationInfo] = conversations.compactMap {
@@ -529,7 +573,7 @@ extension IMController: OIMConversationListener {
     }
 }
 
-
+//MARK: OIMAdvancedMsgListener
 extension IMController: OIMAdvancedMsgListener {
     public func onRecvNewMessage(_ msg: OIMMessageInfo) {
         newMsgReceivedSubject.onNext(msg.toMessageInfo())
@@ -548,7 +592,8 @@ extension IMController: OIMAdvancedMsgListener {
     }
 }
 
-
+// MARK: - Models
+// MARK: 主要模型
 public class UserInfo: Encodable {
     var userID: String = ""
     var nickname: String?
@@ -561,7 +606,7 @@ public class UserInfo: Encodable {
     var ex: String?
 }
 
-public class FriendApplication {
+public class FriendApplication: NSObject {
     var fromUserID: String = ""
     var fromNickname: String?
     var fromFaceURL: String?
@@ -593,21 +638,22 @@ public class GroupApplicationInfo {
     var handleResult: ApplicationStatus = .normal
 }
 
+/// 申请状态
 public enum ApplicationStatus: Int {
-    
+    ///已拒绝
     case decline = -1
-    
+    ///等待处理
     case normal = 0
-    
+    ///已同意
     case accept = 1
 }
-
+///消息接收选项
 public enum ReceiveMessageOpt: Int {
-    
+    ///在线正常接收消息，离线时会使用 APNs
     case receive = 0
-    
+    ///不会接收到消息，离线不会有推送通知
     case notReceive = 1
-    
+    ///在线正常接收消息，离线不会有推送通知
     case notNotify = 2
 }
 
@@ -647,7 +693,7 @@ public class MessageInfo: Encodable {
     var senderFaceUrl: String?
     var groupID: String?
     var content: String?
-    
+    ///消息唯一序列号
     var seq: Int = 0
     var isRead: Bool = false
     var status: MessageStatus = .undefine
@@ -669,10 +715,14 @@ public class MessageInfo: Encodable {
     var isPlaying = false
     
     func getAbstruct() -> String? {
-        if contentType == .text {
+        switch contentType {
+        case .text:
             return content
+        case .quote:
+            return quoteElem?.text
+        default:
+            return contentType.abstruct
         }
-        return contentType.abstruct
     }
     
     
@@ -686,7 +736,7 @@ public class GroupMemberBaseInfo: Encodable {
 public enum GroupMemberRole: Int, Encodable {
     case undefine = 0
     case member = 1
-    
+    ///群主
     case `super` = 2
     case admin = 3
 }
@@ -707,46 +757,62 @@ public class GroupMemberInfo: GroupMemberBaseInfo {
 
 public enum MessageContentType: Int, Codable {
     case unknown = -1
+    //MARK: 消息类型
     case text = 101
     case image
     case audio
     case video
     case file
+    ///@消息
     case at
+    ///合并消息
     case merge
+    ///名片消息
     case card
     case location
     case custom
+    ///撤回消息回执
     case revokeReciept
+    ///C2C单聊已读回执
     case C2CReciept
+    ///正在输入状态
     case typing
     case quote
+    ///动图消息
     case face
+    
+    //MARK: 通知类型
     case friendAppApproved = 1201
     case friendAppRejected
     case friendApplication
     case friendAdded
     case friendDeleted
+    /// 设置好友备注通知
     case friendRemarkSet
     case blackAdded
     case blackDeleted
+    /// 会话免打扰设置通知
     case conversationOptChange = 1300
     case userInfoUpdated = 1303
+    /// 会话通知
     case conversationNotification = 1307
+    /// 会话不通知
     case conversationNotNotification
     case groupCreated = 1501
+    /// 更新群信息通知
     case groupInfoSet
     case joinGroupApplication
     case memberQuit
     case groupAppAccepted
     case groupAppRejected
+    /// 群主更换通知
     case groupOwnerTransferred
     case memberKicked
     case memberInvited
     case memberEnter
-    
+    ///解散群通知
     case dismissGroup
-    
+    ///阅后即焚
     case privateMessage
     
     var abstruct: String? {
@@ -787,11 +853,11 @@ public enum MessageLevel: Int, Codable {
 }
 
 public enum ConversationType: Int, Codable {
-    
+    ///未定义
     case undefine
-    
+    ///单聊
     case c2c
-    
+    ///群聊
     case group
 }
 
@@ -822,7 +888,7 @@ public class ConversationNotDisturbInfo {
         self.conversationId = conversationId
     }
 }
-
+// MARK: 次要模型
 public class FaceElem: Encodable {
     var index: Int = 0
     var data: String?
@@ -843,7 +909,7 @@ public class NotificationElem: Encodable {
     private(set) var opUser: GroupMemberInfo?
     private(set) var quitUser: GroupMemberInfo?
     private(set) var entrantUser: GroupMemberInfo?
-    
+    ///群改变新群主的信息
     private(set) var groupNewOwner: GroupMemberInfo?
     private(set) var group: GroupInfo?
     private(set) var kickedUserList: [GroupMemberInfo]?
@@ -869,13 +935,13 @@ public class OfflinePushInfo: Codable {
 }
 
 public class PictureElem: Codable {
-    
+    ///本地资源地址
     var sourcePath: String?
-    
+    ///本地图片详情
     var sourcePicture: PictureInfo?
-    
+    ///大图详情
     var bigPicture: PictureInfo?
-    
+    ///缩略图详情
     var snapshotPicture: PictureInfo?
 }
 
@@ -885,15 +951,15 @@ public class PictureInfo: Codable {
     var size: Int = 0
     var width: CGFloat = 0
     var height: CGFloat = 0
-    
+    ///图片oss地址
     var url: String?
 }
 
 public class SoundElem: Codable {
     var uuID: String?
-    
+    ///本地资源地址
     var soundPath: String?
-    
+    ///oss地址
     var sourceUrl: String?
     var dataSize: Int = 0
     var duration: Int = 0
@@ -906,12 +972,12 @@ public class VideoElem: Codable {
     var videoType: String?
     var videoSize: Int = 0
     var duration: Int = 0
-    
+    ///视频快照本地地址
     var snapshotPath: String?
-    
+    ///视频快照唯一ID
     var snapshotUUID: String?
     var snapshotSize: Int = 0
-    
+    ///视频快照oss地址
     var snapshotUrl: String?
     var snapshotWidth: CGFloat = 0
     var snapshotHeight: CGFloat = 0
@@ -920,7 +986,7 @@ public class VideoElem: Codable {
 public class FileElem: Encodable {
     var filePath: String?
     var uuID: String?
-    
+    ///oss地址
     var sourceUrl: String?
     var fileName: String?
     var fileSize: Int = 0
@@ -961,7 +1027,7 @@ public class CustomElem: Encodable {
     var description: String?
 }
 
-struct BusinessCard: Decodable {
+struct BusinessCard: Codable {
     let faceURL: String?
     let nickname: String?
     let userID: String
@@ -970,7 +1036,7 @@ struct BusinessCard: Decodable {
 class ReceiptInfo {
     var userID: String?
     var groupID: String?
-    
+    ///已读消息id
     var msgIDList: [String]?
     var readTime: Int = 0
     var msgFrom: MessageLevel = .user
@@ -1054,7 +1120,7 @@ class SearchResultItemInfo {
     var messageCount: Int = 0
     var messageList: [MessageInfo] = []
 }
-
+// MARK: - 模型转换(From SDK)
 extension MessageInfo {
     func toOIMMessageInfo() -> OIMMessageInfo {
         let json: String = JsonTool.toJson(fromObject: self)
@@ -1140,7 +1206,7 @@ extension OIMFriendApplication {
         item.toNickname = self.toNickname
         item.toFaceURL = self.toFaceURL
         item.handleResult = ApplicationStatus.init(rawValue: self.handleResult.rawValue) ?? .normal
-        
+        //注意此处值类型的不对应
         item.reqMsg = self.ex
         item.handlerUserID = self.handlerUserID
         item.handleMsg = self.handleMsg
@@ -1153,7 +1219,7 @@ extension OIMFullUserInfo {
     func toUserInfo() -> UserInfo {
         let item = UserInfo.init()
         item.faceURL = self.faceURL
-        
+        //注意此处值类型的不对应
         item.nickname = self.showName
         item.userID = self.userID ?? ""
         return item
@@ -1599,7 +1665,7 @@ extension OIMSearchResultItemInfo {
         return item
     }
 }
-
+// MARK: - 模型转换(From OIMUIKit)
 extension UserInfo {
     func toOIMUserInfo() -> OIMUserInfo {
         let json = JsonTool.toJson(fromObject: self)

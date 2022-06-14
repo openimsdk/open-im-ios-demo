@@ -14,8 +14,7 @@ class ChatMenuView: UIView, UITableViewDataSource, UITableViewDelegate {
         v.register(MenuTableViewCell.self, forCellReuseIdentifier: MenuTableViewCell.className)
         v.showsVerticalScrollIndicator = false
         v.contentInset = UIEdgeInsets.init(top: topInset, left: 0, bottom: topInset, right: 0)
-        v.separatorInset = .zero
-        v.separatorColor = StandardUI.color_F1F1F1
+        v.separatorStyle = .none
         v.dataSource = self
         v.delegate = self
         v.layer.cornerRadius = 6

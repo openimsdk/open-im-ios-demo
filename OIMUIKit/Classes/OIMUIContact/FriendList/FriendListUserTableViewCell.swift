@@ -31,6 +31,7 @@ class FriendListUserTableViewCell: UITableViewCell {
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
+        self.selectionStyle = .none
         contentView.addSubview(avatarImageView)
         avatarImageView.snp.makeConstraints { make in
             make.left.equalToSuperview().offset(StandardUI.margin_22)

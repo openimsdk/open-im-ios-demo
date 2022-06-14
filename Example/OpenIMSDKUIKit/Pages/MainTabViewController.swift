@@ -88,7 +88,9 @@ class MainTabViewController: UITabBarController {
     private func loginIM(uid: String, token: String, completion: (() -> Void)?) {
         IMController.shared.login(uid: uid, token: token) { [weak self] (resp2: String?) in
             print("login onSuccess \(String(describing: resp2))")
-            
+            JPUSHService.setAlias(uid, completion: { code, msg, code2 in
+                print("别名设置成功：", code, msg, code2)
+            }, seq: 0)
             self?.save(uid: uid, token: token)
             SVProgressHUD.dismiss()
             completion?()

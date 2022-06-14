@@ -14,7 +14,7 @@ public class MineViewController: UIViewController {
         v.backgroundImageView.image = UIImage.init(nameInBundle: "mine_background_image")
         v.tap.rx.event.subscribe(onNext: { [weak self] _ in
             guard let user = self?._viewModel.currentUserRelay.value else { return }
-            let vc = QRCodeViewController.init(idString: user.userID)
+            let vc = QRCodeViewController.init(idString: IMController.addFriendPrefix.append(string: user.userID))
             vc.avatarImageView.setImage(with: user.faceURL, placeHolder: "contact_my_friend_icon")
             vc.nameLabel.text = user.nickname
             vc.tipLabel.text = "扫一扫下面的二维码，添加我为好友"
@@ -38,7 +38,7 @@ public class MineViewController: UIViewController {
         return v
     }()
     
-    private let items: [RowType] = RowType.allCases
+    private let items: [RowType] = [.myInfo, .setting, .logout]
     
     private let _viewModel = MineViewModel()
     private let _disposeBag = DisposeBag()

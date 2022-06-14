@@ -1,9 +1,4 @@
 
-
-
-
-
-
 import UIKit
 import RxSwift
 import SVProgressHUD
@@ -46,6 +41,7 @@ class GroupChatSettingTableViewController: UITableViewController {
         }
         tableView.backgroundColor = StandardUI.color_F1F1F1
         tableView.rowHeight = UITableView.automaticDimension
+        tableView.separatorInset = UIEdgeInsets.init(top: 0, left: 0, bottom: 0, right: 0)
         tableView.register(GroupChatNameTableViewCell.self, forCellReuseIdentifier: GroupChatNameTableViewCell.className)
         tableView.register(GroupChatMemberTableViewCell.self, forCellReuseIdentifier: GroupChatMemberTableViewCell.className)
         tableView.register(SwitchTableViewCell.self, forCellReuseIdentifier: SwitchTableViewCell.className)
@@ -110,8 +106,10 @@ class GroupChatSettingTableViewController: UITableViewController {
             cell.titleLabel.text = rowType.title
             
             cell.memberCollectionView.rx.modelSelected(UserInfo.self).subscribe(onNext: { [weak self] (userInfo: UserInfo) in
+                guard let sself = self else { return }
                 if userInfo.isButton {
                     let vc = SelectContactsViewController()
+                    vc.blockedUsers = sself._viewModel.allMembers
                     vc.selectedContactsBlock = { [weak vc, weak self] (users: [UserInfo]) in
                         guard let sself = self, let groupID = sself._viewModel.groupInfoRelay.value?.groupID else { return }
                         let uids = users.compactMap{$0.userID}
@@ -150,8 +148,35 @@ class GroupChatSettingTableViewController: UITableViewController {
         case .setDisturbOn:
             let cell = tableView.dequeueReusableCell(withIdentifier: SwitchTableViewCell.className) as! SwitchTableViewCell
             _viewModel.noDisturbRelay.bind(to: cell.switcher.rx.isOn).disposed(by: cell.disposeBag)
-            cell.switcher.rx.controlEvent(.valueChanged).subscribe(onNext: { [weak self] in
-                self?._viewModel.toggleNoDisturb()
+            cell.switcher.rx.controlEvent(.valueChanged).subscribe(onNext: { [weak self, weak cell] in
+                guard let scell = cell else { return }
+                //the state has been changed
+                if !scell.switcher.isOn {
+                    self?._viewModel.setNoDisturbOff()
+                    return
+                }
+                let sheet = UIAlertController.init(title: nil, message: nil, preferredStyle: .actionSheet)
+                let maleAction: UIAlertAction = {
+                    let v = UIAlertAction.init(title: "接收消息但不提示".innerLocalized(), style: .default) { [weak self] _ in
+                        self?._viewModel.setNoDisturbWithNotNotify()
+                    }
+                    return v
+                }()
+                
+                let femaleAction: UIAlertAction = {
+                    let v = UIAlertAction.init(title: "屏蔽群消息".innerLocalized(), style: .default) { [weak self] _ in
+                        self?._viewModel.setNoDisturbWithNotRecieve()
+                    }
+                    return v
+                }()
+                
+                let cancelAction = UIAlertAction.init(title: "取消".innerLocalized(), style: UIAlertAction.Style.cancel) { [weak self] _ in
+                    self?._viewModel.setNoDisturbOff()
+                }
+                sheet.addAction(maleAction)
+                sheet.addAction(femaleAction)
+                sheet.addAction(cancelAction)
+                self?.present(sheet, animated: true, completion: nil)
             }).disposed(by: cell.disposeBag)
             cell.titleLabel.text = rowType.title
             return cell
@@ -174,7 +199,7 @@ class GroupChatSettingTableViewController: UITableViewController {
         let rowType = sectionItems[indexPath.section][indexPath.row]
         switch rowType {
         case .qrCodeOfGroup:
-            let vc = QRCodeViewController.init(idString: _viewModel.conversation.groupID ?? "")
+            let vc = QRCodeViewController.init(idString: IMController.joinGroupPrefix.append(string: _viewModel.conversation.groupID))
             vc.avatarImageView.setImage(with: _viewModel.conversation.faceURL, placeHolder: "contact_my_group_icon")
             vc.nameLabel.text = _viewModel.conversation.showName
             vc.tipLabel.text = "扫一扫群二维码，立刻加入该群。".innerLocalized()
@@ -215,11 +240,15 @@ class GroupChatSettingTableViewController: UITableViewController {
         case .quitGroup:
             if _viewModel.isSelfRelay.value {
                 AlertView.show(onWindowOf: self.view, alertTitle: "解散群聊后，将失去和群成员的联系。".innerLocalized(), confirmTitle: "确定".innerLocalized()) { [weak self] in
-                    self?._viewModel.dismissGroup()
+                    self?._viewModel.dismissGroup(onSuccess: {
+                        self?.navigationController?.popToRootViewController(animated: true)
+                    })
                 }
             } else {
                 AlertView.show(onWindowOf: self.view, alertTitle: "退出群聊后，将不再接收此群聊信息。".innerLocalized(), confirmTitle: "确定".innerLocalized()) { [weak self] in
-                    self?._viewModel.quitGroup()
+                    self?._viewModel.quitGroup(onSuccess: {
+                        self?.navigationController?.popToRootViewController(animated: true)
+                    })
                 }
             }
         case .groupName:
@@ -241,6 +270,8 @@ class GroupChatSettingTableViewController: UITableViewController {
                 SVProgressHUD.showInfo(withStatus: "只有群主可以修改".innerLocalized())
             }
             _viewModel.groupInfoRelay.value?.creatorUserID
+        case .complaint:
+            SVProgressHUD.showInfo(withStatus: "参考商业版本".innerLocalized())
         default:
             break
         }

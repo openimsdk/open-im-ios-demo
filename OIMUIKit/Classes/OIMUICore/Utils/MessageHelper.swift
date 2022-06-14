@@ -1,14 +1,8 @@
 
-
-
-
-
-
-
 import Foundation
 
 struct MessageHelper {
-    
+    ///获取消息摘要
     static func getAbstructOf(message: MessageInfo?, isSingleChat: Bool, unreadCount: Int, status: ReceiveMessageOpt) -> NSAttributedString {
         var abstruct: String = ""
         if status != .receive, unreadCount > 0 {
@@ -40,7 +34,7 @@ struct MessageHelper {
         case .file:
             abstruct += "[文件]"
         case .at:
-            
+            //TODO:
             if let atElem = message.atElem {
                 if atElem.isAtSelf {
                     tmpAttr = NSAttributedString.init(string: "[有人@我]", attributes: [
@@ -66,6 +60,8 @@ struct MessageHelper {
             abstruct += "[位置]"
         case .face:
             abstruct += "[自定义表情]"
+        case .quote:
+            abstruct += message.quoteElem?.text ?? ""
         default:
             tmpAttr = getSystemNotificationOf(message: message, isSingleChat: isSingleChat)
         }
@@ -137,40 +133,6 @@ struct MessageHelper {
         return desc;
     }
     
-    static let emojiRegex = "\\[[^\\[\\]\\s]+\\]"
-    static func getEmojiReplaced(string: String) -> NSAttributedString {
-        let ntext = string as NSString
-        let lineSpacing: CGFloat = 2
-        let font = UIFont.systemFont(ofSize: 14)
-        let textColor = StandardUI.color_333333
-        
-        let paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.lineSpacing = lineSpacing > 0 ? max(lineSpacing + font.pointSize - font.lineHeight, 0) : lineSpacing
-        let defaultAttr: [NSAttributedString.Key: Any] = [
-            NSAttributedString.Key.font: font,
-            NSAttributedString.Key.foregroundColor: textColor,
-            NSAttributedString.Key.paragraphStyle: paragraphStyle
-        ]
-        
-        var atr = NSMutableAttributedString.init(string: string, attributes: defaultAttr)
-        do {
-            let emotionReg: NSRegularExpression = try NSRegularExpression.init(pattern: MessageHelper.emojiRegex, options: [.caseInsensitive, .dotMatchesLineSeparators])
-            let emotionResults = emotionReg.matches(in: string, options: [], range: NSRange.init(location: 0, length: ntext.length))
-            
-            for (_, match) in emotionResults.enumerated().reversed() {
-                let matchString: String = ntext.substring(with: match.range)
-                if let emojiName: String = ChatEmojiHelper.emojiMap[matchString], let emoji = UIImage.init(nameInEmoji: emojiName) {
-                    let imageAttachment = NSTextAttachment.init()
-                    imageAttachment.image = emoji
-                    imageAttachment.bounds = CGRect(x: 0, y: font.descender, width: font.lineHeight, height: font.lineHeight)
-                    let attrStringWithImage = NSAttributedString.init(attachment: imageAttachment)
-                    atr.replaceCharacters(in: NSRange(location: match.range.location, length: match.range.length), with: attrStringWithImage)
-                }
-            }
-        } catch { }
-        return atr
-    }
-    
     static func getSystemNotificationOf(message: MessageInfo, isSingleChat: Bool) -> NSAttributedString? {
         let nameAttributes: [NSAttributedString.Key: Any] = [
             NSAttributedString.Key.font: UIFont.systemFont(ofSize: 12),
@@ -203,11 +165,17 @@ struct MessageHelper {
             return content
         case .memberQuit:
             if let elem = message.notificationElem?.quitUser {
-                let name = NSMutableAttributedString.init(string: elem.nickname ?? "", attributes: nameAttributes)
+                var ret = NSMutableAttributedString()
+                if elem.userID == IMController.shared.uid {
+                    ret.append(NSAttributedString.init(string: "你".innerLocalized(), attributes: contentAttributes))
+                } else {
+                    let name = NSAttributedString.init(string: elem.nickname ?? "", attributes: nameAttributes)
+                    ret.append(name)
+                    ret.append(getSpaceString())
+                }
                 let content = NSAttributedString.init(string: "已退出群聊".innerLocalized(), attributes: contentAttributes)
-                name.append(getSpaceString())
-                name.append(content)
-                return name
+                ret.append(content)
+                return ret
             }
         case .memberEnter:
             if let elem = message.notificationElem?.entrantUser {
@@ -219,8 +187,8 @@ struct MessageHelper {
                     ret.append(getSpaceString())
                     ret.append(NSAttributedString.init(string: elem.nickname ?? "", attributes: nameAttributes))
                     ret.append(getSpaceString())
-                    ret.append(NSAttributedString.init(string: "已加入群聊".innerLocalized(), attributes: contentAttributes))
                 }
+                ret.append(NSAttributedString.init(string: "已加入群聊".innerLocalized(), attributes: contentAttributes))
                 return ret
             }
         case .memberKicked:
@@ -282,6 +250,8 @@ struct MessageHelper {
             ret.append(getOpUserName(message: message))
             ret.append(NSAttributedString.init(string: "解散了群聊".innerLocalized(), attributes: contentAttributes))
             return ret
+        case .typing:
+            return nil
         default:
             let content = NSAttributedString.init(string: "不支持的消息类型".innerLocalized(), attributes: contentAttributes)
             return content

@@ -1,12 +1,13 @@
 
-
-
-
-
-
 import UIKit
 
 class SelectUserTableViewCell: FriendListUserTableViewCell {
+    
+    var canBeSelected = true {
+        didSet {
+            stateImageView.image = canBeSelected ? UIImage.init(nameInBundle: "common_checkbox_unselected") : UIImage.init(nameInBundle: "common_checkbox_disable_selected")
+        }
+    }
     
     private let stateImageView: UIImageView = {
         let v = UIImageView()
@@ -36,8 +37,13 @@ class SelectUserTableViewCell: FriendListUserTableViewCell {
     }
     
     override func setSelected(_ selected: Bool, animated: Bool) {
+        if !canBeSelected { return }
         super.setSelected(selected, animated: animated)
         stateImageView.image = selected ? UIImage.init(nameInBundle: "common_checkbox_selected") : UIImage.init(nameInBundle: "common_checkbox_unselected")
     }
     
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        canBeSelected = true
+    }
 }

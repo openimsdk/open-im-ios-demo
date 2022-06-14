@@ -26,6 +26,7 @@ class NewFriendListViewController: UIViewController {
         v.separatorInset = UIEdgeInsets.init(top: 0, left: 82, bottom: 0, right: StandardUI.margin_22)
         v.separatorColor = StandardUI.color_F1F1F1
         v.rowHeight = UITableView.automaticDimension
+        v.tableFooterView = UIView()
         if #available(iOS 15.0, *) {
             v.sectionHeaderTopPadding = 0
         }
@@ -37,10 +38,11 @@ class NewFriendListViewController: UIViewController {
         let searchC: UISearchController = {
             let v = UISearchController.init(searchResultsController: resultC)
             v.searchResultsUpdater = resultC
-            v.searchBar.placeholder = "通过用户ID号搜索添加"
+            v.searchBar.placeholder = "通过用户ID号搜索添加".innerLocalized()
             v.obscuresBackgroundDuringPresentation = false
             return v
         }()
+        self.navigationItem.hidesSearchBarWhenScrolling = false
         self.navigationItem.searchController = searchC
         
         view.addSubview(tableView)
@@ -61,7 +63,13 @@ class NewFriendListViewController: UIViewController {
             cell.avatarImageView.setImage(with: item.fromFaceURL, placeHolder: "contact_my_friend_icon")
             
             cell.helloBtn.rx.tap.subscribe { _ in
-                print("给 \(String(describing: item.fromNickname)) 打了招呼")
+                IMController.shared.getConversation(sessionType: ConversationType.c2c, sourceId: item.fromUserID) { [weak self] (conversation: ConversationInfo?) in
+                    guard let conversation = conversation else { return }
+                    let viewModel = MessageListViewModel.init(userId: item.fromUserID, conversation: conversation)
+                    viewModel.sendText(text: "Hello", quoteMessage: nil)
+                    let chatVC = MessageListViewController.init(viewModel: viewModel)
+                    self?.navigationController?.pushViewController(chatVC, animated: true)
+                }
             }.disposed(by: cell.disposeBag)
             
             cell.acceptBtn.rx.tap.subscribe { [weak self] _ in
@@ -70,6 +78,17 @@ class NewFriendListViewController: UIViewController {
 
             return cell
         }.disposed(by: _disposeBag)
+        
+        tableView.rx.modelSelected(FriendApplication.self).subscribe(onNext: { (application: FriendApplication) in
+            if let state = NewFriendTableViewCell.ApplyState.init(rawValue: application.handleResult.rawValue), state == .agreed {
+                IMController.shared.getConversation(sessionType: ConversationType.c2c, sourceId: application.fromUserID, onSuccess: { [weak self] (conversation: ConversationInfo?) in
+                    guard let conversation = conversation else { return }
+                    let viewModel = MessageListViewModel.init(userId: application.fromUserID, conversation: conversation)
+                    let chatVC = MessageListViewController.init(viewModel: viewModel)
+                    self?.navigationController?.pushViewController(chatVC, animated: true)
+                })
+            }
+        }).disposed(by: _disposeBag)
     }
     
     private let _viewModel = NewFriendListViewModel()

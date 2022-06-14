@@ -1,14 +1,10 @@
 
-
-
-
-
-
 import UIKit
 import SnapKit
 
 class RoundCornerLayoutLabel: UIView {
 
+    /// 文本距左右边界的缩进值
     public var contentInset: UIEdgeInsets = .zero {
         didSet {
             _hStack.snp.remakeConstraints { make in
@@ -83,7 +79,10 @@ class RoundCornerLayoutLabel: UIView {
         v.alignment = .center
         return v
     }()
-    
+    /// 只有文本的圆角Label
+    /// - Parameters:
+    ///   - roundCorners: 圆角
+    ///   - radius: 半径为nil时，以高的一半为半径
     init(roundCorners: UIRectCorner, radius: CGFloat?) {
         corners_ = roundCorners
         radius_ = radius
@@ -94,7 +93,12 @@ class RoundCornerLayoutLabel: UIView {
         }
         checkValue()
     }
-    
+
+    /// 左图右文的Label
+    /// - Parameters:
+    ///   - icon: 图标图片
+    ///   - roundCorners: 圆角
+    ///   - radius: 半径为nil时，以高的一半为半径
     init(icon: UIImage?, roundCorners: UIRectCorner, radius: CGFloat?) {
         _iconImage = icon
         corners_ = roundCorners

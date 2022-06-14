@@ -1,9 +1,4 @@
 
-
-
-
-
-
 import UIKit
 import SnapKit
 
@@ -49,7 +44,7 @@ class ChatListHeaderView: UIView {
         return v
     }()
     
-    private lazy var searchBar: UISearchBar = {
+    lazy var searchBar: UISearchBar = {
         let margin: CGFloat = 14
         let v = UISearchBar.init(frame: CGRect.init(x: margin, y: 10, width: kScreenWidth - 2 * margin, height: 44))
         v.searchBarStyle = .minimal

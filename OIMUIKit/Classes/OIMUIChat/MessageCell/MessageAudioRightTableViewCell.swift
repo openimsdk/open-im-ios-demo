@@ -26,7 +26,7 @@ class MessageAudioRightTableViewCell: MessageBaseRightTableViewCell {
     }()
     
     private let audioIconImageView: AnimationView = {
-
+//        let v = UIImageView.init(image: UIImage.init(nameInBundle: "msg_audio_right_icon"))
         let bundle = ViewControllerFactory.getBundle() ?? Bundle.main
         let v = AnimationView.init(name: "voice_blue", bundle: bundle)
         v.loopMode = .loop

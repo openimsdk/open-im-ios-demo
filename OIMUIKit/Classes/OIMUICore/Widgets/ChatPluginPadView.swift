@@ -126,9 +126,11 @@ extension ChatPluginPadView: UICollectionViewDataSource, UICollectionViewDelegat
 public enum PluginType: CaseIterable {
     case album
     case camera
-
+//        case video
+//        case file
     case businessCard
-
+//        case location
+//        case voiceInput
     
     var name: String {
         switch self {

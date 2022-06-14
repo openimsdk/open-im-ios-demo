@@ -11,7 +11,7 @@ class MessageBaseLeftTableViewCell: UITableViewCell, MessageCellAble {
     weak var delegate: MessageDelegate?
     let disposeBag = DisposeBag()
     var model: MessageInfo?
-    
+    /// 头像
     lazy var avatarImageView: UIImageView = {
         let v = UIImageView()
         v.layer.cornerRadius = 6
@@ -25,14 +25,15 @@ class MessageBaseLeftTableViewCell: UITableViewCell, MessageCellAble {
         v.addGestureRecognizer(tap)
         return v
     }()
-    
+    /// 昵称
     let nameLabel: UILabel = {
         let v = UILabel()
         v.font = .systemFont(ofSize: 12)
         v.textColor = StandardUI.color_666666
         return v
     }()
-
+    
+    /// 气泡背景
     lazy var bubbleImageView: UIImageView = {
         let v = UIImageView()
         v.isUserInteractionEnabled = true
@@ -54,6 +55,7 @@ class MessageBaseLeftTableViewCell: UITableViewCell, MessageCellAble {
         return v
     }()
     
+    /// 包裹消息体的容器视图
     let containerView: UIView = {
         let v = UIView()
         return v

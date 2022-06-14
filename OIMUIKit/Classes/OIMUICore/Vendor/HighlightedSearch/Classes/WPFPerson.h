@@ -28,7 +28,7 @@
 /** 匹配类型 */
 @property (nonatomic, assign) NSInteger matchType;
 
-
+// 以下四个属性为多音字的适配，暂时只支持双多音字
 /** 是否包含多音字 */
 @property (nonatomic, assign) BOOL isContainPolyPhone;
 /** 第二个多音字 拼音全拼（小写） */
@@ -38,8 +38,8 @@
 /** 第二个多音字 拼音全拼（小写）位置 */
 @property (nonatomic, copy) NSString *polyPhonePinyinLocationString;
 /** 第二个多音字 拼音首字母拼音（小写）数组字符串位置 */
-
-
+// 可以忽略掉，因为即使是多音字，简拼的定位是一定一样的
+//@property (nonatomic, copy) NSString *polyPhoneInitialLocationString;
 
 
 /**

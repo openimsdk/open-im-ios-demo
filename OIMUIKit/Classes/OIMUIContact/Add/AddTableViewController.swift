@@ -67,14 +67,20 @@ open class AddTableViewController: UITableViewController {
         case .createGroup:
             let vc = SelectContactsViewController()
             vc.selectedContactsBlock = { [weak vc, weak self] (users: [UserInfo]) in
-                IMController.shared.createConversation(users: users) { (groupInfo: GroupInfo?) in
+                IMController.shared.createGroupConversation(users: users) { (groupInfo: GroupInfo?) in
                     guard let groupInfo = groupInfo else { return }
                     IMController.shared.getConversation(sessionType: groupInfo.groupType, sourceId: groupInfo.groupID) { (conversation: ConversationInfo?) in
                         guard let conversation = conversation else { return }
 
                         let viewModel: MessageListViewModel = MessageListViewModel.init(groupId: groupInfo.groupID, conversation: conversation)
                         let chatVC = MessageListViewController.init(viewModel: viewModel)
-                        self?.navigationController?.pushViewController(chatVC, animated: false)
+                        chatVC.hidesBottomBarWhenPushed = true
+                        self?.navigationController?.pushViewController(chatVC, animated: true)
+                        if let root = self?.navigationController?.viewControllers.first {
+                            self?.navigationController?.viewControllers.removeAll(where: { controller in
+                                return controller != root && controller != chatVC
+                            })
+                        }
                     }
                 }
             }
@@ -87,8 +93,22 @@ open class AddTableViewController: UITableViewController {
             self.navigationController?.pushViewController(vc, animated: true)
         case .scanQrcode:
             let vc = ScanViewController()
-            vc.scanDidComplete = { (result: String) in
-                SVProgressHUD.showInfo(withStatus: result)
+            vc.scanDidComplete = { [weak self] (result: String) in
+                if result.contains(IMController.addFriendPrefix) {
+                    let uid = result.replacingOccurrences(of: IMController.addFriendPrefix, with: "")
+                    let vc = UserDetailTableViewController.init(userId: uid, groupId: nil)
+                    vc.hidesBottomBarWhenPushed = true
+                    self?.navigationController?.pushViewController(vc, animated: true)
+                    self?.dismiss(animated: true)
+                } else if result.contains(IMController.joinGroupPrefix) {
+                    let groupID = result.replacingOccurrences(of: IMController.joinGroupPrefix, with: "")
+                    let vc = GroupDetailViewController.init(groupId: groupID)
+                    vc.hidesBottomBarWhenPushed = true
+                    self?.navigationController?.pushViewController(vc, animated: true)
+                    self?.dismiss(animated: true)
+                } else {
+                    SVProgressHUD.showError(withStatus: result)
+                }
             }
             vc.modalPresentationStyle = .fullScreen
             self.present(vc, animated: true)

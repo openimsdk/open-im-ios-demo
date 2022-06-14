@@ -24,6 +24,7 @@ class ImageRecordViewController: UIViewController {
             return v
         }()
         let v = UICollectionView.init(frame: .zero, collectionViewLayout: layout)
+        v.backgroundColor = .white
         v.register(ImageCollectionViewCell.self, forCellWithReuseIdentifier: ImageCollectionViewCell.className)
         v.register(SectionHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: SectionHeaderView.className)
         return v

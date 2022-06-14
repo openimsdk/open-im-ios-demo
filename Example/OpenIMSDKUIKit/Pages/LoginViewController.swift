@@ -1,7 +1,6 @@
 
 import UIKit
 import RxSwift
-import IQKeyboardManagerSwift
 
 class LoginViewController: UIViewController {
     
@@ -63,16 +62,6 @@ class LoginViewController: UIViewController {
         v.titleLabel?.font = UIFont.systemFont(ofSize: 18, weight: .semibold)
         return v
     }()
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        IQKeyboardManager.shared.enable = true
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        IQKeyboardManager.shared.enable = false
-    }
 
     override func viewDidLoad() {
         super.viewDidLoad()

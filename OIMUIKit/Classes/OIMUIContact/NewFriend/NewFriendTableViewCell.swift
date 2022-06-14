@@ -13,6 +13,8 @@ class NewFriendTableViewCell: UITableViewCell {
     
     let avatarImageView: UIImageView = {
         let v = UIImageView()
+        v.layer.cornerRadius = 4
+        v.clipsToBounds = true
         return v
     }()
     
@@ -51,6 +53,7 @@ class NewFriendTableViewCell: UITableViewCell {
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
+        self.selectionStyle = .none
         contentView.addSubview(avatarImageView)
         avatarImageView.snp.makeConstraints { make in
             make.left.equalToSuperview().offset(StandardUI.margin_22)

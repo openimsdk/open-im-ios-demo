@@ -1,7 +1,6 @@
 //
 
-
-
+// TODO: 拼音简拼的多音字locationArray是一致的
 
 #import "WPFPerson.h"
 
@@ -10,17 +9,17 @@
 + (instancetype)personWithId:(NSString *)personId name:(NSString *)name hanyuPinyinOutputFormat:(HanyuPinyinOutputFormat *)pinyinFormat {
     WPFPerson *person = [[WPFPerson alloc] init];
     
-    
+    // 拼音全拼
     NSMutableString *completeSpelling = [[NSMutableString alloc] init];
     NSMutableString *polyPhoneCompleteSpelling;
     
-    
+    // 首字母所组成的字符串
     NSString *initialString = @"";
     NSString *polyPhoneInitialString;
-    
+    // 全拼拼音数组
     NSMutableArray *completeSpellingArray = [[NSMutableArray alloc] init];
     NSMutableArray *polyPhoneCompleteSpellingArray;
-    
+    // 拼音首字母的位置数组
     NSMutableArray *pinyinFirstLetterLocationArray = [[NSMutableArray alloc] init];
    
     for (NSInteger i = 0; i < name.length; i++) {
@@ -36,7 +35,7 @@
          *  @"" :  seperator 分隔符
          */
         NSArray *pinyinStrArrayOfChar = [PinyinHelper getFormattedHanyuPinyinStringArrayWithChar:[name characterAtIndex:i] withHanyuPinyinOutputFormat:pinyinFormat];
-        
+        // 获取每个字符所对应的拼音数组，如果包含多音字，则匹配
         if ((nil != pinyinStrArrayOfChar) && ((int) [pinyinStrArrayOfChar count] > 0)) {
             mainPinyinStrOfChar = [pinyinStrArrayOfChar objectAtIndex:0];
             if (pinyinStrArrayOfChar.count > 1) {
@@ -56,18 +55,18 @@
                 }
             }
             [completeSpelling appendString:mainPinyinStrOfChar];
-            
+            // 如果该字符是中文
             if ([WPFPinYinTools isChinese:hanyuChar]) {
-                
+                // 获取该字符的第一个拼音字母，如 wang 的 firstLetter 就是 w
                 NSString *firstLetter = [mainPinyinStrOfChar substringToIndex:1];
                 
-                
+                // 多音字的处理
                 if (person.isContainPolyPhone) {
-                    
+                    // 获取该字符多音字的第一个拼音字母
                     NSString *targetStringOfChar = isPolyPhoneChar ? polyPhonePinyinStrOfChar : mainPinyinStrOfChar;
                     NSString *targetFirstLetter = [targetStringOfChar substringToIndex:1];
                     
-                    
+                    //                NSString *pinyinString = [PinyinHelper toHanyuPinyinStringWithNSString:hanyuChar withHanyuPinyinOutputFormat:pinyinFormat withNSString:@""];
                     /** 获取该 多音字 字符的拼音在整个字符串中的位置 */
                     
                     for (NSInteger j= 0 ;j < targetStringOfChar.length ; j++) {
@@ -76,7 +75,7 @@
                         }
                         [polyPhoneCompleteSpellingArray addObject:@(i)];
                     }
-                    
+                    // 拼接 多音字 首字母字符串
                     if (polyPhoneInitialString.length) {
                         polyPhoneInitialString = [polyPhoneInitialString stringByAppendingString:targetFirstLetter];
                     } else {
@@ -93,13 +92,13 @@
                 for (NSInteger j= 0 ;j < mainPinyinStrOfChar.length ; j++) {
                     [completeSpellingArray addObject:@(i)];
                 }
-                
+                // 拼接首字母字符串，如 "王鹏飞" 对应的首字母字符串就是 "wpf"
                 initialString = [initialString stringByAppendingString:firstLetter];
-                
+                // 拼接首字母位置字符串，如 "王鹏飞" 对应的首字母位置就是 "0,1,2"
                 [pinyinFirstLetterLocationArray addObject:@(i)];
             }
         } else {
-            
+            // 如果包含多音字，需要对多音字进行额外处理
             if (person.isContainPolyPhone) {
                 [polyPhoneCompleteSpelling appendFormat:@"%C",[name characterAtIndex:i]];
                 [polyPhoneCompleteSpellingArray addObject:@(i)];

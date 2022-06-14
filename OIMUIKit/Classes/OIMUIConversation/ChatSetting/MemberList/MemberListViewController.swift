@@ -125,8 +125,7 @@ extension MemberListViewController: UITableViewDataSource, UITableViewDelegate {
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let member: GroupMemberInfo = _viewModel.contactSections[indexPath.section][indexPath.row]
-        let vc = UserDetailTableViewController.init()
-        vc.setMemberInfo(member: member)
+        let vc = UserDetailTableViewController.init(userId: member.userID ?? "", groupId: member.groupID)
         self.navigationController?.pushViewController(vc, animated: true)
     }
     

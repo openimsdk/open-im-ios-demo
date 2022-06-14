@@ -19,10 +19,39 @@ class GroupListViewController: UIViewController {
         super.viewDidAppear(animated)
         navigationItem.hidesSearchBarWhenScrolling = true
     }
+    
+    private lazy var createChatBtn: UIBarButtonItem = {
+        let v = UIBarButtonItem.init()
+        v.title = "发起群聊".innerLocalized()
+        v.rx.tap.subscribe(onNext: { [weak self] in
+            let vc = SelectContactsViewController()
+            vc.selectedContactsBlock = { [weak vc, weak self] (users: [UserInfo]) in
+                IMController.shared.createGroupConversation(users: users) { (groupInfo: GroupInfo?) in
+                    guard let groupInfo = groupInfo else { return }
+                    IMController.shared.getConversation(sessionType: groupInfo.groupType, sourceId: groupInfo.groupID) { (conversation: ConversationInfo?) in
+                        guard let conversation = conversation else { return }
+
+                        let viewModel: MessageListViewModel = MessageListViewModel.init(groupId: groupInfo.groupID, conversation: conversation)
+                        let chatVC = MessageListViewController.init(viewModel: viewModel)
+                        chatVC.hidesBottomBarWhenPushed = true
+                        self?.navigationController?.pushViewController(chatVC, animated: true)
+                        if let root = self?.navigationController?.viewControllers.first {
+                            self?.navigationController?.viewControllers.removeAll(where: { controller in
+                                return controller != root && controller != chatVC
+                            })
+                        }
+                    }
+                }
+            }
+            self?.navigationController?.pushViewController(vc, animated: true)
+        }).disposed(by: _disposeBag)
+        return v
+    }()
 
     override func viewDidLoad() {
         super.viewDidLoad()
         self.navigationItem.title = "我的群组".innerLocalized()
+        self.navigationItem.rightBarButtonItem = createChatBtn
         initView()
         bindData()
         _viewModel.getMyGroups()
@@ -111,6 +140,15 @@ class GroupListViewController: UIViewController {
             cell.subtitleLabel.text = "\(model.memberCount)人"
             cell.avatarImageView.setImage(with: model.faceURL, placeHolder: "contact_my_friend_icon")
         }.disposed(by: _disposeBag)
+        
+        tableView.rx.modelSelected(GroupInfo.self).subscribe(onNext: { (groupInfo: GroupInfo) in
+            IMController.shared.getConversation(sessionType: ConversationType.group, sourceId: groupInfo.groupID) { [weak self] (conversation: ConversationInfo?) in
+                guard let sself = self, let conversation = conversation else { return }
+                let viewModel: MessageListViewModel = MessageListViewModel.init(groupId: groupInfo.groupID, conversation: conversation)
+                let vc = MessageListViewController.init(viewModel: viewModel)
+                self?.navigationController?.pushViewController(vc, animated: true)
+            }
+        }).disposed(by: _disposeBag)
         
         _viewModel.myGroupsRelay
             .asDriver(onErrorJustReturn: [])

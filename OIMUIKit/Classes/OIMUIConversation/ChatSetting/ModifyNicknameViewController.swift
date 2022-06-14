@@ -1,9 +1,4 @@
 
-
-
-
-
-
 import UIKit
 import RxSwift
 
@@ -31,7 +26,6 @@ class ModifyNicknameViewController: UIViewController {
         let v = UIImageView()
         v.layer.cornerRadius = 4
         v.clipsToBounds = true
-        v.backgroundColor = .purple
         return v
     }()
     

@@ -128,6 +128,7 @@ class ProfileTableViewController: UITableViewController {
             vc.completeBtn.rx.tap.subscribe(onNext: { [weak self, weak vc] in
                 guard let text = vc?.nameTextField.text, text.isEmpty == false else { return }
                 self?._viewModel.updateNickname(text)
+                vc?.navigationController?.popViewController(animated: true)
             }).disposed(by: vc.disposeBag)
             self.navigationController?.pushViewController(vc, animated: true)
         case .gender:
@@ -162,7 +163,7 @@ class ProfileTableViewController: UITableViewController {
             break
         case .qrcode:
             guard let user = _viewModel.currentUserRelay.value else { return }
-            let vc = QRCodeViewController.init(idString: user.userID)
+            let vc = QRCodeViewController.init(idString: IMController.addFriendPrefix.append(string: user.userID))
             vc.nameLabel.text = user.nickname
             vc.avatarImageView.setImage(with: user.faceURL, placeHolder: "contact_my_friend_icon")
             vc.tipLabel.text = "扫一扫下面的二维码，添加我为好友"

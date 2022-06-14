@@ -20,3 +20,10 @@ class EventRecordClear: Event {
 public class EventLogout: Event {
     
 }
+
+class EventGroupDismissed: Event {
+    let conversationId: String
+    init(conversationId: String) {
+        self.conversationId = conversationId
+    }
+}

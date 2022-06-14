@@ -5,11 +5,14 @@ target 'OpenIMSDKUIKit_Example' do
   pod 'OIMUIKit', :path => '../'
   pod 'JNFoundation', '0.2.1'
   pod 'Alamofire', '4.9.1'
+  pod 'JCore', '3.2.3-noidfa'
+  pod 'JPush', '4.6.6'
   
   post_install do |installer|
     installer.pods_project.targets.each do |target|
       target.build_configurations.each do |config|
         config.build_settings.delete 'IPHONEOS_DEPLOYMENT_TARGET'
+        config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64"
       end
     end
   end

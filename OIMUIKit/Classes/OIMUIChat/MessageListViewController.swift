@@ -107,8 +107,18 @@ class MessageListViewController: UIViewController {
             }).disposed(by: self._disposeBag)
             return v
         }()
-        self.navigationItem.rightBarButtonItem = rightBar
-        
+        if let last = _viewModel.conversation.latestMsg {
+            if last.contentType == .memberQuit && last.sendID == IMController.shared.uid {
+                self.navigationItem.rightBarButtonItem = nil
+            } else if last.contentType == .dismissGroup {
+                self.navigationItem.rightBarButtonItem = nil
+            } else {
+                self.navigationItem.rightBarButtonItem = rightBar
+            }
+        } else {
+            self.navigationItem.rightBarButtonItem = rightBar
+        }
+
         initView()
         bindData()
         _viewModel.loadMoreMessages(completion: { [weak self] in
@@ -129,6 +139,14 @@ class MessageListViewController: UIViewController {
         _viewModel.markAllMessageReaded()
     }
     
+    private var didSetupViewConstraints: Bool = false
+    
+    override func updateViewConstraints() {
+        super.updateViewConstraints()
+        guard !self.didSetupViewConstraints else { return }
+        self.didSetupViewConstraints = true
+    }
+    
     deinit {
         #if DEBUG
         print("dealloc \(type(of: self))")
@@ -143,7 +161,7 @@ class MessageListViewController: UIViewController {
             make.top.equalTo(self.view.safeAreaLayoutGuide.snp.top)
             _bottomConstraint = make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom).offset(-ChatToolBar.defaultHeight).constraint
         }
-        
+        //ChatBar在初始化时已经添加到父视图，注意CharBar的视图层级
         defer {
             chatBar.backgroundColor = StandardUI.color_E8F2FF
         }
@@ -173,22 +191,44 @@ class MessageListViewController: UIViewController {
         
         RxKeyboard.instance.visibleHeight
           .drive(onNext: { [weak self] keyboardVisibleHeight in
-              guard let sself = self else { return }
-              UIView.animate(withDuration: 0) {
-                  sself._tableView.contentInset.bottom = keyboardVisibleHeight
-                  sself.view.layoutIfNeeded()
+            guard let sself = self, sself.didSetupViewConstraints else { return }
+              if keyboardVisibleHeight <= sself.view.safeAreaInsets.bottom {
+                  sself.chatBar.bottomConstraint?.update(offset: -keyboardVisibleHeight)
+              } else {
+                  sself.chatBar.bottomConstraint?.update(offset: -keyboardVisibleHeight + sself.view.safeAreaInsets.bottom)
               }
-          })
-          .disposed(by: _disposeBag)
+              if sself._tableView.bounds.size.height - sself._tableView.contentSize.height >= keyboardVisibleHeight { return }
+              sself.view.setNeedsLayout()
+                UIView.animate(withDuration: 0) {
+                    if keyboardVisibleHeight <= sself.view.safeAreaInsets.bottom {
+                        sself._tableView.contentInset.bottom = keyboardVisibleHeight
+                    } else {
+                        sself._tableView.contentInset.bottom = keyboardVisibleHeight - sself.view.safeAreaInsets.bottom
+                    }
+                    sself._tableView.scrollIndicatorInsets.bottom = sself._tableView.contentInset.bottom
+                    sself.view.layoutIfNeeded()
+                }
+          }).disposed(by: _disposeBag)
 
         RxKeyboard.instance.willShowVisibleHeight
           .drive(onNext: { [weak self] keyboardVisibleHeight in
-            self?._tableView.contentOffset.y += keyboardVisibleHeight
-          })
-          .disposed(by: _disposeBag)
+              guard let sself = self else { return }
+              if sself._tableView.bounds.size.height - sself._tableView.contentSize.height >= keyboardVisibleHeight { return }
+              if keyboardVisibleHeight <= sself.view.safeAreaInsets.bottom {
+                  sself._tableView.contentOffset.y += keyboardVisibleHeight
+              } else {
+                  sself._tableView.contentOffset.y += keyboardVisibleHeight - sself.view.safeAreaInsets.bottom
+              }
+          }).disposed(by: _disposeBag)
         
-        _viewModel.scrollsToBottom.delay(.milliseconds(500), scheduler: MainScheduler.instance).subscribe(onNext: { [weak self] in
+        _viewModel.scrollsToBottom.subscribe(onNext: { [weak self] in
             self?.scrollsToBottom()
+        }).disposed(by: _disposeBag)
+        
+        _viewModel.shouldHideSettingBtnSubject.subscribe(onNext: { [weak self] (shouldHide: Bool) in
+            if shouldHide {
+                self?.navigationItem.rightBarButtonItem = nil
+            }
         }).disposed(by: _disposeBag)
     }
     
@@ -200,7 +240,7 @@ class MessageListViewController: UIViewController {
         }
     }
 }
-
+//MARK: - ChatPluginPadDelegate
 extension MessageListViewController: ChatPluginPadDelegate {
     func didSelect(plugin: PluginType) {
         switch plugin {
@@ -209,11 +249,17 @@ extension MessageListViewController: ChatPluginPadDelegate {
         case .camera:
             _photoHelper.presentCamera(byController: self)
         case .businessCard:
-            break
+            let vc = FriendListViewController()
+            vc.selectCallBack = { [weak self, weak vc] (user: UserInfo) in
+                self?._viewModel.sendCard(user: user)
+                vc?.navigationController?.popViewController(animated: true)
+            }
+            vc.hidesBottomBarWhenPushed = true
+            self.navigationController?.pushViewController(vc, animated: true)
         }
     }
 }
-
+//MARK: - ChatToolBarDelegate
 extension MessageListViewController: ChatToolBarDelegate {
     func tb_didTouchSend(text: String) {
         _viewModel.sendText(text: text, quoteMessage: chatBar.quoteMessage)
@@ -245,7 +291,7 @@ extension MessageListViewController: MessageDelegate {
     func didTapMessageCell(cell: UITableViewCell, with message: MessageInfo) {
         switch message.contentType {
         case .audio:
-            
+            //如果当前音频消息正在播放，停止
             if message.isPlaying {
                 _audioPlayer.pause()
                 _viewModel.markAudio(messageId: message.clientMsgID ?? "", isPlaying: false)
@@ -270,6 +316,14 @@ extension MessageListViewController: MessageDelegate {
             }
         case .image, .video:
             _photoHelper.preview(message: message, from: self)
+        case .card:
+            guard let content = message.content else { return }
+            guard let cardModel = JsonTool.fromJson(content, toClass: BusinessCard.self) else {
+                SVProgressHUD.showError(withStatus: "数据格式不正确:\(content)")
+                return
+            }
+            let vc = UserDetailTableViewController.init(userId: cardModel.userID, groupId: self._viewModel.conversation.groupID)
+            self.navigationController?.pushViewController(vc, animated: true)
         default:
             break
         }
@@ -280,7 +334,7 @@ extension MessageListViewController: MessageDelegate {
         var toolItems: [ChatToolController.ToolItem] = []
         let isMyMessage = message.sendID == IMController.shared.uid
         switch message.contentType {
-        case .text:
+        case .text, .quote:
             toolItems = [.copy, .delete, .reply]
         case .audio:
             toolItems = [.delete]
@@ -306,7 +360,16 @@ extension MessageListViewController: MessageDelegate {
             case .delete:
                 self?._viewModel.delete(message: message)
             case .copy:
-                UIPasteboard.general.string = message.content
+                var content: String?
+                switch message.contentType {
+                case .text:
+                    content = message.content
+                case .quote:
+                    content = message.quoteElem?.text
+                default:
+                    content = nil
+                }
+                UIPasteboard.general.string = content
                 SVProgressHUD.showSuccess(withStatus: "复制成功".innerLocalized())
             default:
                 break

@@ -19,6 +19,7 @@ class SingleChatMemberTableViewCell: UITableViewCell {
         let v = UICollectionView.init(frame: .zero, collectionViewLayout: layout)
         v.contentInset = UIEdgeInsets.init(top: 0, left: 20, bottom: 0, right: 0)
         v.register(MemberCell.self, forCellWithReuseIdentifier: MemberCell.className)
+        v.backgroundColor = .white
         return v
     }()
 

@@ -46,6 +46,7 @@ class PhotoHelper {
         editConfig.tools([.clip])
             .clipRatios([ZLImageClipRatio.wh1x1])
         ZLPhotoConfiguration.default().maxSelectCount(1)
+            .editAfterSelectThumbnailImage(true)
             .allowRecordVideo(false)
             .allowMixSelect(false)
             .allowSelectGif(false)

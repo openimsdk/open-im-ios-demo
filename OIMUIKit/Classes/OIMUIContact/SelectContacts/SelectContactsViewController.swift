@@ -1,15 +1,11 @@
 
-
-
-
-
-
 import UIKit
 import RxSwift
 
 class SelectContactsViewController: UIViewController {
     
     var selectedContactsBlock: (([UserInfo]) -> Void)?
+    var blockedUsers: [String] = []
     
     private let maxCount = 1000
     
@@ -69,11 +65,13 @@ class SelectContactsViewController: UIViewController {
             self?._tableView.reloadData()
         }).disposed(by: _disposeBag)
         
-        bottomBar.completeBtn.rx.tap.subscribe(onNext: { [weak self] in
-            guard let sself = self, let selectedIndexs = sself._tableView.indexPathsForSelectedRows else { return }
-            let users = sself._viewModel.getUsersAt(indexPaths: selectedIndexs)
-            self?.selectedContactsBlock?(users)
-        }).disposed(by: _disposeBag)
+        bottomBar.completeBtn.rx.tap
+            .throttle(.seconds(2), latest: false, scheduler: MainScheduler.instance)
+            .subscribe(onNext: { [weak self] in
+                guard let sself = self, let selectedIndexs = sself._tableView.indexPathsForSelectedRows else { return }
+                let users = sself._viewModel.getUsersAt(indexPaths: selectedIndexs)
+                self?.selectedContactsBlock?(users)
+            }).disposed(by: _disposeBag)
     }
     
     private func setSelectedCount() {
@@ -140,7 +138,18 @@ extension SelectContactsViewController: UITableViewDataSource, UITableViewDelega
         let user: UserInfo = _viewModel.contactSections[indexPath.section][indexPath.row]
         cell.titleLabel.text = user.nickname
         cell.avatarImageView.setImage(with: user.faceURL, placeHolder: "contact_my_friend_icon")
+        if blockedUsers.contains(user.userID) {
+            cell.canBeSelected = false
+        }
         return cell
+    }
+    
+    func tableView(_ tableView: UITableView, willSelectRowAt indexPath: IndexPath) -> IndexPath? {
+        let user: UserInfo = _viewModel.contactSections[indexPath.section][indexPath.row]
+        if blockedUsers.contains(user.userID) {
+            return nil
+        }
+        return indexPath
     }
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {

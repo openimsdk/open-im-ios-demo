@@ -156,6 +156,7 @@ class JNDatePickerView: UIView {
         fatalError("init(coder:) has not been implemented")
     }
 
+    /// 递归检查目标视图的子视图是否有滚动
     private func anySubviewScrolling(_ view: UIView) -> Bool {
         if let scrview = view as? UIScrollView {
             if scrview.isDragging || scrview.isDecelerating {

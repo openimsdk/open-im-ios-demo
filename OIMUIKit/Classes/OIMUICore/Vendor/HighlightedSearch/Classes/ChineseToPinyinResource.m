@@ -1,9 +1,4 @@
 
-
-
-
-
-
 #include "ChineseToPinyinResource.h"
 #define LEFT_BRACKET @"("
 #define RIGHT_BRACKET @")"
@@ -53,7 +48,7 @@ static inline NSString* cachePathForKey(NSString* directory, NSString* key) {
     if (dataMap) {
         self->_unicodeToHanyuPinyinTable=dataMap;
     }else{
-
+//        NSBundle *myBundle = [NSBundle bundleWithURL:[[NSBundle bundleForClass:NSClassFromString(@"WPFPinYinDataManager")] URLForResource:@"HighlightedSearch" withExtension:@"bundle"]];
         NSString *bundlePath = [NSBundle bundleForClass: self.class].resourcePath;
         NSBundle *bundle = [NSBundle bundleWithPath: [bundlePath stringByAppendingString:@"/OIMUIResource.bundle"]];
         NSString *resourceName =[bundle pathForResource:@"unicode_to_hanyu_pinyin" ofType:@"txt"];
@@ -75,7 +70,7 @@ static inline NSString* cachePathForKey(NSString* directory, NSString* key) {
 {
     NSError *error=nil;
     NSData *data = [NSData dataWithContentsOfFile:cachePathForKey(_directory, key) options:0 error:&error];
-   
+   // NSAssert4((!error), @"Error, s is %@, %s, %s, %d",error.description, __FILE__ ,__FUNCTION__, __LINE__);
     if (!error) {
         if (data) {
             return [NSKeyedUnarchiver unarchiveObjectWithData:data];

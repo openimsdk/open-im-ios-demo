@@ -39,7 +39,7 @@ class SingleChatSettingViewModel {
                 userInfo.userID = user.userID ?? ""
                 userInfo.faceURL = user.faceURL
                 userInfo.nickname = user.showName
-                
+                //the fake user will be shown as an add btn
                 let fakeUser = UserInfo()
                 fakeUser.isButton = true
                 self?.membesRelay.accept([userInfo, fakeUser])

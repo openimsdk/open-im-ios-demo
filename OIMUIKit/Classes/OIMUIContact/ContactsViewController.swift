@@ -7,6 +7,7 @@
 import UIKit
 import RxCocoa
 import RxSwift
+import SVProgressHUD
 
 open class ContactsViewController: UITableViewController {
     public lazy var viewModel = ContactsViewModel()
@@ -23,7 +24,7 @@ open class ContactsViewController: UITableViewController {
             vc.hidesBottomBarWhenPushed = true
             self?.navigationController?.pushViewController(vc, animated: true)
         }).disposed(by: _disposeBag)
-        v.contentView.addGestureRecognizer(tap)
+        v.addGestureRecognizer(tap)
         return v
     }()
     
@@ -38,7 +39,7 @@ open class ContactsViewController: UITableViewController {
             vc.hidesBottomBarWhenPushed = true
             self?.navigationController?.pushViewController(vc, animated: true)
         }).disposed(by: _disposeBag)
-        v.contentView.addGestureRecognizer(tap)
+        v.addGestureRecognizer(tap)
         return v
     }()
     
@@ -64,6 +65,7 @@ open class ContactsViewController: UITableViewController {
             v.image = UIImage.init(nameInBundle: "contact_search_icon")
             v.rx.tap.subscribe(onNext: {
                 print("跳转搜索页面")
+                SVProgressHUD.showInfo(withStatus: "参考商业版本".innerLocalized())
             }).disposed(by: _disposeBag)
             return v
         }()
@@ -109,7 +111,7 @@ open class ContactsViewController: UITableViewController {
                     vc.hidesBottomBarWhenPushed = true
                     self?.navigationController?.pushViewController(vc, animated: true)
                 }).disposed(by: _disposeBag)
-                v.contentView.addGestureRecognizer(tap)
+                v.addGestureRecognizer(tap)
                 return v
             }()
             let arrangedViews: [UIView] = [newFriendCell, groupNotiCell, myFriendCell, myGroupCell]
@@ -191,7 +193,7 @@ open class ContactsViewController: UITableViewController {
             let cell = tableView.dequeueReusableCell(withIdentifier: FrequentUserTableViewCell.className) as! FrequentUserTableViewCell
             cell.avatarImageView.setImage(with: item.faceURL, placeHolder: "contact_my_friend_icon")
             cell.titleLabel.text = item.nickname
-
+//            cell.subtitleLabel.text = "[离线]".innerLocalized()
             return cell
         }
         return UITableViewCell()

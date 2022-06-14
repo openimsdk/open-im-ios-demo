@@ -29,7 +29,7 @@ class FriendListViewModel {
     }
     
     func createConversationWith(users: [UserInfo], onSuccess: @escaping CallBack.VoidReturnVoid) {
-        IMController.shared.createConversation(users: users) { (groupInfo: GroupInfo?) in
+        IMController.shared.createGroupConversation(users: users) { (groupInfo: GroupInfo?) in
             onSuccess()
         }
     }

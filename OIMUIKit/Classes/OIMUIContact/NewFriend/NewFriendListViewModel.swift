@@ -19,7 +19,7 @@ class NewFriendListViewModel {
     func acceptFriendWith(uid: String) {
         IMController.shared.imManager.acceptFriendApplication(uid, handleMsg: "") { [weak self] (resp: String?) in
             self?.getNewFriendApplications()
-            
+            //发送通知，告诉列表入群申请或者好友申请数量发生改变
             NotificationCenter.default.post(name: ContactsViewModel.NotificationApplicationCountChanged, object: nil)
         }
     }
