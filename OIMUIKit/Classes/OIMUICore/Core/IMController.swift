@@ -1308,6 +1308,8 @@ extension OIMConversationType {
             return .c2c
         case .group:
             return .group
+        default:
+            return .undefine
         }
     }
 }
