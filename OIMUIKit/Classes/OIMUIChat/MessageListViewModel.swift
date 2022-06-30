@@ -11,6 +11,8 @@ import RxRelay
 class MessageListViewModel {
     let messagesRelay: BehaviorRelay<[MessageInfo]> = .init(value: [])
     
+    let typingRelay: BehaviorRelay<Bool> = .init(value: false)
+    
     let scrollsToBottom: PublishSubject<Void> = .init()
     
     let shouldHideSettingBtnSubject: PublishSubject<Bool> = .init()
@@ -38,8 +40,14 @@ class MessageListViewModel {
         IMController.shared.newMsgReceivedSubject.subscribe(onNext: { [weak self] (message: MessageInfo) in
             guard let sself = self else { return }
             if let userId = sself.userId, userId == message.sendID {
-                //TODO: - 正在键入状态提醒
                 if sself.ignoreStateMessageTypes.contains(message.contentType) {
+                    switch message.contentType {
+                    case .typing:
+                        let isTyping = message.content == "yes"
+                        self?.typingRelay.accept(isTyping)
+                    default:
+                        break
+                    }
                     return
                 }
                 sself.addMessage(message)

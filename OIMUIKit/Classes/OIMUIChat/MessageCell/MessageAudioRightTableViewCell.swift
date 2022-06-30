@@ -60,15 +60,15 @@ class MessageAudioRightTableViewCell: MessageBaseRightTableViewCell {
     
     override func setMessage(model: MessageInfo, extraInfo: ExtraInfo?) {
         super.setMessage(model: model, extraInfo: extraInfo)
-        if let elem = model.soundElem {
-            timeLabel.text = #"\#(elem.duration)""#
-        }
-        
+        guard let elem = model.soundElem else { return }
+        timeLabel.text = #"\#(elem.duration)""#
         if model.isPlaying {
             audioIconImageView.play()
         } else {
             audioIconImageView.stop()
             audioIconImageView.currentProgress = 1
         }
+        let width = MessageHelper.getAudioMessageDisplayWidth(duration: elem.duration)
+        audioLengthConstraint?.update(offset: width)
     }
 }

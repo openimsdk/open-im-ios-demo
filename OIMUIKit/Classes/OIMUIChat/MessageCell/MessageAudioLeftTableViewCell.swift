@@ -25,7 +25,6 @@ class MessageAudioLeftTableViewCell: MessageBaseLeftTableViewCell {
     }()
     
     private let audioIconImageView: AnimationView = {
-//        let v = UIImageView.init(image: UIImage.init(nameInBundle: "msg_audio_left_icon"))
         let bundle = ViewControllerFactory.getBundle() ?? Bundle.main
         let v = AnimationView.init(name: "voice_black", bundle: bundle)
         v.loopMode = .loop
@@ -58,14 +57,15 @@ class MessageAudioLeftTableViewCell: MessageBaseLeftTableViewCell {
     
     override func setMessage(model: MessageInfo, extraInfo: ExtraInfo?) {
         super.setMessage(model: model, extraInfo: extraInfo)
-        if let elem = model.soundElem {
-            timeLabel.text = #"\#(elem.duration)""#
-        }
+        guard let elem = model.soundElem else { return }
+        timeLabel.text = #"\#(elem.duration)""#
         if model.isPlaying {
             audioIconImageView.play()
         } else {
             audioIconImageView.stop()
             audioIconImageView.currentProgress = 1
         }
+        let width = MessageHelper.getAudioMessageDisplayWidth(duration: elem.duration)
+        audioLengthConstraint?.update(offset: width)
     }
 }

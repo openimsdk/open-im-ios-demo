@@ -9,5 +9,5 @@ struct MessageUI {
     /// 消息体距屏幕边框最大间距
     static let maxTrailingPadding: CGFloat = 85
     /// 消息体最小高
-    static let atLeasetHeight: CGFloat = 34
+    static let atLeasetHeight: CGFloat = StandardUI.avatar_42
 }

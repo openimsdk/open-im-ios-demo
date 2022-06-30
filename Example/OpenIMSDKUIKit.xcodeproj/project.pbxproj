@@ -579,7 +579,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MARKETING_VERSION = 2.3.23;
 				MODULE_NAME = ExampleApp;
-				PRODUCT_BUNDLE_IDENTIFIER = cn.rentsoft.openim;
+				PRODUCT_BUNDLE_IDENTIFIER = cn.rentsoft.ios.openim;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "OpenIMSDKUIKit/OpenIMSDKUIKit_Example-Bridging-Header.h";
@@ -606,7 +606,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MARKETING_VERSION = 2.3.23;
 				MODULE_NAME = ExampleApp;
-				PRODUCT_BUNDLE_IDENTIFIER = cn.rentsoft.openim;
+				PRODUCT_BUNDLE_IDENTIFIER = cn.rentsoft.ios.openim;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "OpenIMSDKUIKit/OpenIMSDKUIKit_Example-Bridging-Header.h";

@@ -2,6 +2,7 @@
 import UIKit
 import OIMUIKit
 import RxSwift
+import RxCocoa
 import SVProgressHUD
 import Localize_Swift
 import OpenIMSDK
@@ -20,6 +21,17 @@ class MainTabViewController: UITabBarController {
         chatNav.tabBarItem.image = UIImage.init(named: "tab_home_icon_normal")?.withRenderingMode(.alwaysOriginal)
         chatNav.tabBarItem.selectedImage = UIImage.init(named: "tab_home_icon_selected")?.withRenderingMode(.alwaysOriginal)
         controllers.append(chatNav)
+        IMController.shared.totalUnreadSubject.map({ (unread: Int) -> String? in
+            var badge: String?
+            if unread == 0 {
+                badge = nil
+            } else if unread > 99 {
+                badge = "..."
+            } else {
+                badge = String(unread)
+            }
+            return badge
+        }).bind(to: chatNav.tabBarItem.rx.badgeValue).disposed(by: _disposeBag)
         
         let contactVC = ContactsViewController()
         contactVC.viewModel.dataSource = self
@@ -28,6 +40,15 @@ class MainTabViewController: UITabBarController {
         contactNav.tabBarItem.image = UIImage.init(named: "tab_contact_icon_normal")?.withRenderingMode(.alwaysOriginal)
         contactNav.tabBarItem.selectedImage = UIImage.init(named: "tab_contact_icon_selected")?.withRenderingMode(.alwaysOriginal)
         controllers.append(contactNav)
+        IMController.shared.contactUnreadSubject.map({ (unread: Int) -> String? in
+            var badge: String?
+            if unread == 0 {
+                badge = nil
+            } else {
+                badge = String(unread)
+            }
+            return badge
+        }).bind(to: contactNav.tabBarItem.rx.badgeValue).disposed(by: _disposeBag)
         
         let mineNav = UINavigationController.init(rootViewController: MineViewController())
         mineNav.tabBarItem.title = "我的".localized()
@@ -82,7 +103,7 @@ class MainTabViewController: UITabBarController {
         
         vc.modalPresentationStyle = .fullScreen
         
-        self.present(vc, animated: true)
+        self.present(vc, animated: false)
     }
     
     private func loginIM(uid: String, token: String, completion: (() -> Void)?) {
@@ -94,9 +115,11 @@ class MainTabViewController: UITabBarController {
             self?.save(uid: uid, token: token)
             SVProgressHUD.dismiss()
             completion?()
-        } onFail: { (code: Int, msg: String?) in
+        } onFail: { [weak self] (code: Int, msg: String?) in
             let reason = "login onFail: code \(code), reason \(String(describing: msg))"
             SVProgressHUD.showError(withStatus: reason)
+            self?.save(uid: nil, token: nil)
+            self?.presentLoginController()
         }
     }
     

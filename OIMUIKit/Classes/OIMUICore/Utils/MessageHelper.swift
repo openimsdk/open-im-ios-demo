@@ -258,4 +258,26 @@ struct MessageHelper {
         }
         return nil
     }
+
+    static func getAudioMessageDisplayWidth(duration: Int) -> CGFloat {
+        let duration: CGFloat = CGFloat(duration)
+        let Lmin: CGFloat = 50;
+
+        let Lmax: CGFloat = kScreenWidth * 0.5;
+        var barLen: CGFloat = 0;
+        var barCanChangeLen: CGFloat = Lmax - Lmin;
+        var unitWidth: CGFloat = barCanChangeLen / 58
+
+        switch duration {
+        case 0..<2:
+            barLen = Lmin
+        case 2..<10:
+            barLen = Lmin + (duration - 2) * unitWidth
+        case 10..<60:
+            barLen = (Lmin + 10 * unitWidth) + (70 - duration) / 10 * unitWidth
+        default:
+            barLen = Lmax
+        }
+        return barLen
+    }
 }

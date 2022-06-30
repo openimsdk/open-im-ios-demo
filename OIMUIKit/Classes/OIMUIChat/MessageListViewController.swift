@@ -82,9 +82,20 @@ class MessageListViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     private weak var currentPlayingMessage: MessageInfo?
+    
+    private let titleLabel: UILabel = {
+        let v = UILabel()
+        return v
+    }()
+    
+    private let subtitleLabel: UILabel = {
+        let v = UILabel()
+        v.font = UIFont.systemFont(ofSize: 13)
+        v.text = "输入中...".innerLocalized()
+        return v
+    }()
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.navigationItem.title = _viewModel.conversation.showName
         view.backgroundColor = .white
         
         lazy var rightBar: UIBarButtonItem = {
@@ -154,6 +165,14 @@ class MessageListViewController: UIViewController {
     }
 
     private func initView() {
+        let titleView: UIStackView = {
+            let v = UIStackView.init(arrangedSubviews: [titleLabel, subtitleLabel])
+            v.axis = .vertical
+            v.alignment = .center
+            v.spacing = 5
+            return v
+        }()
+        self.navigationItem.titleView = titleView
         
         view.addSubview(_tableView)
         _tableView.snp.makeConstraints { make in
@@ -168,6 +187,8 @@ class MessageListViewController: UIViewController {
     }
     
     private func bindData() {
+        titleLabel.text = _viewModel.conversation.showName
+        
         _viewModel.messagesRelay.asDriver(onErrorJustReturn: []).drive(_tableView.rx.items) { [weak self] (tableView, row, item: MessageInfo) in
             guard let sself = self else { return UITableViewCell() }
             let messageType = item.contentType
@@ -230,6 +251,8 @@ class MessageListViewController: UIViewController {
                 self?.navigationItem.rightBarButtonItem = nil
             }
         }).disposed(by: _disposeBag)
+        
+        _viewModel.typingRelay.distinctUntilChanged().map({!$0}).bind(to: self.subtitleLabel.rx.isHidden).disposed(by: _disposeBag)
     }
     
     private func scrollsToBottom(animated: Bool = true) {

@@ -20,6 +20,10 @@ public class ContactsViewModel {
     public weak var dataSource: ContactsDataSource?
     private let _disposeBag = DisposeBag()
     init() {
+        Observable.combineLatest(newFriendCountRelay, newGroupCountRelay) { (friendCount: Int, groupCount: Int) -> Int in
+            return friendCount + groupCount
+        }.bind(to: IMController.shared.contactUnreadSubject).disposed(by: _disposeBag)
+        
         IMController.shared.friendApplicationChangedSubject.subscribe(onNext: { [weak self] _ in
             self?.getFriendApplications()
         }).disposed(by: _disposeBag)

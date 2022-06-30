@@ -16,6 +16,7 @@ public class IMController: NSObject {
     let friendApplicationChangedSubject: PublishSubject<FriendApplication> = .init()
     ///组申请信息更新
     let groupApplicationChangedSubject: PublishSubject<GroupApplicationInfo> = .init()
+    public let contactUnreadSubject: PublishSubject<Int> = .init()
     
     let conversationChangedSubject: BehaviorSubject<[ConversationInfo]> = .init(value: [])
     let friendInfoChangedSubject: BehaviorSubject<UserInfo?> = .init(value: nil)
@@ -23,7 +24,7 @@ public class IMController: NSObject {
     let syncServerStartSubject: PublishSubject<Void> = PublishSubject.init()
     let syncServerEndSubject: PublishSubject<Void> = PublishSubject.init()
     let newConversationSubject: BehaviorSubject<[ConversationInfo]> = .init(value: [])
-    let totalUnreadSubject: BehaviorSubject<Int> = .init(value: 0)
+    public let totalUnreadSubject: BehaviorSubject<Int> = .init(value: 0)
     let newMsgReceivedSubject: PublishSubject<MessageInfo> = .init()
     let c2cReadReceiptReceived: BehaviorSubject<[ReceiptInfo]> = .init(value: [])
     let groupReadReceiptReceived: BehaviorSubject<[ReceiptInfo]> = .init(value: [])
