@@ -10,7 +10,7 @@ Demo 是基于 Open-IM SDK 实现的一套 UI 组件，其包含会话、聊天�
 
 ### 直接testflight下载app体验
 
-<img src="https://github.com/OpenIMSDK/OpenIM-Docs/blob/main/docs/images/ios_native.png" alt="image" style="width: 200px; " />
+<img src="../../images/ios_native.png" alt="image" style="width: 200px; " />
 
 ### 源代码体验
 
@@ -52,8 +52,6 @@ Demo 是基于 Open-IM SDK 实现的一套 UI 组件，其包含会话、聊天�
 1. 举例
     ```ruby
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // 自己业务服务器的地址，demo中负责业务服务器的登录操作
-        DemoPlugin.shared.setup(baseUrl: "http://xxxx:10004/")
         // IM服务器的地址，OpenIM SDK使用
         IMController.shared.setup(apiAdrr: "http://xxxx:10002",
                                   wsAddr: "ws://xxxx:10001")
@@ -66,17 +64,26 @@ Demo 是基于 Open-IM SDK 实现的一套 UI 组件，其包含会话、聊天�
 3. 举例：
     ```ruby
     // 1: 登录自己的业务服务器，获取userID 和 token；
-    LoginAPI.init(req: .init(phoneNumber: "", pwd: "")).send()
-        .subscribe(onNext: { (api: LoginAPI) in
-            guard let resp = api.response else { return }
+    
+    // 业务服务器地址 Pages/LoginViewModel.swift
+    let API_BASE_URL = "http://121.37.25.71:10004/";
 
+    func loginDemo(phone: String, pwd: String) {
+        let body = JsonTool.toJson(fromObject: Request.init(phoneNumber: phone, pwd: pwd)).data(using: .utf8)
+        
+        var req = try! URLRequest.init(url: API_BASE_URL + getUrl(), method: .post)
+        req.httpBody = body
+        
+        let dataRequest = Alamofire.request(req).responseString { (response: DataResponse<String>) in
+            switch response.result {
+            case .success(let result): {
             // 2: 登录OpenIM服务器；
             self?.loginIM(uid: resp.data.userID, token: resp.data.token, completion: { [weak controller] in
                 controller?.dismiss(animated: true)
             })
-        }, onError: { err in
-
-        }).disposed(by: sself._disposeBag)
+            }
+        }
+    }
     ```
         
     ```ruby
@@ -104,15 +111,25 @@ Demo 是基于 Open-IM SDK 实现的一套 UI 组件，其包含会话、聊天�
     let mineNav = MineViewController()        
     ```
 
+
 ### 常见问题
 
 1. 提醒: 在调用sdk相关API返回“resource loading is not complete”
     如果出现该问题，需在login的callback以后调用其它API。
 
 2. 提醒：“target has transitive dependencies that include statically linked binaries”？
-    如果在 pod 过程中出现该错误，是因为 TUIKit 使用到了第三方静态库，需要在 podfile 中注释掉 use_frameworks!。
+    如果在 pod 过程中出现该错误，是因为 UIKit 使用到了第三方静态库，需要在 podfile 中注释掉 use_frameworks!。
     如果在某种情况下，需要使用use_frameworks!，则请使用 cocoapods 1.9.0及以上版本进行 pod install，并修改为：
     ```ruby
         use_frameworks! :linkage => :static
     ```
     如果您使用的是 swift，请将头文件引用改成 @import 模块名形式引用。
+3. 提醒：有开发者发现，目前M1芯片build会出现报错，添加arm64后正常，真机去掉arm64正常。
+![WeChat53896c52f31d22703d323db7aacfeba7](https://user-images.githubusercontent.com/99468005/177078181-7c7614b6-4282-4f1f-bf4a-e7af105ec4b6.png)
+4. 提醒：有开发者发现，报错“找不到xxx模块”,做如下操作可解决：
+    ```ruby
+    pod deintegrate；
+    Clean(Command + K)；
+    pod install/update
+    ```
+
