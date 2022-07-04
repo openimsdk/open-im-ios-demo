@@ -11,7 +11,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     private let _disposeBag = DisposeBag();
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         
-        DemoPlugin.shared.setup(baseUrl: "http://121.37.25.71:10004/")
+        // 初始化SDK
         IMController.shared.setup(apiAdrr: "http://121.37.25.71:10002",
                                   wsAddr: "ws://121.37.25.71:10001")
         

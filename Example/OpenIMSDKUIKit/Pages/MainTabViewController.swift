@@ -11,7 +11,7 @@ class MainTabViewController: UITabBarController {
     private let _disposeBag = DisposeBag()
     private let imUidKey = "DemoIMUidKey"
     private let imTokenKey = "DemoIMTokenKey"
-    
+    private lazy var _viewModel = LoginViewModel()
     override func viewDidLoad() {
         super.viewDidLoad()
         var controllers: [UIViewController] = []
@@ -90,9 +90,8 @@ class MainTabViewController: UITabBarController {
             guard let phone = controller.phone, let pwd = controller.password else { return }
             
             SVProgressHUD.show()
-            LoginAPI.init(req: .init(phoneNumber: phone, pwd: pwd)).send()
-                .subscribe(onNext: { (api: LoginAPI) in
-                    guard let resp = api.response else { return }
+            self?._viewModel.loginDemo(phone: phone, pwd: pwd).subscribe(onNext: { (response: LoginViewModel.Response?) in
+                    guard let resp = response else { return }
                     self?.loginIM(uid: resp.data.userID, token: resp.data.token, completion: { [weak controller] in
                         controller?.dismiss(animated: true)
                     })
@@ -103,14 +102,14 @@ class MainTabViewController: UITabBarController {
         
         vc.modalPresentationStyle = .fullScreen
         
-        self.present(vc, animated: false)
+        self.present(vc, animated: true)
     }
     
     private func loginIM(uid: String, token: String, completion: (() -> Void)?) {
         IMController.shared.login(uid: uid, token: token) { [weak self] (resp2: String?) in
             print("login onSuccess \(String(describing: resp2))")
             JPUSHService.setAlias(uid, completion: { code, msg, code2 in
-                print("别名设置成功：", code, msg, code2)
+                print("别名设置成功：", code, msg ?? "no message", code2)
             }, seq: 0)
             self?.save(uid: uid, token: token)
             SVProgressHUD.dismiss()
@@ -132,13 +131,10 @@ class MainTabViewController: UITabBarController {
 
 extension MainTabViewController: ContactsDataSource {
     func getFrequentUsers() -> [OIMUserInfo] {
-        let items: [OIMUserInfo] = DemoPlugin.shared.getMf().getModel(UserModel.self).getAllItems().compactMap {$0.toItem()}
-        return items
+        return []
     }
     
     func setFrequentUsers(_ users: [OIMUserInfo]) {
-        if !users.isEmpty {
-            DemoPlugin.shared.getMf().getModel(UserModel.self).setItems(users)
-        }
+        
     }
 }
