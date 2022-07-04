@@ -10,7 +10,7 @@ Demo 是基于 Open-IM SDK 实现的一套 UI 组件，其包含会话、聊天�
 
 ### 直接testflight下载app体验
 
-<img src="../../images/ios_native.png" alt="image" style="width: 200px; " />
+<img src="https://github.com/OpenIMSDK/OpenIM-Docs/blob/main/docs/images/ios_native.png" alt="image" style="width: 200px; " />
 
 ### 源代码体验
 
