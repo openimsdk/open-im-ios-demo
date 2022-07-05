@@ -1,11 +1,6 @@
 
-
-
-
-
-
-import UIKit
 import RxSwift
+import UIKit
 
 class GroupChatNameTableViewCell: UITableViewCell {
     var disposeBag = DisposeBag()
@@ -15,7 +10,7 @@ class GroupChatNameTableViewCell: UITableViewCell {
         v.clipsToBounds = true
         return v
     }()
-    
+
     let titleLabel: UILabel = {
         let v = UILabel()
         v.font = UIFont.systemFont(ofSize: 18, weight: .medium)
@@ -25,7 +20,7 @@ class GroupChatNameTableViewCell: UITableViewCell {
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        self.selectionStyle = .none
+        selectionStyle = .none
         contentView.addSubview(avatarImageView)
         avatarImageView.snp.makeConstraints { make in
             make.size.equalTo(48)
@@ -33,7 +28,7 @@ class GroupChatNameTableViewCell: UITableViewCell {
             make.top.equalToSuperview().inset(20)
             make.bottom.equalToSuperview().inset(20).priority(.low)
         }
-        
+
         contentView.addSubview(titleLabel)
         titleLabel.snp.makeConstraints { make in
             make.left.equalTo(avatarImageView.snp.right).offset(20)
@@ -41,11 +36,12 @@ class GroupChatNameTableViewCell: UITableViewCell {
             make.right.equalToSuperview().offset(-20)
         }
     }
-    
-    required init?(coder: NSCoder) {
+
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func prepareForReuse() {
         super.prepareForReuse()
         disposeBag = DisposeBag()

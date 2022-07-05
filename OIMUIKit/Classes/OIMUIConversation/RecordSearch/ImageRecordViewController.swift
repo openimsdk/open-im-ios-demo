@@ -1,75 +1,70 @@
 
-
-
-
-
-
-import UIKit
-import SnapKit
+import RxCocoa
 import RxDataSources
 import RxSwift
-import RxCocoa
+import SnapKit
+import UIKit
 
 class ImageRecordViewController: UIViewController {
-
     private lazy var contentCollectionView: UICollectionView = {
         let layout: UICollectionViewFlowLayout = {
-            let v = UICollectionViewFlowLayout.init()
+            let v = UICollectionViewFlowLayout()
             let itemWidth = kScreenWidth / 4
-            v.itemSize = CGSize.init(width: itemWidth, height: itemWidth)
+            v.itemSize = CGSize(width: itemWidth, height: itemWidth)
             v.minimumLineSpacing = 0
             v.minimumInteritemSpacing = 0
             v.scrollDirection = .vertical
-            v.headerReferenceSize = CGSize.init(width: kScreenWidth, height: 48)
+            v.headerReferenceSize = CGSize(width: kScreenWidth, height: 48)
             return v
         }()
-        let v = UICollectionView.init(frame: .zero, collectionViewLayout: layout)
+        let v = UICollectionView(frame: .zero, collectionViewLayout: layout)
         v.backgroundColor = .white
         v.register(ImageCollectionViewCell.self, forCellWithReuseIdentifier: ImageCollectionViewCell.className)
         v.register(SectionHeaderView.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: SectionHeaderView.className)
         return v
     }()
-    
+
     private let _viewModel: SearchRecordViewModel
     private let _disposeBag = DisposeBag()
     private let _viewType: ResultViewType
-    private lazy var _photoHelper = PhotoHelper.init()
+    private lazy var _photoHelper = PhotoHelper()
     init(viewModel: SearchRecordViewModel, viewType: ResultViewType) {
         _viewModel = viewModel
         _viewType = viewType
         super.init(nibName: nil, bundle: nil)
     }
-    
-    required init?(coder: NSCoder) {
+
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        self.navigationController?.setNavigationBarHidden(false, animated: true)
+        navigationController?.setNavigationBarHidden(false, animated: true)
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         view.addSubview(contentCollectionView)
         contentCollectionView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
-        
+
         bindData()
 
         switch _viewType {
         case .image:
-            self.navigationItem.title = "图片".innerLocalized()
+            navigationItem.title = "图片".innerLocalized()
             _viewModel.searchImages()
         case .video:
-            self.navigationItem.title = "视频".innerLocalized()
+            navigationItem.title = "视频".innerLocalized()
             _viewModel.searchVideos()
         }
     }
-    
+
     private func bindData() {
-        let dataSource = RxCollectionViewSectionedReloadDataSource<SectionModel<String, MessageInfo>>.init(configureCell: { (ds: CollectionViewSectionedDataSource<SectionModel>, colView: UICollectionView, indexPath: IndexPath, item: MessageInfo) -> UICollectionViewCell in
+        let dataSource = RxCollectionViewSectionedReloadDataSource<SectionModel<String, MessageInfo>>.init(configureCell: { (_: CollectionViewSectionedDataSource<SectionModel>, colView: UICollectionView, indexPath: IndexPath, item: MessageInfo) -> UICollectionViewCell in
             let cell = colView.dequeueReusableCell(withReuseIdentifier: ImageCollectionViewCell.className, for: indexPath) as! ImageCollectionViewCell
             cell.imageView.setImage(with: item.pictureElem?.snapshotPicture?.url, placeHolder: nil)
             return cell
@@ -79,7 +74,7 @@ class ImageRecordViewController: UIViewController {
             header.titleLabel.text = title
             return header
         })
-        
+
         let messagesRelay: BehaviorRelay<[SearchRecordViewModel.MediaSectionModel]>
         switch _viewType {
         case .image:
@@ -87,15 +82,15 @@ class ImageRecordViewController: UIViewController {
         case .video:
             messagesRelay = _viewModel.videosRelay
         }
-        
+
         messagesRelay.bind(to: contentCollectionView.rx.items(dataSource: dataSource)).disposed(by: _disposeBag)
-        
+
         contentCollectionView.rx.modelSelected(MessageInfo.self).subscribe(onNext: { [weak self] (message: MessageInfo) in
             guard let sself = self else { return }
             self?._photoHelper.preview(message: message, from: sself)
         }).disposed(by: _disposeBag)
     }
-    
+
     enum ResultViewType {
         case image
         case video
@@ -111,7 +106,7 @@ extension ImageRecordViewController {
             v.layer.borderWidth = 1
             return v
         }()
-        
+
         override init(frame: CGRect) {
             super.init(frame: frame)
             contentView.addSubview(imageView)
@@ -119,12 +114,13 @@ extension ImageRecordViewController {
                 make.edges.equalToSuperview()
             }
         }
-        
-        required init?(coder: NSCoder) {
+
+        @available(*, unavailable)
+        required init?(coder _: NSCoder) {
             fatalError("init(coder:) has not been implemented")
         }
     }
-    
+
     class SectionHeaderView: UICollectionReusableView {
         let titleLabel: UILabel = {
             let v = UILabel()
@@ -132,16 +128,17 @@ extension ImageRecordViewController {
             v.textColor = StandardUI.color_333333
             return v
         }()
-        
+
         override init(frame: CGRect) {
             super.init(frame: frame)
-            self.addSubview(titleLabel)
+            addSubview(titleLabel)
             titleLabel.snp.makeConstraints { make in
                 make.left.bottom.equalToSuperview().inset(10)
             }
         }
-        
-        required init?(coder: NSCoder) {
+
+        @available(*, unavailable)
+        required init?(coder _: NSCoder) {
             fatalError("init(coder:) has not been implemented")
         }
     }

@@ -1,9 +1,4 @@
 
-
-
-
-
-
 import UIKit
 
 class GroupListResultViewController: UIViewController, UISearchResultsUpdating, UITableViewDataSource, UITableViewDelegate {
@@ -12,7 +7,7 @@ class GroupListResultViewController: UIViewController, UISearchResultsUpdating, 
             for user in dataList {
                 if let ret: [WPFPerson] = WPFPinYinDataManager.getInitializedDataSource() as? [WPFPerson] {
                     if !ret.contains(where: { (item: WPFPerson) in
-                        return item.personId == user.groupID
+                        item.personId == user.groupID
                     }) {
                         WPFPinYinDataManager.addInitializeString(user.groupName, identifer: user.groupID)
                     }
@@ -22,15 +17,15 @@ class GroupListResultViewController: UIViewController, UISearchResultsUpdating, 
             }
         }
     }
-    
+
     private var searchArr: [WPFPerson] = []
-    
+
     private lazy var tableView: UITableView = {
         let v = UITableView()
         v.register(FriendListUserTableViewCell.self, forCellReuseIdentifier: FriendListUserTableViewCell.className)
         v.dataSource = self
         v.delegate = self
-        v.separatorInset = UIEdgeInsets.init(top: 0, left: 82, bottom: 0, right: StandardUI.margin_22)
+        v.separatorInset = UIEdgeInsets(top: 0, left: 82, bottom: 0, right: StandardUI.margin_22)
         v.separatorColor = StandardUI.color_F1F1F1
         v.rowHeight = UITableView.automaticDimension
         if #available(iOS 15.0, *) {
@@ -46,7 +41,7 @@ class GroupListResultViewController: UIViewController, UISearchResultsUpdating, 
             make.edges.equalToSuperview()
         }
     }
-    
+
     func updateSearchResults(for searchController: UISearchController) {
         searchArr.removeAll()
         guard let keyword = searchController.searchBar.text else { return }
@@ -63,22 +58,22 @@ class GroupListResultViewController: UIViewController, UISearchResultsUpdating, 
         }
         let change = searchArr
         searchArr = change.sorted { lhs, rhs in
-            return lhs.matchType < rhs.matchType
+            lhs.matchType < rhs.matchType
         }.sorted { lhs, rhs in
-            return lhs.highlightLoaction < rhs.highlightLoaction
+            lhs.highlightLoaction < rhs.highlightLoaction
         }
-        
+
         tableView.reloadData()
     }
-    
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+
+    func tableView(_: UITableView, numberOfRowsInSection _: Int) -> Int {
         return searchArr.count
     }
-    
+
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: FriendListUserTableViewCell.className, for: indexPath) as! FriendListUserTableViewCell
-        let person = self.searchArr[indexPath.row]
-        let attString = NSMutableAttributedString.init(string: person.name)
+        let person = searchArr[indexPath.row]
+        let attString = NSMutableAttributedString(string: person.name)
         let highLightColor = UIColor.blue
         attString.addAttribute(NSAttributedString.Key.foregroundColor, value: highLightColor, range: person.textRange)
         cell.titleLabel.attributedText = attString
@@ -87,8 +82,8 @@ class GroupListResultViewController: UIViewController, UISearchResultsUpdating, 
         }
         return cell
     }
+
     deinit {
         print("dealloc \(type(of: self))")
     }
 }
-

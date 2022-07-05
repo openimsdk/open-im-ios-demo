@@ -1,13 +1,7 @@
 
-
-
-
-
-
 import UIKit
 
 class QRCodeViewController: UIViewController {
-    
     private lazy var shadowView: UIView = {
         let v = UIView()
         v.layer.shadowColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.08).cgColor
@@ -16,7 +10,7 @@ class QRCodeViewController: UIViewController {
         v.layer.shadowRadius = 7
         return v
     }()
-    
+
     private let backgroundView: UIView = {
         let v = UIView()
         v.layer.cornerRadius = 10
@@ -30,7 +24,7 @@ class QRCodeViewController: UIViewController {
         v.contentMode = .scaleAspectFill
         return v
     }()
-    
+
     let nameLabel: UILabel = {
         let v = UILabel()
         v.font = UIFont.systemFont(ofSize: 20)
@@ -38,69 +32,70 @@ class QRCodeViewController: UIViewController {
         v.numberOfLines = 2
         return v
     }()
-    
+
     let tipLabel: UILabel = {
         let v = UILabel()
         v.font = UIFont.systemFont(ofSize: 14)
         v.textColor = StandardUI.color_999999
         return v
     }()
-    
+
     private lazy var codeBackgroundImageView: UIImageView = {
-        let v = UIImageView.init(image: UIImage.init(nameInBundle: "common_qrcode_background_image"))
+        let v = UIImageView(image: UIImage(nameInBundle: "common_qrcode_background_image"))
         v.contentMode = .scaleAspectFill
         return v
     }()
-    
-    private let codeContentImageView: UIImageView = UIImageView()
-    
+
+    private let codeContentImageView: UIImageView = .init()
+
     init(idString: String) {
         super.init(nibName: nil, bundle: nil)
         DispatchQueue.global().async {
-            let image = CodeImageGenerator().createQRCodeImage(content: idString, size: CGSize.init(width: 140, height: 140), foregroundColor: UIColor.black, backgroundColor: UIColor.clear)
+            let image = CodeImageGenerator().createQRCodeImage(content: idString, size: CGSize(width: 140, height: 140), foregroundColor: UIColor.black, backgroundColor: UIColor.clear)
             DispatchQueue.main.async {
                 self.codeContentImageView.image = image
             }
         }
     }
-    
-    required init?(coder: NSCoder) {
+
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
-        self.navigationItem.title = "群二维码".innerLocalized()
+        navigationItem.title = "群二维码".innerLocalized()
         initView()
         bindData()
     }
-    
+
     private func initView() {
         shadowView.addSubview(backgroundView)
         backgroundView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
-        
+
         backgroundView.addSubview(avatarImageView)
         avatarImageView.snp.makeConstraints { make in
             make.top.left.equalToSuperview().inset(30)
             make.size.equalTo(48)
         }
-        
+
         backgroundView.addSubview(nameLabel)
         nameLabel.snp.makeConstraints { make in
             make.left.equalTo(avatarImageView.snp.right).offset(13)
             make.right.equalToSuperview().offset(-20)
             make.centerY.equalTo(avatarImageView)
         }
-        
+
         backgroundView.addSubview(tipLabel)
         tipLabel.snp.makeConstraints { make in
             make.top.equalTo(avatarImageView.snp.bottom).offset(56)
             make.centerX.equalToSuperview()
         }
-        
+
         backgroundView.addSubview(codeBackgroundImageView)
         codeBackgroundImageView.snp.makeConstraints { make in
             make.top.equalTo(tipLabel.snp.bottom).offset(30)
@@ -108,20 +103,18 @@ class QRCodeViewController: UIViewController {
             make.size.equalTo(180)
             make.bottom.equalToSuperview().offset(-80)
         }
-        
+
         codeBackgroundImageView.addSubview(codeContentImageView)
         codeContentImageView.snp.makeConstraints { make in
             make.center.equalToSuperview()
         }
-        
+
         view.addSubview(shadowView)
         shadowView.snp.makeConstraints { make in
             make.top.equalTo(self.view.safeAreaLayoutGuide.snp.top).offset(58)
             make.left.right.equalToSuperview().inset(StandardUI.margin_22)
         }
     }
-    
-    private func bindData() {
-        
-    }
+
+    private func bindData() {}
 }

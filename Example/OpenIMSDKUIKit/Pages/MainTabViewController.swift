@@ -95,8 +95,9 @@ class MainTabViewController: UITabBarController {
                     self?.loginIM(uid: resp.data.userID, token: resp.data.token, completion: { [weak controller] in
                         controller?.dismiss(animated: true)
                     })
-                }, onError: { err in
-                    SVProgressHUD.showError(withStatus: err.localizedDescription)
+                }, onError: { (err: Error) in
+                    let error = err as? DemoError
+                    SVProgressHUD.showError(withStatus: error?.localizedDescription)
                 }).disposed(by: sself._disposeBag)
         }).disposed(by: _disposeBag)
         

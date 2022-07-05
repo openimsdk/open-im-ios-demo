@@ -1,18 +1,12 @@
 
-
-
-
-
-
 import UIKit
 
 class MineOptionTableViewCell: UITableViewCell {
-    
     let avatarImageView: UIImageView = {
         let v = UIImageView()
         return v
     }()
-    
+
     let titleLabel: UILabel = {
         let v = UILabel()
         v.font = UIFont.systemFont(ofSize: 16)
@@ -22,24 +16,25 @@ class MineOptionTableViewCell: UITableViewCell {
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        self.selectionStyle = .none
-        self.accessoryType = .disclosureIndicator
-        
+        selectionStyle = .none
+        accessoryType = .disclosureIndicator
+
         contentView.addSubview(avatarImageView)
         avatarImageView.snp.makeConstraints { make in
             make.left.equalToSuperview().offset(StandardUI.margin_22)
             make.centerY.equalToSuperview()
             make.size.equalTo(22)
         }
-        
+
         contentView.addSubview(titleLabel)
         titleLabel.snp.makeConstraints { make in
             make.left.equalTo(avatarImageView.snp.right).offset(10)
             make.centerY.equalToSuperview()
         }
     }
-    
-    required init?(coder: NSCoder) {
+
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 }

@@ -18,8 +18,17 @@ class LoginViewModel {
             let dataRequest = Alamofire.request(req).responseString { (response: DataResponse<String>) in
                 switch response.result {
                 case .success(let result):
-                    observer.onNext(result)
-                    observer.onCompleted()
+                    if let err = JsonTool.fromJson(result, toClass: DemoError.self) {
+                        if err.errCode == 0 {
+                            observer.onNext(result)
+                            observer.onCompleted()
+                        } else {
+                            observer.onError(err)
+                        }
+                    } else {
+                        observer.onNext(result)
+                        observer.onCompleted()
+                    }
                 case .failure(let err):
                     observer.onError(err)
                 }
@@ -59,5 +68,15 @@ extension LoginViewModel {
     struct UserEntity: Decodable {
         let userID: String
         let token: String
+    }
+}
+
+struct DemoError: Error, Decodable {
+    let errCode: Int
+    let errMsg: String?
+    
+    var localizedDescription: String {
+        let msg: String = errMsg ?? "no message"
+        return "code: \(errCode), msg: \(msg)"
     }
 }

@@ -1,13 +1,7 @@
 
-
-
-
-
-
 import UIKit
 
 class MessageQuoteLeftTableViewCell: MessageTextLeftTableViewCell {
-    
     let quoteTextLabel: UILabel = {
         let v = UILabel()
         v.numberOfLines = 2
@@ -15,7 +9,7 @@ class MessageQuoteLeftTableViewCell: MessageTextLeftTableViewCell {
         v.textColor = StandardUI.color_666666
         return v
     }()
-    
+
     let quoteMediaImageView: UIImageView = {
         let v = UIImageView()
         v.contentMode = .scaleAspectFit
@@ -23,9 +17,9 @@ class MessageQuoteLeftTableViewCell: MessageTextLeftTableViewCell {
         v.clipsToBounds = true
         return v
     }()
-    
+
     let quotePlayIconImageView: UIImageView = {
-        let v = UIImageView.init(image: UIImage.init(nameInBundle: "msg_quote_play_icon"))
+        let v = UIImageView(image: UIImage(nameInBundle: "msg_quote_play_icon"))
         return v
     }()
 
@@ -36,7 +30,7 @@ class MessageQuoteLeftTableViewCell: MessageTextLeftTableViewCell {
             make.center.equalToSuperview()
         }
         let hStack: UIStackView = {
-            let v = UIStackView.init(arrangedSubviews: [quoteTextLabel, quoteMediaImageView])
+            let v = UIStackView(arrangedSubviews: [quoteTextLabel, quoteMediaImageView])
             quoteTextLabel.snp.makeConstraints { make in
                 make.width.lessThanOrEqualTo(165)
             }
@@ -65,17 +59,18 @@ class MessageQuoteLeftTableViewCell: MessageTextLeftTableViewCell {
             make.bottom.equalToSuperview().offset(-MessageUI.topBottomPadding)
         }
     }
-    
-    required init?(coder: NSCoder) {
+
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func setMessage(model: MessageInfo, extraInfo: ExtraInfo?) {
         super.setMessage(model: model, extraInfo: extraInfo)
         if let elem = model.quoteElem {
             contentLabel.text = elem.text
         }
-        
+
         if let quoteMsg = model.quoteElem?.quoteMessage {
             let senderName = (quoteMsg.senderNickname ?? "") + ":"
             switch quoteMsg.contentType {

@@ -1,9 +1,4 @@
 
-
-
-
-
-
 import Foundation
 
 protocol MessageCellAble: UITableViewCell {
@@ -24,7 +19,7 @@ struct ExtraInfo {
     let isC2C: Bool
 }
 
-class MessageCell {
+enum MessageCell {
     static let allCells: [UITableViewCell.Type] = [
         MessageTextLeftTableViewCell.self,
         MessageTextRightTableViewCell.self,
@@ -40,7 +35,7 @@ class MessageCell {
         MessageQuoteRightTableViewCell.self,
         MessageTimeOrTipsTableViewCell.self,
     ]
-    
+
     static let rightCellsMap: [MessageContentType: MessageCellAble.Type] = [
         .text: MessageTextRightTableViewCell.self,
         .audio: MessageAudioRightTableViewCell.self,
@@ -49,7 +44,7 @@ class MessageCell {
         .quote: MessageQuoteRightTableViewCell.self,
         .image: MessageImageRightTableViewCell.self,
     ]
-    
+
     static let leftCellsMap: [MessageContentType: MessageCellAble.Type] = [
         .text: MessageTextLeftTableViewCell.self,
         .audio: MessageAudioLeftTableViewCell.self,
@@ -58,13 +53,13 @@ class MessageCell {
         .quote: MessageQuoteLeftTableViewCell.self,
         .image: MessageImageLeftTableViewCell.self,
     ]
-    
+
     static func getCellType(by messageType: MessageContentType, isRight: Bool) -> MessageCellAble.Type {
         if isRight {
             let cellType = rightCellsMap[messageType] ?? MessageTimeOrTipsTableViewCell.self
             return cellType
         }
-        
+
         let cellType = leftCellsMap[messageType] ?? MessageTimeOrTipsTableViewCell.self
         return cellType
     }

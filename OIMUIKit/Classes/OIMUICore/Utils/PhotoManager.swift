@@ -1,32 +1,25 @@
 
-
-
-
-
-
-
 import Foundation
 import Photos
-import ZLPhotoBrowser
 import UIKit
+import ZLPhotoBrowser
 
 class PhotoHelper {
-    
     var didPhotoSelected: ((_ images: [UIImage], _ assets: [PHAsset], _ isOriginPhoto: Bool) -> Void)?
-    
+
     var didPhotoSelectedCancel: (() -> Void)?
-    
+
     var didCameraFinished: ((UIImage?, URL?) -> Void)?
-    
+
     init() {
-        resetConfigToSendMedia();
+        resetConfigToSendMedia()
     }
-    
+
     func resetConfigToSendMedia() {
         let editConfig = ZLPhotoConfiguration.default().editImageConfiguration
         editConfig.tools([.draw, .clip, .textSticker, .mosaic])
         ZLPhotoConfiguration.default().editImageConfiguration(editConfig)
-            .canSelectAsset({_ in true})
+            .canSelectAsset { _ in true }
             .navCancelButtonStyle(.text)
             .noAuthorityCallback { (authType: ZLNoAuthorityType) in
                 switch authType {
@@ -40,7 +33,7 @@ class PhotoHelper {
             }
         ZLPhotoConfiguration.default().cameraConfiguration.videoExportType = .mp4
     }
-    
+
     func setConfigToPickAvatar() {
         let editConfig = ZLPhotoConfiguration.default().editImageConfiguration
         editConfig.tools([.clip])
@@ -55,7 +48,7 @@ class PhotoHelper {
             .allowSelectOriginal(false)
             .editImageConfiguration(editConfig)
             .showClipDirectlyIfOnlyHasClipTool(true)
-            .canSelectAsset({_ in false})
+            .canSelectAsset { _ in false }
             .navCancelButtonStyle(.text)
             .noAuthorityCallback { (authType: ZLNoAuthorityType) in
                 switch authType {
@@ -68,27 +61,27 @@ class PhotoHelper {
                 }
             }
     }
-    
+
     func presentPhotoLibraryOnlyEdit(byController: UIViewController) {
-        let sheet = ZLPhotoPreviewSheet.init(selectedAssets: nil)
+        let sheet = ZLPhotoPreviewSheet(selectedAssets: nil)
         sheet.selectImageBlock = didPhotoSelected
         sheet.cancelBlock = didPhotoSelectedCancel
         sheet.showPhotoLibrary(sender: byController)
     }
-    
+
     func presentPhotoLibrary(byController: UIViewController) {
-        let sheet = ZLPhotoPreviewSheet.init(selectedAssets: nil)
+        let sheet = ZLPhotoPreviewSheet(selectedAssets: nil)
         sheet.selectImageBlock = didPhotoSelected
         sheet.cancelBlock = didPhotoSelectedCancel
         sheet.showPhotoLibrary(sender: byController)
     }
-    
+
     func presentCamera(byController: UIViewController) {
         let camera = ZLCustomCamera()
         camera.takeDoneBlock = didCameraFinished
         byController.showDetailViewController(camera, sender: nil)
     }
-    
+
     func sendMediaTuple(assets: [MediaTuple], with messageSender: MessageListViewModel) {
         for tuple in assets {
             let asset = tuple.asset
@@ -102,50 +95,50 @@ class PhotoHelper {
             }
         }
     }
-    
+
     func sendVideoAt(url: URL, messageSender: MessageListViewModel) {
-        let asset = AVURLAsset.init(url: url)
-        let assetGen = AVAssetImageGenerator.init(asset: asset)
+        let asset = AVURLAsset(url: url)
+        let assetGen = AVAssetImageGenerator(asset: asset)
         assetGen.appliesPreferredTrackTransform = true
-        let time = CMTime.init(seconds: .zero, preferredTimescale: 600)
+        let time = CMTime(seconds: .zero, preferredTimescale: 600)
         var actualTime: CMTime = .zero
         DispatchQueue.global().async { [weak messageSender] in
             do {
                 let cgImage = try assetGen.copyCGImage(at: time, actualTime: &actualTime)
-                let thumbnail = UIImage.init(cgImage: cgImage)
+                let thumbnail = UIImage(cgImage: cgImage)
                 let result = FileHelper.shared.saveImage(image: thumbnail)
                 let thumbnailPath = result.relativeFilePath
                 messageSender?.sendVideo(path: url, thumbnailPath: thumbnailPath, duration: Int(asset.duration.seconds))
             } catch {
                 #if DEBUG
-                print("获取视频帧错误:", error)
+                    print("获取视频帧错误:", error)
                 #endif
             }
         }
     }
-    
+
     func preview(message: MessageInfo, from controller: UIViewController) {
         switch message.contentType {
         case .image:
             var tmpURL: URL?
-            if let imageUrl = message.pictureElem?.sourcePicture?.url, let url = URL.init(string: imageUrl) {
+            if let imageUrl = message.pictureElem?.sourcePicture?.url, let url = URL(string: imageUrl) {
                 tmpURL = url
             } else if let imageUrl = message.pictureElem?.sourcePath {
-                let url = URL.init(fileURLWithPath: imageUrl)
+                let url = URL(fileURLWithPath: imageUrl)
                 if FileManager.default.fileExists(atPath: url.path) {
                     tmpURL = url
                 }
             }
-            
+
             if let tmpURL = tmpURL {
-                let previewController = ZLImagePreviewController.init(datas: [tmpURL], index: 0, showSelectBtn: false, showBottomView: false) { _ in
-                    return .image
-                } urlImageLoader: { (url, imageView, progress, loadFinish) in
-                    imageView.kf.setImage(with: url) { (receivedSize, totalSize) in
+                let previewController = ZLImagePreviewController(datas: [tmpURL], index: 0, showSelectBtn: false, showBottomView: false) { _ in
+                    .image
+                } urlImageLoader: { url, imageView, progress, loadFinish in
+                    imageView.kf.setImage(with: url) { receivedSize, totalSize in
                         let percentage = (CGFloat(receivedSize) / CGFloat(totalSize))
                         debugPrint("\(percentage)")
                         progress(percentage)
-                    } completionHandler: { (_) in
+                    } completionHandler: { _ in
                         loadFinish()
                     }
                 }
@@ -154,24 +147,24 @@ class PhotoHelper {
             }
         case .video:
             var tmpURL: URL?
-            if let videoUrl = message.videoElem?.videoUrl, let url = URL.init(string: videoUrl) {
+            if let videoUrl = message.videoElem?.videoUrl, let url = URL(string: videoUrl) {
                 tmpURL = url
             } else if let videoUrl = message.videoElem?.videoPath {
-                let url = URL.init(fileURLWithPath: videoUrl)
+                let url = URL(fileURLWithPath: videoUrl)
                 if FileManager.default.fileExists(atPath: url.path) {
                     tmpURL = url
                 }
             }
-            
+
             if let tmpURL = tmpURL {
-                let previewController = ZLImagePreviewController.init(datas: [tmpURL], index: 0, showSelectBtn: false, showBottomView: false) { _ in
-                    return .video
-                } urlImageLoader: { (url, imageView, progress, loadFinish) in
-                    imageView.kf.setImage(with: url) { (receivedSize, totalSize) in
+                let previewController = ZLImagePreviewController(datas: [tmpURL], index: 0, showSelectBtn: false, showBottomView: false) { _ in
+                    .video
+                } urlImageLoader: { url, imageView, progress, loadFinish in
+                    imageView.kf.setImage(with: url) { receivedSize, totalSize in
                         let percentage = (CGFloat(receivedSize) / CGFloat(totalSize))
                         debugPrint("\(percentage)")
                         progress(percentage)
-                    } completionHandler: { (_) in
+                    } completionHandler: { _ in
                         loadFinish()
                     }
                 }
@@ -182,28 +175,28 @@ class PhotoHelper {
             break
         }
     }
-    
+
     private func compressAndSendMp4(asset: PHAsset, thumbnail: UIImage?, messageSender: MessageListViewModel) {
         let fileHelper = FileHelper.shared
-        var thumbnailPath: String = ""
+        var thumbnailPath = ""
         if let thumbnail = thumbnail {
             let result = fileHelper.saveImage(image: thumbnail)
             thumbnailPath = result.relativeFilePath
         }
-        ZLVideoManager.exportVideo(for: asset, exportType: .mp4) { [weak messageSender] (url: URL?, error: Error?) in
+        ZLVideoManager.exportVideo(for: asset, exportType: .mp4) { [weak messageSender] (url: URL?, _: Error?) in
             guard let url = url else { return }
             messageSender?.sendVideo(path: url, thumbnailPath: thumbnailPath, duration: Int(asset.duration))
         }
     }
-    
+
     struct MediaTuple {
         let thumbnail: UIImage
         let asset: PHAsset
     }
-    
+
     deinit {
-#if DEBUG
-        print("dealloc \(type(of: self))")
-#endif
+        #if DEBUG
+            print("dealloc \(type(of: self))")
+        #endif
     }
 }

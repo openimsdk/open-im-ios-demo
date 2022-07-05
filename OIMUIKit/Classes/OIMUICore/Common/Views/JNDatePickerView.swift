@@ -1,15 +1,9 @@
 
-
-
-
-
-
-import UIKit
 import RxSwift
 import SnapKit
+import UIKit
 
 class JNDatePickerView: UIView {
-
     lazy var cancelButton: UIButton = {
         let v = UIButton()
         v.setTitle("取消".innerLocalized(), for: .normal)
@@ -40,45 +34,45 @@ class JNDatePickerView: UIView {
         return v
     }()
 
-    var currentDate: Date = Date()
+    var currentDate: Date = .init()
 
     let disposeBag = DisposeBag()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
         container.addSubview(cancelButton)
-        cancelButton.snp.makeConstraints { (make) in
+        cancelButton.snp.makeConstraints { make in
             make.left.equalToSuperview().offset(10)
             make.top.equalToSuperview().offset(5)
-            make.size.equalTo(CGSize.init(width: 44, height: 34))
+            make.size.equalTo(CGSize(width: 44, height: 34))
         }
         container.addSubview(confirmButton)
-        confirmButton.snp.makeConstraints { (make) in
+        confirmButton.snp.makeConstraints { make in
             make.right.equalToSuperview().offset(-10)
             make.centerY.size.equalTo(cancelButton)
         }
 
         container.addSubview(datePicker)
-        datePicker.snp.makeConstraints { (make) in
+        datePicker.snp.makeConstraints { make in
             make.top.equalTo(cancelButton.snp.bottom).offset(10)
             make.left.right.equalToSuperview().inset(10)
             make.bottom.equalToSuperview().offset(-40)
             make.height.equalTo(200)
         }
 
-        self.addSubview(container)
-        container.snp.makeConstraints { (make) in
+        addSubview(container)
+        container.snp.makeConstraints { make in
             make.left.right.equalToSuperview()
             _bottomConstraint = make.bottom.equalTo(200).constraint
         }
 
         cancelButton.rx.tap.throttle(.milliseconds(300), latest: false, scheduler: MainScheduler.instance)
-            .map({ [weak self] (_) -> Bool in
+            .map { [weak self] _ -> Bool in
                 guard let sself = self else { return false }
                 let ret = sself.anySubviewScrolling(sself.datePicker)
                 return ret
-            })
-            .subscribe { [weak self] (event) in
+            }
+            .subscribe { [weak self] event in
                 if let isSpinning = event.element, !isSpinning {
                     self?.hide()
                 }
@@ -87,16 +81,16 @@ class JNDatePickerView: UIView {
 
     static func show(onWindowOfView: UIView, currentDate: Date = Date(), configure: ((JNDatePickerView) -> Void)?, confirmAction: @escaping ((Date) -> Void)) {
         let pickerView: JNDatePickerView = {
-            let v = JNDatePickerView.init()
-            v.backgroundColor = UIColor.init(white: 0, alpha: 0.6)
+            let v = JNDatePickerView()
+            v.backgroundColor = UIColor(white: 0, alpha: 0.6)
             v.currentDate = currentDate
             v.confirmButton.rx.tap.throttle(.milliseconds(300), latest: false, scheduler: MainScheduler.instance)
-                .map({ [weak v] (_) -> Bool in
+                .map { [weak v] _ -> Bool in
                     guard let sself = v else { return false }
                     let ret = sself.anySubviewScrolling(sself.datePicker)
                     return ret
-                })
-                .subscribe { [weak v] (event) in
+                }
+                .subscribe { [weak v] event in
                     guard let sself = v else { return }
                     if let isScrolling = event.element, !isScrolling {
                         sself.currentDate = sself.datePicker.date
@@ -112,47 +106,46 @@ class JNDatePickerView: UIView {
             make.edges.equalToSuperview()
         }
         pickerView.layoutIfNeeded()
-        pickerView.backgroundColor = UIColor.init(white: 0, alpha: 0)
+        pickerView.backgroundColor = UIColor(white: 0, alpha: 0)
         pickerView.datePicker.setDate(currentDate, animated: false)
         UIView.animate(withDuration: 0.3) {
-            pickerView.backgroundColor = UIColor.init(white: 0, alpha: 0.6)
+            pickerView.backgroundColor = UIColor(white: 0, alpha: 0.6)
             pickerView._bottomConstraint?.updateOffset(amount: 0)
             pickerView.layoutIfNeeded()
-        } completion: { (_) in
-
+        } completion: { _ in
         }
     }
 
     func show(onWindowOfView: UIView) {
         onWindowOfView.window?.addSubview(self)
-        self.snp.makeConstraints { make in
+        snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
         layoutIfNeeded()
-        self.backgroundColor = UIColor.init(white: 0, alpha: 0)
-        self.datePicker.setDate(currentDate, animated: false)
+        backgroundColor = UIColor(white: 0, alpha: 0)
+        datePicker.setDate(currentDate, animated: false)
         UIView.animate(withDuration: 0.3) {
-            self.backgroundColor = UIColor.init(white: 0, alpha: 0.6)
+            self.backgroundColor = UIColor(white: 0, alpha: 0.6)
             self._bottomConstraint?.updateOffset(amount: 0)
             self.layoutIfNeeded()
-        } completion: { (_) in
-
+        } completion: { _ in
         }
     }
 
     func hide() {
         UIView.animate(withDuration: 0.3) {
-            self.backgroundColor = UIColor.init(white: 0, alpha: 0)
+            self.backgroundColor = UIColor(white: 0, alpha: 0)
             self._bottomConstraint?.updateOffset(amount: self.container.bounds.size.height)
             self.layoutIfNeeded()
-        } completion: {[weak self] (complete) in
+        } completion: { [weak self] complete in
             if complete {
                 self?.removeFromSuperview()
             }
         }
     }
 
-    required init?(coder: NSCoder) {
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
@@ -165,7 +158,7 @@ class JNDatePickerView: UIView {
         }
 
         for subview in view.subviews {
-            if self.anySubviewScrolling(subview) {
+            if anySubviewScrolling(subview) {
                 return true
             }
         }
@@ -176,7 +169,7 @@ class JNDatePickerView: UIView {
 
     deinit {
         #if DEBUG
-        print("dealloc \(type(of: self))")
+            print("dealloc \(type(of: self))")
         #endif
     }
 
@@ -194,7 +187,7 @@ class JNDatePickerView: UIView {
                 return
             }
 
-            self.removeFromSuperview()
+            removeFromSuperview()
         }
     }
 }

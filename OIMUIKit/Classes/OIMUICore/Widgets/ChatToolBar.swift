@@ -1,14 +1,10 @@
 
-
-    
-    
-
-import UIKit
-import RxSwift
+import AVFAudio
 import RxCocoa
 import RxKeyboard
+import RxSwift
 import SnapKit
-import AVFAudio
+import UIKit
 
 protocol ChatToolBarDelegate: AnyObject {
     func tb_didTouchSend(text: String)
@@ -16,11 +12,10 @@ protocol ChatToolBarDelegate: AnyObject {
 }
 
 class ChatToolBar: UIView {
-    
     weak var delegate: ChatToolBarDelegate?
-    
+
     static let defaultHeight: CGFloat = 50
-    
+
     weak var quoteMessage: MessageInfo? {
         didSet {
             if let message = quoteMessage {
@@ -32,11 +27,11 @@ class ChatToolBar: UIView {
             }
         }
     }
-    
+
     lazy var voiceSwitchBtn: UIButton = {
         let v = UIButton()
-        v.setImage(UIImage.init(nameInBundle: "inputbar_audio_btn_icon"), for: .normal)
-        v.setImage(UIImage.init(nameInBundle: "inputbar_keyboard_btn_icon"), for: .selected)
+        v.setImage(UIImage(nameInBundle: "inputbar_audio_btn_icon"), for: .normal)
+        v.setImage(UIImage(nameInBundle: "inputbar_keyboard_btn_icon"), for: .selected)
         v.isSelected = false
         v.rx.controlEvent(.touchDown).subscribe(onNext: { [weak self] in
             guard let sself = self else { return }
@@ -45,11 +40,11 @@ class ChatToolBar: UIView {
         }).disposed(by: _disposeBag)
         return v
     }()
-    
+
     lazy var emojiBtn: UIButton = {
         let v = UIButton()
-        v.setImage(UIImage.init(nameInBundle: "inputbar_emoji_btn_icon"), for: .normal)
-        v.setImage(UIImage.init(nameInBundle: "inputbar_keyboard_btn_icon"), for: .selected)
+        v.setImage(UIImage(nameInBundle: "inputbar_emoji_btn_icon"), for: .normal)
+        v.setImage(UIImage(nameInBundle: "inputbar_keyboard_btn_icon"), for: .selected)
         v.isSelected = false
         v.rx.controlEvent(.touchDown).subscribe(onNext: { [weak self] in
             guard let sself = self else { return }
@@ -58,10 +53,10 @@ class ChatToolBar: UIView {
         }).disposed(by: _disposeBag)
         return v
     }()
-    
+
     lazy var moreBtn: UIButton = {
         let v = UIButton()
-        v.setImage(UIImage.init(nameInBundle: "inputbar_more_btn_icon"), for: .normal)
+        v.setImage(UIImage(nameInBundle: "inputbar_more_btn_icon"), for: .normal)
         v.rx.controlEvent(.touchDown).subscribe(onNext: { [weak self] in
             guard let sself = self else { return }
             let state: ChatBarStatus = sself.barStatusRelay.value == .pad ? .default : .pad
@@ -69,7 +64,7 @@ class ChatToolBar: UIView {
         }).disposed(by: _disposeBag)
         return v
     }()
-        
+
     lazy var textInputView: UITextView = {
         let v = UITextView()
         v.layoutManager.allowsNonContiguousLayout = false
@@ -86,7 +81,7 @@ class ChatToolBar: UIView {
         v.textColor = StandardUI.color_333333
         return v
     }()
-    
+
     lazy var voiceInputBtn: NoIntrinsicSizeButton = {
         let v = NoIntrinsicSizeButton()
         v.setTitle("按住开始说话".innerLocalized(), for: .normal)
@@ -106,7 +101,7 @@ class ChatToolBar: UIView {
                 }
                 self?.startRecord()
             }).disposed(by: _disposeBag)
-        
+
         v.rx.controlEvent(.touchUpInside)
             .subscribe(onNext: { [weak self] in
                 print("touchUpInside")
@@ -114,7 +109,7 @@ class ChatToolBar: UIView {
                 print("录制完毕，发送语音消息")
                 self?.stopRecord()
             }).disposed(by: _disposeBag)
-        
+
         v.rx.controlEvent(.touchUpOutside)
             .subscribe(onNext: { [weak self] in
                 guard let sself = self else { return }
@@ -134,13 +129,13 @@ class ChatToolBar: UIView {
         v.delegate = self.recordView
         return v
     }()
-    
+
     let recordView: ChatRecordView = {
         let v = ChatRecordView()
         v.backgroundColor = .brown
         return v
     }()
-    
+
     lazy var quoteLabel: UILabel = {
         let v = UILabel()
         v.font = .systemFont(ofSize: 12)
@@ -148,42 +143,42 @@ class ChatToolBar: UIView {
         v.numberOfLines = 2
         return v
     }()
-    
+
     lazy var quoteDeleteBtn: UIButton = {
         let v = UIButton()
-        v.setImage(UIImage.init(nameInBundle: "inputbar_delete_btn_icon"), for: .normal)
+        v.setImage(UIImage(nameInBundle: "inputbar_delete_btn_icon"), for: .normal)
         return v
     }()
-    
+
     lazy var padView: ChatPluginPadView = {
-        let v = ChatPluginPadView.init(frame: CGRect.init(x: 0, y: 0, width: kScreenWidth, height: 220))
+        let v = ChatPluginPadView(frame: CGRect(x: 0, y: 0, width: kScreenWidth, height: 220))
         return v
     }()
-    
+
     init(moveTo superView: UIView, conversation: ConversationInfo) {
         self.conversation = conversation
-        self.parentView = superView
+        parentView = superView
         super.init(frame: .zero)
         initView()
         bindData()
     }
-    
-    required init?(coder: NSCoder) {
+
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
     func initView() {
-        
-        self.backgroundColor = StandardUI.color_999999
-        self.addSubview(voiceSwitchBtn)
+        backgroundColor = StandardUI.color_999999
+        addSubview(voiceSwitchBtn)
         voiceSwitchBtn.snp.makeConstraints { make in
             make.size.equalTo(30)
             make.left.equalToSuperview().inset(8)
             make.centerY.equalToSuperview()
         }
-        
+
         let vStack: UIStackView = {
-            let v = UIStackView.init(arrangedSubviews: [textInputView, quoteContainerView])
+            let v = UIStackView(arrangedSubviews: [textInputView, quoteContainerView])
             textInputView.snp.makeConstraints { make in
                 make.height.greaterThanOrEqualTo(30)
                 textHeightConstraint = make.height.equalTo(30).priority(.low).constraint
@@ -196,22 +191,22 @@ class ChatToolBar: UIView {
             v.spacing = 8
             return v
         }()
-        
-        self.addSubview(vStack)
+
+        addSubview(vStack)
         vStack.snp.makeConstraints { make in
             make.top.equalToSuperview().offset(8)
             make.centerY.equalTo(voiceSwitchBtn)
             make.left.equalTo(voiceSwitchBtn.snp.right).offset(8)
             make.bottom.equalToSuperview().offset(-8)
         }
-        
-        self.addSubview(textInputCover)
+
+        addSubview(textInputCover)
         textInputCover.snp.makeConstraints { make in
             make.edges.equalTo(textInputView)
         }
-        
+
         let hStack: UIStackView = {
-            let v = UIStackView.init(arrangedSubviews: [emojiBtn, moreBtn, sendBtn])
+            let v = UIStackView(arrangedSubviews: [emojiBtn, moreBtn, sendBtn])
             emojiBtn.snp.makeConstraints { make in
                 make.size.equalTo(30)
             }
@@ -219,7 +214,7 @@ class ChatToolBar: UIView {
                 make.size.equalTo(30)
             }
             sendBtn.snp.makeConstraints { make in
-                make.size.equalTo(CGSize.init(width: 43, height: 30))
+                make.size.equalTo(CGSize(width: 43, height: 30))
             }
             v.axis = .horizontal
             v.distribution = .fillProportionally
@@ -227,32 +222,32 @@ class ChatToolBar: UIView {
             v.setContentHuggingPriority(UILayoutPriority.required, for: .horizontal)
             return v
         }()
-        
-        self.addSubview(hStack)
+
+        addSubview(hStack)
         hStack.snp.makeConstraints { make in
             make.right.equalToSuperview().inset(8)
             make.left.equalTo(textInputView.snp.right).offset(8)
             make.centerY.equalTo(voiceSwitchBtn)
         }
-        
-        self.addSubview(voiceInputBtn)
+
+        addSubview(voiceInputBtn)
         voiceInputBtn.snp.makeConstraints { make in
             make.left.equalTo(voiceSwitchBtn.snp.right).offset(8)
             make.centerY.equalToSuperview()
             make.height.equalTo(30)
             make.right.equalTo(hStack.snp.left).offset(-8)
         }
-        
+
         parentView.addSubview(self)
-        self.snp.makeConstraints { make in
+        snp.makeConstraints { make in
             make.left.right.equalToSuperview()
             bottomConstraint = make.bottom.equalTo(parentView.safeAreaLayoutGuide.snp.bottom).constraint
             make.height.greaterThanOrEqualTo(ChatToolBar.defaultHeight)
         }
     }
-    
+
     func bindData() {
-        self.barStatusRelay.distinctUntilChanged().subscribe(onNext: { [weak self] (barStatus: ChatBarStatus) in
+        barStatusRelay.distinctUntilChanged().subscribe(onNext: { [weak self] (barStatus: ChatBarStatus) in
             switch barStatus {
             case .default:
                 self?.setVoiceInput(visible: false)
@@ -282,19 +277,19 @@ class ChatToolBar: UIView {
                 self?.setTextInput(visible: false)
             }
         }).disposed(by: _disposeBag)
-        
+
 //        RxKeyboard.instance.visibleHeight
 //            .drive(onNext: { [weak self] keyboardVisibleHeight in
 //                let offset = keyboardVisibleHeight > 0 ? (kSafeAreaBottomHeight - keyboardVisibleHeight) : (-keyboardVisibleHeight)
 //                self?.bottomConstraint?.update(offset: offset)
 //            }).disposed(by: _disposeBag)
-        
-        let textCoverTap: UITapGestureRecognizer = UITapGestureRecognizer()
+
+        let textCoverTap = UITapGestureRecognizer()
         textInputCover.addGestureRecognizer(textCoverTap)
         textCoverTap.rx.event.subscribe(onNext: { [weak self] _ in
             self?.barStatusRelay.accept(.keyboard)
         }).disposed(by: _disposeBag)
-        
+
         textInputView.rx.didChange.subscribe(onNext: { [weak self] in
             guard let sself = self else { return }
             let height = sself.textInputView.contentSize.height
@@ -302,21 +297,21 @@ class ChatToolBar: UIView {
             let offset: CGFloat = height > maxHeight ? maxHeight : height
             self?.textInputView.isScrollEnabled = height > maxHeight
             self?.textHeightConstraint?.updateOffset(amount: offset)
-            self?.textInputView.scrollRangeToVisible(NSRange.init(location: 0, length: sself.textInputView.attributedText.string.count))
+            self?.textInputView.scrollRangeToVisible(NSRange(location: 0, length: sself.textInputView.attributedText.string.count))
             sself.sendBtn.isHidden = sself.textInputView.text.isEmpty
         }).disposed(by: _disposeBag)
-        
+
         quoteDeleteBtn.rx.tap.subscribe(onNext: { [weak self] in
             self?.quoteMessage = nil
             self?.quoteLabel.text = nil
             self?.quoteContainerView.isHidden = true
         }).disposed(by: _disposeBag)
-        
+
         emojiView.deleteBtn.rx.tap.subscribe(onNext: { [weak self] in
             self?.textInputView.deleteBackward()
         }).disposed(by: _disposeBag)
     }
-    
+
     private func setVoiceInput(visible: Bool) {
         voiceSwitchBtn.isSelected = visible
         if visible {
@@ -337,7 +332,7 @@ class ChatToolBar: UIView {
             sendBtn.isHidden = textInputView.text.isEmpty
         }
     }
-    
+
     private func setEmojiInput(visible: Bool) {
         emojiBtn.isSelected = visible
         if visible {
@@ -355,7 +350,7 @@ class ChatToolBar: UIView {
             textInputView.reloadInputViews()
         }
     }
-    
+
     private func setPadInput(visible: Bool) {
         if visible {
             textInputView.isHidden = false
@@ -372,7 +367,7 @@ class ChatToolBar: UIView {
             }
         }
     }
-    
+
     private func setTextInput(visible: Bool) {
         if visible {
             textInputView.isHidden = false
@@ -383,7 +378,7 @@ class ChatToolBar: UIView {
             voiceInputBtn.isHidden = true
             textInputView.inputView = nil
             textInputView.tintColor = .systemBlue
-            if !textInputView.isFirstResponder && barStatusRelay.value == .keyboard {
+            if !textInputView.isFirstResponder, barStatusRelay.value == .keyboard {
                 textInputView.becomeFirstResponder()
             }
             if barStatusRelay.value == .keyboard {
@@ -391,7 +386,7 @@ class ChatToolBar: UIView {
             }
         }
     }
-    
+
     private lazy var sendBtn: UIButton = {
         let v = UIButton()
         v.setTitle("发送".innerLocalized(), for: .normal)
@@ -401,7 +396,7 @@ class ChatToolBar: UIView {
         v.setTitleColor(UIColor.white, for: .normal)
         v.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .medium)
         v.isHidden = true
-        v.rx.tap.map{ [weak self] _ -> Bool in
+        v.rx.tap.map { [weak self] _ -> Bool in
             guard let sself = self else { return false }
             return !sself.textInputView.text.isEmpty
         }.subscribe(onNext: { [weak self] (contentNotEmpty: Bool) in
@@ -411,10 +406,10 @@ class ChatToolBar: UIView {
         }).disposed(by: _disposeBag)
         return v
     }()
-    
+
     private let _disposeBag = DisposeBag()
     private var barStatusRelay: BehaviorRelay<ChatBarStatus> = .init(value: ChatBarStatus.default)
-    
+
     private lazy var quoteContainerView: UIView = {
         let v = UIView()
         v.backgroundColor = .white
@@ -435,47 +430,47 @@ class ChatToolBar: UIView {
         v.isHidden = true
         return v
     }()
-    
+
     private let textInputCover: UIView = {
         let v = UIView()
         return v
     }()
-    
+
     private let conversation: ConversationInfo
     private weak var parentView: UIView!
-    
+
     private lazy var emojiView: ChatEmojiView = {
-        let v = ChatEmojiView.init(frame: CGRect.init(x: 0, y: 0, width: kScreenWidth, height: 200))
+        let v = ChatEmojiView(frame: CGRect(x: 0, y: 0, width: kScreenWidth, height: 200))
         v.backgroundColor = .white
         v.delegate = self
         return v
     }()
-        
+
     var bottomConstraint: Constraint?
     private var textHeightConstraint: Constraint?
-    
+
     private lazy var _recorder: AVAudioRecorder = {
         let voicePath: String = NSHomeDirectory() + "/Documents/voice.wav"
-        let fileUrl: URL = URL.init(fileURLWithPath: voicePath)
+        let fileUrl = URL(fileURLWithPath: voicePath)
         let settings: [String: Any] = [
             AVFormatIDKey: kAudioFormatLinearPCM,
             AVSampleRateKey: 8000,
-            AVNumberOfChannelsKey: 2
+            AVNumberOfChannelsKey: 2,
         ]
         do {
-            let v = try AVAudioRecorder.init(url: fileUrl, settings: settings)
+            let v = try AVAudioRecorder(url: fileUrl, settings: settings)
             v.delegate = self
-    //        v.isMeteringEnabled = true
+            //        v.isMeteringEnabled = true
             return v
         } catch {
             print("初始化Recorder失败：\(error.localizedDescription)")
         }
-        return AVAudioRecorder.init()
+        return AVAudioRecorder()
     }()
-    
+
     private var _recordingTimer: Timer?
     private var _seconds: Int = 0
-    
+
     enum ChatBarStatus {
         case `default`
         case keyboard
@@ -483,19 +478,19 @@ class ChatToolBar: UIView {
         case emoji
         case record
     }
-    
+
     private func sendAndClearText() {
-        let plainText = EmojiHelper.shared.getPlainTextIn(attributedString: textInputView.attributedText, atRange: NSRange.init(location: 0, length: textInputView.attributedText.length))
+        let plainText = EmojiHelper.shared.getPlainTextIn(attributedString: textInputView.attributedText, atRange: NSRange(location: 0, length: textInputView.attributedText.length))
         delegate?.tb_didTouchSend(text: plainText as String)
         textInputView.attributedText = nil
         quoteMessage = nil
     }
-    
+
     private func startRecord() {
         AVAudioSession.sharedInstance().requestRecordPermission { [weak self] granted in
             guard let sself = self else { return }
             if !granted {
-                //TODO: Toast弹窗提示开启权限
+                // TODO: Toast弹窗提示开启权限
                 return
             }
             let session = AVAudioSession.sharedInstance()
@@ -525,7 +520,7 @@ class ChatToolBar: UIView {
             })
         }
     }
-    
+
     private func stopRecord() {
         if _recorder.isRecording {
             _recorder.stop()
@@ -534,7 +529,7 @@ class ChatToolBar: UIView {
             try? AVAudioSession.sharedInstance().setActive(false)
         }
     }
-    
+
     private func cancelRecord() {
         stopRecord()
     }
@@ -542,76 +537,78 @@ class ChatToolBar: UIView {
 
 extension ChatToolBar: ChatEmojiViewDelegate {
     func emojiViewDidSelect(emojiStr: String) {
-        let selectedRange = self.textInputView.selectedRange
-        let emojiAttrString = NSMutableAttributedString.init(string: emojiStr)
+        let selectedRange = textInputView.selectedRange
+        let emojiAttrString = NSMutableAttributedString(string: emojiStr)
         EmojiHelper.shared.markReplaceableRange(inAttributedString: emojiAttrString, withString: emojiStr)
-        
-        let attrText = NSMutableAttributedString.init(attributedString: self.textInputView.attributedText)
+
+        let attrText = NSMutableAttributedString(attributedString: textInputView.attributedText)
         attrText.replaceCharacters(in: selectedRange, with: emojiAttrString)
-        self.textInputView.attributedText = attrText
-        self.textInputView.selectedRange = NSRange.init(location: selectedRange.location + emojiAttrString.length, length: 0)
+        textInputView.attributedText = attrText
+        textInputView.selectedRange = NSRange(location: selectedRange.location + emojiAttrString.length, length: 0)
         refreshDisplayText()
-        self.sendBtn.isHidden = false
+        sendBtn.isHidden = false
     }
-    
+
     private func refreshDisplayText() {
-        if self.textInputView.text.isEmpty {
+        if textInputView.text.isEmpty {
             return
         }
-        
-        if let markedRange = self.textInputView.markedTextRange {
-            let position = self.textInputView.position(from: markedRange.start, offset: 0)
+
+        if let markedRange = textInputView.markedTextRange {
+            let position = textInputView.position(from: markedRange.start, offset: 0)
             if position == nil {
-                //处于输入拼音还未确定的中间状态
+                // 处于输入拼音还未确定的中间状态
                 return
             }
         }
-        
-        let selectedRange = self.textInputView.selectedRange
-        let plainText = EmojiHelper.shared.getPlainTextIn(attributedString: self.textInputView.attributedText, atRange: NSRange.init(location: 0, length: self.textInputView.attributedText.length))
-        
+
+        let selectedRange = textInputView.selectedRange
+        let plainText = EmojiHelper.shared.getPlainTextIn(attributedString: textInputView.attributedText, atRange: NSRange(location: 0, length: textInputView.attributedText.length))
+
         let attr: [NSAttributedString.Key: Any] = [
             NSAttributedString.Key.font: UIFont.systemFont(ofSize: 14),
-            NSAttributedString.Key.foregroundColor: StandardUI.color_333333
+            NSAttributedString.Key.foregroundColor: StandardUI.color_333333,
         ]
-        let attributedContent = EmojiHelper.shared.replaceTextWithEmojiIn(attributedString: NSAttributedString.init(string: plainText as String, attributes: attr))
-        
-        let offset = self.textInputView.attributedText.length - attributedContent.length
-        self.textInputView.attributedText = attributedContent
-        self.textInputView.selectedRange = NSRange.init(location: selectedRange.location - offset, length: 0)
+        let attributedContent = EmojiHelper.shared.replaceTextWithEmojiIn(attributedString: NSAttributedString(string: plainText as String, attributes: attr))
+
+        let offset = textInputView.attributedText.length - attributedContent.length
+        textInputView.attributedText = attributedContent
+        textInputView.selectedRange = NSRange(location: selectedRange.location - offset, length: 0)
     }
 }
 
 extension ChatToolBar: UITextViewDelegate {
-    func textView(_ textView: UITextView, shouldChangeTextIn range: NSRange, replacementText text: String) -> Bool {
+    func textView(_: UITextView, shouldChangeTextIn _: NSRange, replacementText text: String) -> Bool {
         if text == "\n" {
             sendAndClearText()
             return false
         }
-        
+
         var needUpdateText = false
         if conversation.conversationType == .group {
             if text == "@" {
                 print("弹出选择群成员窗口")
             }
-            
+
             if text.isEmpty {
                 print("执行删除@联系人的逻辑")
             }
         }
         return true
     }
-    
-    func textViewDidChange(_ textView: UITextView) {
+
+    func textViewDidChange(_: UITextView) {
         refreshDisplayText()
     }
 }
-//MARK: - AVAudioRecorderDelegate
+
+// MARK: - AVAudioRecorderDelegate
+
 extension ChatToolBar: AVAudioRecorderDelegate {
-    func audioRecorderDidFinishRecording(_ recorder: AVAudioRecorder, successfully flag: Bool) {
+    func audioRecorderDidFinishRecording(_: AVAudioRecorder, successfully flag: Bool) {
         if !flag { return }
         if _seconds < 1 {
-            //TODO: Toast提示录音时间太短
+            // TODO: Toast提示录音时间太短
             return
         }
         let path = NSHomeDirectory() + "/Documents/audio.m4a"

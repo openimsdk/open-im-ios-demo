@@ -1,15 +1,9 @@
 
-
-
-
-
-
-import UIKit
 import SnapKit
+import UIKit
 
 class MessageVideoRightTableViewCell: MessageBaseRightTableViewCell {
-    
-    let videoContentView: MessageVideoContentView = MessageVideoContentView()
+    let videoContentView: MessageVideoContentView = .init()
     private var sizeConstraint: Constraint?
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -22,10 +16,12 @@ class MessageVideoRightTableViewCell: MessageBaseRightTableViewCell {
         bubbleImageView.image = nil
         containerView.isHidden = true
     }
-    
-    required init?(coder: NSCoder) {
+
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+
     override func setMessage(model: MessageInfo, extraInfo: ExtraInfo?) {
         super.setMessage(model: model, extraInfo: extraInfo)
         if let elem = model.videoElem {
@@ -41,17 +37,17 @@ class MessageVideoRightTableViewCell: MessageBaseRightTableViewCell {
 
 class MessageVideoContentView: UIView {
     private let playIconImageView: UIImageView = {
-        let v = UIImageView.init(image: UIImage.init(nameInBundle: "msg_video_play_icon"))
+        let v = UIImageView(image: UIImage(nameInBundle: "msg_video_play_icon"))
         return v
     }()
-    
+
     let timeLabel: UILabel = {
         let v = UILabel()
         v.font = .systemFont(ofSize: 14)
         v.textColor = .white
         return v
     }()
-    
+
     let imageView: UIImageView = {
         let v = UIImageView()
         v.contentMode = .scaleAspectFit
@@ -60,25 +56,26 @@ class MessageVideoContentView: UIView {
         v.backgroundColor = .black
         return v
     }()
-    
+
     override init(frame: CGRect) {
         super.init(frame: frame)
-        self.addSubview(imageView)
+        addSubview(imageView)
         imageView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
-        self.addSubview(playIconImageView)
+        addSubview(playIconImageView)
         playIconImageView.snp.makeConstraints { make in
             make.center.equalToSuperview()
         }
-        
-        self.addSubview(timeLabel)
+
+        addSubview(timeLabel)
         timeLabel.snp.makeConstraints { make in
             make.right.bottom.equalToSuperview().inset(6)
         }
     }
-    
-    required init?(coder: NSCoder) {
+
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 }

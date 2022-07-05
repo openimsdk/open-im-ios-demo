@@ -1,11 +1,6 @@
 
-
-
-
-
-
-import UIKit
 import RxSwift
+import UIKit
 
 class SwitchTableViewCell: UITableViewCell {
     var disposeBag = DisposeBag()
@@ -15,26 +10,27 @@ class SwitchTableViewCell: UITableViewCell {
         v.textColor = StandardUI.color_333333
         return v
     }()
-    
-    let switcher: UISwitch = UISwitch()
+
+    let switcher: UISwitch = .init()
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        self.selectionStyle = .none
+        selectionStyle = .none
         contentView.addSubview(titleLabel)
         titleLabel.snp.makeConstraints { make in
             make.left.equalToSuperview().offset(StandardUI.margin_22)
             make.centerY.equalToSuperview()
         }
-        
+
         contentView.addSubview(switcher)
         switcher.snp.makeConstraints { make in
             make.right.equalToSuperview().offset(-18)
             make.centerY.equalToSuperview()
         }
     }
-    
-    required init?(coder: NSCoder) {
+
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 

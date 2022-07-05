@@ -1,9 +1,4 @@
 
-
-
-
-
-
 import Foundation
 import RxRelay
 import RxSwift
@@ -25,7 +20,7 @@ class GroupListViewModel {
             }
         }).disposed(by: _disposeBag)
     }
-    
+
     func getMyGroups() {
         IMController.shared.getJoinedGroupList { [weak self] (groups: [GroupInfo]) in
             let groups: [GroupInfo] = groups ?? []

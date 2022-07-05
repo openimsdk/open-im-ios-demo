@@ -1,16 +1,10 @@
 
-
-
-
-
-
-import UIKit
 import AVFoundation
+import UIKit
 
 class JNScanner: NSObject, AVCaptureMetadataOutputObjectsDelegate, AVCapturePhotoCaptureDelegate {
-
     lazy var cameraLayer: AVCaptureVideoPreviewLayer = {
-        let v = AVCaptureVideoPreviewLayer.init(session: _session)
+        let v = AVCaptureVideoPreviewLayer(session: _session)
         v.videoGravity = .resizeAspectFill
         return v
     }()
@@ -24,7 +18,7 @@ class JNScanner: NSObject, AVCaptureMetadataOutputObjectsDelegate, AVCapturePhot
         }
 
         do {
-            _input = try AVCaptureDeviceInput.init(device: device)
+            _input = try AVCaptureDeviceInput(device: device)
         } catch {
             print("scan input error:\(error.localizedDescription)")
         }
@@ -108,23 +102,23 @@ class JNScanner: NSObject, AVCaptureMetadataOutputObjectsDelegate, AVCapturePhot
     }
 
     func scanQRImage(image: UIImage) -> [ScanResult] {
-        let det = CIDetector.init(ofType: CIDetectorTypeQRCode, context: nil, options: [CIDetectorAccuracy: CIDetectorAccuracyHigh])
-        guard let img = CIImage.init(image: image), let detector = det else {
+        let det = CIDetector(ofType: CIDetectorTypeQRCode, context: nil, options: [CIDetectorAccuracy: CIDetectorAccuracyHigh])
+        guard let img = CIImage(image: image), let detector = det else {
             return []
         }
         let features = detector.features(in: img, options: [CIDetectorAccuracy: CIDetectorAccuracyHigh])
         let results = features.filter { (feature: CIFeature) -> Bool in
-            return feature.isKind(of: CIQRCodeFeature.self)
-        }.compactMap { (feature) -> CIQRCodeFeature? in
-            return feature as? CIQRCodeFeature
+            feature.isKind(of: CIQRCodeFeature.self)
+        }.compactMap { feature -> CIQRCodeFeature? in
+            feature as? CIQRCodeFeature
         }.compactMap { (feature: CIQRCodeFeature) -> ScanResult? in
-            ScanResult.init(strScanned: feature.messageString, imgScanned: image, locations: nil)
+            ScanResult(strScanned: feature.messageString, imgScanned: image, locations: nil)
         }
 
         return results
     }
 
-    func metadataOutput(_ output: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from connection: AVCaptureConnection) {
+    func metadataOutput(_: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from _: AVCaptureConnection) {
         // 只处理一个扫描结果
         if !_needScan {
             return
@@ -136,13 +130,13 @@ class JNScanner: NSObject, AVCaptureMetadataOutputObjectsDelegate, AVCapturePhot
             guard let code = meta as? AVMetadataMachineReadableCodeObject else {
                 continue
             }
-            let item = ScanResult.init(strScanned: code.stringValue, imgScanned: nil, locations: code.corners)
+            let item = ScanResult(strScanned: code.stringValue, imgScanned: nil, locations: code.corners)
             _scanResults.append(item)
             _capture()
         }
     }
 
-    func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
+    func photoOutput(_: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
         stop()
         if let err = error {
             print("scan output error:\(err.localizedDescription)")
@@ -152,27 +146,27 @@ class JNScanner: NSObject, AVCaptureMetadataOutputObjectsDelegate, AVCapturePhot
 
         if let data = photo.fileDataRepresentation() {
             var result: [ScanResult] = []
-            let image = UIImage.init(data: data)
+            let image = UIImage(data: data)
             for item in _scanResults {
-                let nItem = ScanResult.init(strScanned: item.strScanned, imgScanned: image, locations: item.locations)
+                let nItem = ScanResult(strScanned: item.strScanned, imgScanned: image, locations: item.locations)
                 result.append(nItem)
             }
             scanSuccessBlock?(result)
         }
     }
 
-    func photoOutput(_ output: AVCapturePhotoOutput, willCapturePhotoFor resolvedSettings: AVCaptureResolvedPhotoSettings) {
+    func photoOutput(_: AVCapturePhotoOutput, willCapturePhotoFor _: AVCaptureResolvedPhotoSettings) {
         AudioServicesDisposeSystemSoundID(1108)
     }
 
     deinit {
         #if DEBUG
-        print("dealloc \(type(of: self))")
+            print("dealloc \(type(of: self))")
         #endif
     }
 
     private func _capture() {
-        let settings = AVCapturePhotoSettings.init()
+        let settings = AVCapturePhotoSettings()
         _stillImgOutput.capturePhoto(with: settings, delegate: self)
     }
 
@@ -181,6 +175,7 @@ class JNScanner: NSObject, AVCaptureMetadataOutputObjectsDelegate, AVCapturePhot
         v.sessionPreset = AVCaptureSession.Preset.high
         return v
     }()
+
     private let _device = AVCaptureDevice.default(for: .video)
     private var _input: AVCaptureDeviceInput?
     private lazy var _output: AVCaptureMetadataOutput = {
@@ -188,6 +183,7 @@ class JNScanner: NSObject, AVCaptureMetadataOutputObjectsDelegate, AVCapturePhot
         v.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
         return v
     }()
+
     private var _stillImgOutput = AVCapturePhotoOutput()
     private var _scanResults: [ScanResult] = []
     private var _needScan: Bool = false

@@ -1,17 +1,11 @@
 
-
-
-
-
-
-import UIKit
-import SnapKit
 import RxSwift
+import SnapKit
+import UIKit
 
 class OptionTableViewCell: UITableViewCell {
-    
     var disposeBag = DisposeBag()
-    
+
     let titleLabel: UILabel = {
         let v = UILabel()
         v.font = UIFont.systemFont(ofSize: 18)
@@ -20,7 +14,7 @@ class OptionTableViewCell: UITableViewCell {
         v.setContentCompressionResistancePriority(.required, for: .horizontal)
         return v
     }()
-    
+
     let subtitleLabel: UILabel = {
         let v = UILabel()
         v.font = UIFont.systemFont(ofSize: 16)
@@ -30,14 +24,14 @@ class OptionTableViewCell: UITableViewCell {
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        self.accessoryType = .disclosureIndicator
-        self.selectionStyle = .none
+        accessoryType = .disclosureIndicator
+        selectionStyle = .none
         contentView.addSubview(titleLabel)
         titleLabel.snp.makeConstraints { make in
             make.left.equalToSuperview().offset(StandardUI.margin_22)
             make.centerY.equalToSuperview()
         }
-        
+
         contentView.addSubview(subtitleLabel)
         subtitleLabel.snp.makeConstraints { make in
             make.right.equalToSuperview().offset(-12)
@@ -45,11 +39,12 @@ class OptionTableViewCell: UITableViewCell {
             make.left.greaterThanOrEqualTo(titleLabel.snp.right).offset(10)
         }
     }
-    
-    required init?(coder: NSCoder) {
+
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func prepareForReuse() {
         super.prepareForReuse()
         accessoryType = .disclosureIndicator

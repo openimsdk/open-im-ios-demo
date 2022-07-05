@@ -1,21 +1,13 @@
 
-
-
-
-
-
-
-
 import UIKit
 
 class UnderlineButton: UIButton {
-    
     let underline: UIView = {
         let v = UIView()
         v.backgroundColor = StandardUI.color_1B72EC
         return v
     }()
-    
+
     var underLineWidth: CGFloat? {
         didSet {
             if let underLineWidth = underLineWidth {
@@ -27,21 +19,22 @@ class UnderlineButton: UIButton {
             }
         }
     }
-    
+
     override init(frame: CGRect) {
         super.init(frame: frame)
-        self.addSubview(underline)
+        addSubview(underline)
         underline.snp.makeConstraints { make in
             make.bottom.centerX.equalToSuperview()
             make.left.right.equalToSuperview()
             make.height.equalTo(3)
         }
     }
-    
-    required init?(coder: NSCoder) {
+
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override var isSelected: Bool {
         didSet {
             underline.isHidden = !isSelected

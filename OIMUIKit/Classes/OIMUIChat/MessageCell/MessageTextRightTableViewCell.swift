@@ -1,13 +1,7 @@
 
-
-
-
-
-
 import UIKit
 
 class MessageTextRightTableViewCell: MessageBaseRightTableViewCell {
-
     let contentLabel: UILabel = {
         let v = UILabel()
         v.numberOfLines = 0
@@ -21,14 +15,16 @@ class MessageTextRightTableViewCell: MessageBaseRightTableViewCell {
             make.edges.equalToSuperview()
         }
     }
-    
-    required init?(coder: NSCoder) {
+
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+
     override func setMessage(model: MessageInfo, extraInfo: ExtraInfo?) {
         super.setMessage(model: model, extraInfo: extraInfo)
         if let content = model.content {
-            contentLabel.attributedText = EmojiHelper.shared.replaceTextWithEmojiIn(attributedString: NSAttributedString.init(string: content))
+            contentLabel.attributedText = EmojiHelper.shared.replaceTextWithEmojiIn(attributedString: NSAttributedString(string: content))
         }
     }
 }

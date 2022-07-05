@@ -1,21 +1,17 @@
 
-
-    
-    
-
-import UIKit
 import RxSwift
+import UIKit
 
 class ChatToolController: UICollectionViewController, UIPopoverPresentationControllerDelegate {
     let disposeBag = DisposeBag()
     init(sourceView: UIView, items: [ToolItem]) {
-        let itemSize = CGSize.init(width: 35, height: 40)
-        let lineSpacing: Int = 10
-        let itemSpacing: Int = 5
-        let leftRightInset: Int = 16
-        let topBottomInset: Int = 0
+        let itemSize = CGSize(width: 35, height: 40)
+        let lineSpacing = 10
+        let itemSpacing = 5
+        let leftRightInset = 16
+        let topBottomInset = 0
         let layout: UICollectionViewFlowLayout = {
-            let v = UICollectionViewFlowLayout.init()
+            let v = UICollectionViewFlowLayout()
             v.itemSize = itemSize
             v.minimumLineSpacing = CGFloat(lineSpacing)
             v.minimumInteritemSpacing = CGFloat(itemSpacing)
@@ -26,32 +22,33 @@ class ChatToolController: UICollectionViewController, UIPopoverPresentationContr
         collectionView.register(ChatToolCell.self, forCellWithReuseIdentifier: ChatToolCell.className)
         collectionView.backgroundColor = StandardUI.color_666666
         collectionView.isScrollEnabled = false
-        self.toolItems = items
-        self.modalPresentationStyle = .popover
+        toolItems = items
+        modalPresentationStyle = .popover
         let maxCountPerLine = 4
-        let itemWidth: Int = Int(itemSize.width)
-        let itemHeight: Int = Int(itemSize.height)
+        let itemWidth = Int(itemSize.width)
+        let itemHeight = Int(itemSize.height)
         let width: Int = items.count >= maxCountPerLine ? (itemWidth * maxCountPerLine + (maxCountPerLine - 1) * itemSpacing) : (items.count * itemWidth + (items.count - 1) * itemSpacing + leftRightInset * 2)
         let height: Int = items.count > maxCountPerLine ? (itemHeight * 2 + lineSpacing + topBottomInset * 2) : (itemHeight + topBottomInset * 2)
-        self.preferredContentSize = CGSize.init(width: width, height: height)
-        let popover = self.popoverPresentationController
+        preferredContentSize = CGSize(width: width, height: height)
+        let popover = popoverPresentationController
         popover?.delegate = self
         popover?.sourceView = sourceView
         popover?.popoverBackgroundViewClass = CustomPopoverBackgroundView.self
     }
-    
-    required init?(coder: NSCoder) {
+
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
-    func adaptivePresentationStyle(for controller: UIPresentationController) -> UIModalPresentationStyle {
+
+    func adaptivePresentationStyle(for _: UIPresentationController) -> UIModalPresentationStyle {
         return .none
     }
-    
-    override func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+
+    override func collectionView(_: UICollectionView, numberOfItemsInSection _: Int) -> Int {
         return toolItems.count
     }
-    
+
     override func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ChatToolCell.className, for: indexPath) as! ChatToolCell
         let item = toolItems[indexPath.item]
@@ -59,9 +56,9 @@ class ChatToolController: UICollectionViewController, UIPopoverPresentationContr
         cell.titleLabel.text = item.name
         return cell
     }
-    
+
     var toolItems: [ToolItem] = ToolItem.allCases
-    
+
     enum ToolItem: CaseIterable {
         case copy
         case delete
@@ -70,26 +67,26 @@ class ChatToolController: UICollectionViewController, UIPopoverPresentationContr
         case revoke
         case muiltSelection
         case translate
-        
+
         var image: UIImage? {
             switch self {
             case .copy:
-                return UIImage.init(nameInBundle: "chattool_copy_btn_icon")
+                return UIImage(nameInBundle: "chattool_copy_btn_icon")
             case .delete:
-                return UIImage.init(nameInBundle: "chattool_delete_btn_icon")
+                return UIImage(nameInBundle: "chattool_delete_btn_icon")
             case .forward:
-                return UIImage.init(nameInBundle: "chattool_forward_btn_icon")
+                return UIImage(nameInBundle: "chattool_forward_btn_icon")
             case .reply:
-                return UIImage.init(nameInBundle: "chattool_reply_btn_icon")
+                return UIImage(nameInBundle: "chattool_reply_btn_icon")
             case .revoke:
-                return UIImage.init(nameInBundle: "chattool_revoke_btn_icon")
+                return UIImage(nameInBundle: "chattool_revoke_btn_icon")
             case .muiltSelection:
-                return UIImage.init(nameInBundle: "chattool_multi_sel_btn_icon")
+                return UIImage(nameInBundle: "chattool_multi_sel_btn_icon")
             case .translate:
-                return UIImage.init(nameInBundle: "chattool_translate_btn_icon")
+                return UIImage(nameInBundle: "chattool_translate_btn_icon")
             }
         }
-        
+
         var name: String {
             switch self {
             case .copy:
@@ -115,19 +112,19 @@ class ChatToolController: UICollectionViewController, UIPopoverPresentationContr
             let v = UIImageView()
             return v
         }()
-        
+
         let titleLabel: UILabel = {
             let v = UILabel()
             v.font = .systemFont(ofSize: 10)
             v.textColor = .white
             return v
         }()
-        
+
         override init(frame: CGRect) {
             super.init(frame: frame)
             contentView.addSubview(imageView)
             imageView.snp.makeConstraints { make in
-                make.size.equalTo(CGSize.init(width: 18, height: 20))
+                make.size.equalTo(CGSize(width: 18, height: 20))
                 make.top.equalToSuperview().offset(3)
                 make.centerX.equalToSuperview()
             }
@@ -137,8 +134,9 @@ class ChatToolController: UICollectionViewController, UIPopoverPresentationContr
                 make.top.equalTo(imageView.snp.bottom).offset(3)
             }
         }
-        
-        required init?(coder: NSCoder) {
+
+        @available(*, unavailable)
+        required init?(coder _: NSCoder) {
             fatalError("init(coder:) has not been implemented")
         }
     }

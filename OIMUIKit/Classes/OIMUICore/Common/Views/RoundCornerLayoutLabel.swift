@@ -1,9 +1,8 @@
 
-import UIKit
 import SnapKit
+import UIKit
 
 class RoundCornerLayoutLabel: UIView {
-
     /// 文本距左右边界的缩进值
     public var contentInset: UIEdgeInsets = .zero {
         didSet {
@@ -70,15 +69,16 @@ class RoundCornerLayoutLabel: UIView {
 
     private var radius_: CGFloat?
     private var corners_: UIRectCorner
-    private var shapeLayer_: CAShapeLayer = CAShapeLayer()
+    private var shapeLayer_: CAShapeLayer = .init()
     private var _iconImage: UIImage?
     private lazy var _hStack: UIStackView = {
-        let v = UIStackView.init(arrangedSubviews: [iconImageView, _label])
+        let v = UIStackView(arrangedSubviews: [iconImageView, _label])
         v.axis = .horizontal
         v.distribution = .equalSpacing
         v.alignment = .center
         return v
     }()
+
     /// 只有文本的圆角Label
     /// - Parameters:
     ///   - roundCorners: 圆角
@@ -87,7 +87,7 @@ class RoundCornerLayoutLabel: UIView {
         corners_ = roundCorners
         radius_ = radius
         super.init(frame: .zero)
-        self.addSubview(_hStack)
+        addSubview(_hStack)
         _hStack.snp.remakeConstraints { make in
             make.edges.equalToSuperview()
         }
@@ -105,7 +105,7 @@ class RoundCornerLayoutLabel: UIView {
         radius_ = radius
         super.init(frame: .zero)
         iconImageView.image = icon
-        self.addSubview(_hStack)
+        addSubview(_hStack)
         _hStack.snp.remakeConstraints { make in
             make.edges.equalToSuperview()
         }
@@ -117,16 +117,17 @@ class RoundCornerLayoutLabel: UIView {
         _label.isHidden = text == nil
     }
 
-    required init?(coder: NSCoder) {
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        let radius = radius_ ?? self.bounds.size.height / 2
-        let path = UIBezierPath.init(roundedRect: self.bounds, byRoundingCorners: corners_, cornerRadii: CGSize.init(width: radius, height: radius)).cgPath
-        shapeLayer_.frame = self.bounds
+        let radius = radius_ ?? bounds.size.height / 2
+        let path = UIBezierPath(roundedRect: bounds, byRoundingCorners: corners_, cornerRadii: CGSize(width: radius, height: radius)).cgPath
+        shapeLayer_.frame = bounds
         shapeLayer_.path = path
-        self.layer.mask = shapeLayer_
+        layer.mask = shapeLayer_
     }
 }

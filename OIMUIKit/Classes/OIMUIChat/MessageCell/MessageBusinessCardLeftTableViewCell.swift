@@ -1,13 +1,7 @@
 
-
-
-
-
-
 import UIKit
 
 class MessageBusinessCardLeftTableViewCell: MessageBaseLeftTableViewCell {
-    
     let cardView: MessageBusinessCardView = {
         let v = MessageBusinessCardView()
         v.layer.cornerRadius = 6
@@ -15,23 +9,25 @@ class MessageBusinessCardLeftTableViewCell: MessageBaseLeftTableViewCell {
         v.layer.borderWidth = 1
         return v
     }()
+
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        
+
         bubbleImageView.addSubview(cardView)
         cardView.snp.makeConstraints { make in
             make.top.bottom.right.equalToSuperview()
             make.left.equalToSuperview().offset(8)
-            make.size.equalTo(CGSize.init(width: 222, height: 88))
+            make.size.equalTo(CGSize(width: 222, height: 88))
         }
-        
+
         bubbleImageView.image = nil
     }
-    
-    required init?(coder: NSCoder) {
+
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func setMessage(model: MessageInfo, extraInfo: ExtraInfo?) {
         super.setMessage(model: model, extraInfo: extraInfo)
         guard let json = model.content else { return }
@@ -48,44 +44,44 @@ class MessageBusinessCardView: UIView {
         v.clipsToBounds = true
         return v
     }()
-    
+
     let nameLabel: UILabel = {
         let v = UILabel()
         v.font = .systemFont(ofSize: 16)
         v.textColor = StandardUI.color_333333
         return v
     }()
-    
+
     override init(frame: CGRect) {
         super.init(frame: frame)
-        self.backgroundColor = .white
-        self.addSubview(avatarImageView)
+        backgroundColor = .white
+        addSubview(avatarImageView)
         avatarImageView.snp.makeConstraints { make in
             make.size.equalTo(StandardUI.avatar_42)
             make.top.equalToSuperview().offset(12)
             make.left.equalToSuperview().offset(16)
         }
-        
-        self.addSubview(nameLabel)
+
+        addSubview(nameLabel)
         nameLabel.snp.makeConstraints { make in
             make.left.equalTo(avatarImageView.snp.right).offset(8)
             make.centerY.equalTo(avatarImageView)
             make.right.equalToSuperview().offset(-8)
         }
-        
+
         let lineView: UIView = {
             let v = UIView()
             v.backgroundColor = StandardUI.color_E9E9E9
             return v
         }()
-        
-        self.addSubview(lineView)
+
+        addSubview(lineView)
         lineView.snp.makeConstraints { make in
             make.height.equalTo(1)
             make.left.right.equalToSuperview()
             make.top.equalTo(avatarImageView.snp.bottom).offset(10)
         }
-        
+
         let iconLabel: UILabel = {
             let v = UILabel()
             v.text = "名片".innerLocalized()
@@ -93,16 +89,17 @@ class MessageBusinessCardView: UIView {
             v.textColor = StandardUI.color_999999
             return v
         }()
-        
-        self.addSubview(iconLabel)
+
+        addSubview(iconLabel)
         iconLabel.snp.makeConstraints { make in
             make.centerX.equalTo(avatarImageView)
             make.top.equalTo(lineView.snp.bottom).offset(3)
             make.bottom.equalToSuperview().inset(4)
         }
     }
-    
-    required init?(coder: NSCoder) {
+
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 }

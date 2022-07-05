@@ -5,9 +5,9 @@
 @class WPFPerson;
 
 typedef NS_ENUM(NSUInteger, MatchType) {
-    MatchTypeChinese,  
-    MatchTypeComplate, 
-    MatchTypeInitial,  
+    MatchTypeChinese,  // 中文完全匹配
+    MatchTypeComplate, // 拼音全拼匹配
+    MatchTypeInitial,  // 拼音简拼匹配
 };
 
 @interface WPFSearchResultModel : NSObject

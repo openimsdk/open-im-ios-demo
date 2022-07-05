@@ -1,9 +1,4 @@
 
-
-
-
-
-
 import UIKit
 
 class MessageTimeOrTipsTableViewCell: UITableViewCell, MessageCellAble {
@@ -19,7 +14,7 @@ class MessageTimeOrTipsTableViewCell: UITableViewCell, MessageCellAble {
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        self.selectionStyle = .none
+        selectionStyle = .none
         contentView.addSubview(titleLabel)
         titleLabel.snp.makeConstraints { make in
             make.left.right.equalToSuperview().inset(22)
@@ -27,13 +22,14 @@ class MessageTimeOrTipsTableViewCell: UITableViewCell, MessageCellAble {
             make.bottom.equalToSuperview().offset(-5).priority(.low)
         }
     }
-    
-    required init?(coder: NSCoder) {
+
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     func setMessage(model: MessageInfo, extraInfo: ExtraInfo?) {
-        var isSingleChat: Bool = false
+        var isSingleChat = false
         if let info = extraInfo {
             isSingleChat = info.isC2C
         }

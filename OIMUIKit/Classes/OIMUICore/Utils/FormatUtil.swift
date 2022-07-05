@@ -1,9 +1,4 @@
 
-
-
-
-
-
 import Foundation
 
 struct FormatUtil {
@@ -15,37 +10,37 @@ struct FormatUtil {
             let hour = seconds / 3600
             let min = seconds % 3600 / 60
             let sec = seconds % 3600 % 60
-            return String.init(format: "%02d:%02d:%02d", hour, min, sec)
+            return String(format: "%02d:%02d:%02d", hour, min, sec)
         } else {
             let min = seconds / 60
             let sec = seconds % 60 % 60
-            return String.init(format: "%02d:%02d", min, sec)
+            return String(format: "%02d:%02d", min, sec)
         }
     }
-    
+
     static func getFormatDate(formatString: String = "yyyy/MM/dd", of seconds: Int) -> String {
-        let format = DateFormatter.init()
+        let format = DateFormatter()
         format.dateFormat = formatString
-        let date = Date.init(timeIntervalSince1970: TimeInterval.init(seconds))
+        let date = Date(timeIntervalSince1970: TimeInterval(seconds))
         let str = format.string(from: date)
         return str
     }
-    
+
     static func getFileSizeDesc(fileSize: Int) -> String {
         let formatter = ByteCountFormatter()
         formatter.countStyle = .file
         let ret = formatter.string(fromByteCount: Int64(fileSize))
         return ret
     }
-    
+
     static func isWeek(seconds: Int) -> Bool {
-        let date = Date.init(timeIntervalSince1970: TimeInterval(seconds))
+        let date = Date(timeIntervalSince1970: TimeInterval(seconds))
         let ret = Calendar.current.isDateInWeekend(date)
         return ret
     }
-    
+
     static func isThisMonth(seconds: Int) -> Bool {
-        let date = Date.init(timeIntervalSince1970: TimeInterval(seconds))
+        let date = Date(timeIntervalSince1970: TimeInterval(seconds))
         let ret = Calendar.current.isDateInMonth(date)
         return ret
     }

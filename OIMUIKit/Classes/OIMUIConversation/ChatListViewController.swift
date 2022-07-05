@@ -1,10 +1,9 @@
 
-import UIKit
 import RxSwift
 import SVProgressHUD
+import UIKit
 
 open class ChatListViewController: UIViewController, UITableViewDelegate {
-    
     private lazy var _headerView: ChatListHeaderView = {
         let v = ChatListHeaderView()
         v.searchBar.rx.textDidBeginEditing.subscribe(onNext: {
@@ -15,14 +14,14 @@ open class ChatListViewController: UIViewController, UITableViewDelegate {
         }).disposed(by: _disposeBag)
         return v
     }()
-    
+
     private lazy var _tableView: UITableView = {
         let v = UITableView()
         v.register(ChatTableViewCell.self, forCellReuseIdentifier: ChatTableViewCell.className)
         v.delegate = self
         v.separatorStyle = .none
         let refresh: UIRefreshControl = {
-            let v = UIRefreshControl.init(frame: CGRect.init(x: 0, y: 0, width: 35, height: 35))
+            let v = UIRefreshControl(frame: CGRect(x: 0, y: 0, width: 35, height: 35))
             v.rx.controlEvent(.valueChanged).subscribe(onNext: { [weak self, weak v] in
                 self?._viewModel.getAllConversations()
                 self?._viewModel.getSelfInfo()
@@ -33,31 +32,31 @@ open class ChatListViewController: UIViewController, UITableViewDelegate {
         v.refreshControl = refresh
         return v
     }()
-    
-    open override func viewWillAppear(_ animated: Bool) {
+
+    override open func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        self.navigationController?.setNavigationBarHidden(true, animated: false)
+        navigationController?.setNavigationBarHidden(true, animated: false)
     }
-    
-    open override func viewWillDisappear(_ animated: Bool) {
+
+    override open func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        self.navigationController?.setNavigationBarHidden(false, animated: true)
+        navigationController?.setNavigationBarHidden(false, animated: true)
     }
-    
+
     private lazy var _menuView: ChatMenuView = {
         let v = ChatMenuView()
-        let scanItem: ChatMenuView.MenuItem = ChatMenuView.MenuItem.init(title: "扫一扫".innerLocalized(), icon: UIImage.init(nameInBundle: "chat_menu_scan_icon")) { [weak self] in
+        let scanItem = ChatMenuView.MenuItem(title: "扫一扫".innerLocalized(), icon: UIImage(nameInBundle: "chat_menu_scan_icon")) { [weak self] in
             let vc = ScanViewController()
             vc.scanDidComplete = { [weak self] (result: String) in
                 if result.contains(IMController.addFriendPrefix) {
                     let uid = result.replacingOccurrences(of: IMController.addFriendPrefix, with: "")
-                    let vc = UserDetailTableViewController.init(userId: uid, groupId: nil)
+                    let vc = UserDetailTableViewController(userId: uid, groupId: nil)
                     vc.hidesBottomBarWhenPushed = true
                     self?.navigationController?.pushViewController(vc, animated: true)
                     self?.dismiss(animated: false)
                 } else if result.contains(IMController.joinGroupPrefix) {
                     let groupID = result.replacingOccurrences(of: IMController.joinGroupPrefix, with: "")
-                    let vc = GroupDetailViewController.init(groupId: groupID)
+                    let vc = GroupDetailViewController(groupId: groupID)
                     vc.hidesBottomBarWhenPushed = true
                     self?.navigationController?.pushViewController(vc, animated: true)
                     self?.dismiss(animated: false)
@@ -68,18 +67,18 @@ open class ChatListViewController: UIViewController, UITableViewDelegate {
             vc.modalPresentationStyle = .fullScreen
             self?.present(vc, animated: true, completion: nil)
         }
-        let addFriendItem = ChatMenuView.MenuItem.init(title: "添加好友".innerLocalized(), icon: UIImage.init(nameInBundle: "chat_menu_add_friend_icon")) { [weak self] in
+        let addFriendItem = ChatMenuView.MenuItem(title: "添加好友".innerLocalized(), icon: UIImage(nameInBundle: "chat_menu_add_friend_icon")) { [weak self] in
             let vc = SearchFriendViewController()
             vc.hidesBottomBarWhenPushed = true
             self?.navigationController?.pushViewController(vc, animated: true)
         }
-        
-        let addGroupItem = ChatMenuView.MenuItem.init(title: "添加群聊".innerLocalized(), icon: UIImage.init(nameInBundle: "chat_menu_add_group_icon")) { [weak self] in
+
+        let addGroupItem = ChatMenuView.MenuItem(title: "添加群聊".innerLocalized(), icon: UIImage(nameInBundle: "chat_menu_add_group_icon")) { [weak self] in
             let vc = SearchGroupViewController()
             vc.hidesBottomBarWhenPushed = true
             self?.navigationController?.pushViewController(vc, animated: true)
         }
-        let createGroupItem = ChatMenuView.MenuItem.init(title: "发起群聊".innerLocalized(), icon: UIImage.init(nameInBundle: "chat_menu_create_group_icon")) { [weak self] in
+        let createGroupItem = ChatMenuView.MenuItem(title: "发起群聊".innerLocalized(), icon: UIImage(nameInBundle: "chat_menu_create_group_icon")) { [weak self] in
             let vc = SelectContactsViewController()
             vc.selectedContactsBlock = { [weak vc, weak self] (users: [UserInfo]) in
                 guard let sself = self else { return }
@@ -88,13 +87,13 @@ open class ChatListViewController: UIViewController, UITableViewDelegate {
                     IMController.shared.getConversation(sessionType: groupInfo.groupType, sourceId: groupInfo.groupID) { (conversation: ConversationInfo?) in
                         guard let conversation = conversation else { return }
 
-                        let viewModel: MessageListViewModel = MessageListViewModel.init(groupId: groupInfo.groupID, conversation: conversation)
-                        let chatVC = MessageListViewController.init(viewModel: viewModel)
+                        let viewModel = MessageListViewModel(groupId: groupInfo.groupID, conversation: conversation)
+                        let chatVC = MessageListViewController(viewModel: viewModel)
                         chatVC.hidesBottomBarWhenPushed = true
                         self?.navigationController?.pushViewController(chatVC, animated: true)
                         if let root = self?.navigationController?.viewControllers.first {
                             self?.navigationController?.viewControllers.removeAll(where: { controller in
-                                return controller != root && controller != chatVC
+                                controller != root && controller != chatVC
                             })
                         }
                     }
@@ -106,16 +105,16 @@ open class ChatListViewController: UIViewController, UITableViewDelegate {
         v.setItems([scanItem, addFriendItem, addGroupItem, createGroupItem])
         return v
     }()
-    
+
     private let _disposeBag = DisposeBag()
     private let _viewModel = ChatListViewModel()
 
-    open override func viewDidLoad() {
+    override open func viewDidLoad() {
         super.viewDidLoad()
         initView()
         bindData()
     }
-    
+
     private func initView() {
         view.addSubview(_headerView)
         _headerView.snp.makeConstraints { make in
@@ -128,7 +127,7 @@ open class ChatListViewController: UIViewController, UITableViewDelegate {
             make.left.right.bottom.equalToSuperview()
         }
     }
-    
+
     private func bindData() {
         _headerView.addBtn.rx.tap.subscribe(onNext: { [weak self] in
             guard let sself = self else { return }
@@ -139,8 +138,8 @@ open class ChatListViewController: UIViewController, UITableViewDelegate {
                 sself._menuView.removeFromSuperview()
             }
         }).disposed(by: _disposeBag)
-        
-        _viewModel.conversationsRelay.asDriver(onErrorJustReturn: []).drive(_tableView.rx.items) { (tableView, row, item: ConversationInfo) in
+
+        _viewModel.conversationsRelay.asDriver(onErrorJustReturn: []).drive(_tableView.rx.items) { (tableView, _, item: ConversationInfo) in
             let cell = tableView.dequeueReusableCell(withIdentifier: ChatTableViewCell.className) as! ChatTableViewCell
             let placeholderName: String = item.conversationType == .c2c ? "contact_my_friend_icon" : "contact_my_group_icon"
             cell.avatarImageView.setImage(with: item.faceURL, placeHolder: placeholderName)
@@ -164,24 +163,24 @@ open class ChatListViewController: UIViewController, UITableViewDelegate {
             cell.timeLabel.text = MessageHelper.convertList(timestamp_ms: item.latestMsgSendTime)
             return cell
         }.disposed(by: _disposeBag)
-        
+
         _tableView.rx.modelSelected(ConversationInfo.self).subscribe(onNext: { [weak self] (conversation: ConversationInfo) in
             let viewModel: MessageListViewModel?
             switch conversation.conversationType {
             case .group:
-                viewModel = MessageListViewModel.init(groupId: conversation.groupID ?? "", conversation: conversation)
+                viewModel = MessageListViewModel(groupId: conversation.groupID ?? "", conversation: conversation)
             case .c2c:
-                viewModel = MessageListViewModel.init(userId: conversation.userID ?? "", conversation: conversation)
+                viewModel = MessageListViewModel(userId: conversation.userID ?? "", conversation: conversation)
             case .undefine:
                 viewModel = nil
             }
             if let viewModel = viewModel {
-                let controller = MessageListViewController.init(viewModel: viewModel)
+                let controller = MessageListViewController(viewModel: viewModel)
                 controller.hidesBottomBarWhenPushed = true
                 self?.navigationController?.pushViewController(controller, animated: true)
             }
         }).disposed(by: _disposeBag)
-        
+
         _viewModel.loginUserPublish.subscribe(onNext: { [weak self] (userInfo: UserInfo?) in
             self?._headerView.avatarImageView.setImage(with: userInfo?.faceURL, placeHolder: nil)
             self?._headerView.nameLabel.text = userInfo?.nickname
@@ -189,26 +188,26 @@ open class ChatListViewController: UIViewController, UITableViewDelegate {
             self?._headerView.statusLabel.statusView.backgroundColor = StandardUI.color_10CC64
         }).disposed(by: _disposeBag)
     }
-    
-    public func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+
+    public func tableView(_: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         let item = _viewModel.conversationsRelay.value[indexPath.row]
-        
+
         let pinActionTitle = item.isPinned ? "取消置顶".innerLocalized() : "置顶".innerLocalized()
-        let setTopAction: UIContextualAction = UIContextualAction.init(style: .normal, title: pinActionTitle) { [weak self] action, actionView, completion in
+        let setTopAction = UIContextualAction(style: .normal, title: pinActionTitle) { [weak self] _, _, completion in
             self?._viewModel.pinConversation(id: item.conversationID, isPinned: item.isPinned, onSuccess: { _ in
                 completion(true)
             })
         }
         setTopAction.backgroundColor = StandardUI.color_1B72EC
-        
-        let deleteAction: UIContextualAction = UIContextualAction.init(style: .destructive, title: "移除".innerLocalized()) { [weak self] action, actionView, completion in
+
+        let deleteAction = UIContextualAction(style: .destructive, title: "移除".innerLocalized()) { [weak self] _, _, completion in
             self?._viewModel.deleteConversationFromLocalStorage(conversationId: item.conversationID, completion: { _ in
                 completion(true)
             })
         }
-        
+
         deleteAction.backgroundColor = StandardUI.color_FFAB41
-        let configure = UISwipeActionsConfiguration.init(actions: [deleteAction, setTopAction])
+        let configure = UISwipeActionsConfiguration(actions: [deleteAction, setTopAction])
         return configure
     }
 }

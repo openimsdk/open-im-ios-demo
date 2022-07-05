@@ -1,41 +1,40 @@
 
-import UIKit
-import SnapKit
 import RxSwift
+import SnapKit
 import SVProgressHUD
+import UIKit
 
 class GroupAnnounceViewController: UIViewController {
-    
     private let avatarImageView: UIImageView = {
         let v = UIImageView()
         v.layer.cornerRadius = 4
         v.clipsToBounds = true
         return v
     }()
-    
+
     private let nameLabel: UILabel = {
         let v = UILabel()
         v.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         v.textColor = StandardUI.color_333333
         return v
     }()
-    
+
     private let timeLabel: UILabel = {
         let v = UILabel()
         v.font = UIFont.systemFont(ofSize: 12)
         v.textColor = StandardUI.color_999999
         return v
     }()
-    
+
     private let contentTextView: UITextView = {
         let v = UITextView()
         v.font = UIFont.systemFont(ofSize: 16)
         v.textColor = StandardUI.color_333333
-        v.contentInset = UIEdgeInsets.init(top: 0, left: StandardUI.margin_22, bottom: 0, right: StandardUI.margin_22)
+        v.contentInset = UIEdgeInsets(top: 0, left: StandardUI.margin_22, bottom: 0, right: StandardUI.margin_22)
         v.isEditable = false
         return v
     }()
-    
+
     private let tipsView: SeparatorView = {
         let v = SeparatorView()
         v.titleLabel.textColor = StandardUI.color_999999
@@ -43,7 +42,7 @@ class GroupAnnounceViewController: UIViewController {
         v.titleLabel.text = "只有群主及管理员可以编辑".innerLocalized()
         return v
     }()
-    
+
     private lazy var headerContainer: UIView = {
         let v = UIView()
         v.addSubview(avatarImageView)
@@ -75,13 +74,13 @@ class GroupAnnounceViewController: UIViewController {
         }
         return v
     }()
-    
+
     private lazy var editBtn: UIBarButtonItem = {
-        let v = UIBarButtonItem.init()
+        let v = UIBarButtonItem()
         v.title = "编辑".innerLocalized()
         return v
     }()
-    
+
     private let _disposeBag = DisposeBag()
     private let memberInfo: GroupMemberInfo
     private let groupInfo: GroupInfo
@@ -90,29 +89,30 @@ class GroupAnnounceViewController: UIViewController {
         self.groupInfo = groupInfo
         super.init(nibName: nil, bundle: nil)
     }
-    
-    required init?(coder: NSCoder) {
+
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
         if memberInfo.roleLevel == .super || memberInfo.roleLevel == .admin {
-            self.navigationItem.rightBarButtonItem = editBtn
+            navigationItem.rightBarButtonItem = editBtn
         } else {
             tipsView.isHidden = true
             contentTextView.isEditable = false
         }
-        
+
         initView()
         bindData()
     }
-    
+
     private func initView() {
-        self.navigationItem.title = "群公告".innerLocalized()
+        navigationItem.title = "群公告".innerLocalized()
         let vStack: UIStackView = {
-            let v = UIStackView.init(arrangedSubviews: [headerContainer, contentTextView, tipsView])
+            let v = UIStackView(arrangedSubviews: [headerContainer, contentTextView, tipsView])
             v.axis = .vertical
             return v
         }()
@@ -123,7 +123,7 @@ class GroupAnnounceViewController: UIViewController {
             make.bottom.equalToSuperview().offset(-kSafeAreaBottomHeight - 60)
         }
     }
-    
+
     private func bindData() {
         nameLabel.text = memberInfo.nickname
         avatarImageView.setImage(with: memberInfo.faceURL, placeHolder: "contact_my_friend_icon")
@@ -144,7 +144,7 @@ class GroupAnnounceViewController: UIViewController {
                 }
             }
         }).disposed(by: _disposeBag)
-        
+
         contentTextView.rx.didChange.subscribe(onNext: { [weak self] in
             guard let sself = self else { return }
             self?.editBtn.title = sself.contentTextView.text.isEmpty ? "编辑".innerLocalized() : "发布".innerLocalized()
@@ -156,26 +156,27 @@ class GroupAnnounceViewController: UIViewController {
             let v = UILabel()
             return v
         }()
-        
+
         override init(frame: CGRect) {
             super.init(frame: frame)
-            let leftIcon: UIImageView = UIImageView.init(image: UIImage.init(nameInBundle: "setting_separator_line_icon"))
-            let rightIcon: UIImageView = UIImageView.init(image: UIImage.init(nameInBundle: "setting_separator_line_icon"))
+            let leftIcon = UIImageView(image: UIImage(nameInBundle: "setting_separator_line_icon"))
+            let rightIcon = UIImageView(image: UIImage(nameInBundle: "setting_separator_line_icon"))
             let hStack: UIStackView = {
-                let v = UIStackView.init(arrangedSubviews: [leftIcon, titleLabel, rightIcon])
+                let v = UIStackView(arrangedSubviews: [leftIcon, titleLabel, rightIcon])
                 v.axis = .horizontal
                 v.spacing = 8
                 v.alignment = .center
                 return v
             }()
-            self.addSubview(hStack)
+            addSubview(hStack)
             hStack.snp.makeConstraints { make in
                 make.top.bottom.equalToSuperview()
                 make.centerX.equalToSuperview()
             }
         }
-        
-        required init?(coder: NSCoder) {
+
+        @available(*, unavailable)
+        required init?(coder _: NSCoder) {
             fatalError("init(coder:) has not been implemented")
         }
     }

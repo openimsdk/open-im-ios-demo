@@ -1,14 +1,7 @@
 
-
-
-
-
-
 import Foundation
 
-class EventLoginSucceed: Event {
-    
-}
+class EventLoginSucceed: Event {}
 
 class EventRecordClear: Event {
     let conversationId: String
@@ -17,9 +10,7 @@ class EventRecordClear: Event {
     }
 }
 
-public class EventLogout: Event {
-    
-}
+public class EventLogout: Event {}
 
 class EventGroupDismissed: Event {
     let conversationId: String

@@ -1,28 +1,28 @@
 
 import Foundation
+import IQKeyboardManagerSwift
 import OpenIMSDK
-import RxSwift
 import RxCocoa
+import RxSwift
 import SVProgressHUD
 import UIKit
-import IQKeyboardManagerSwift
 
 public class IMController: NSObject {
     static let addFriendPrefix = "io.openim.app/addFriend/"
     static let joinGroupPrefix = "io.openim.app/joinGroup/"
-    public static let shared: IMController = IMController()
+    public static let shared: IMController = .init()
     private(set) var imManager: OpenIMSDK.OIMManager!
-    ///好友申请列表新增
+    /// 好友申请列表新增
     let friendApplicationChangedSubject: PublishSubject<FriendApplication> = .init()
-    ///组申请信息更新
+    /// 组申请信息更新
     let groupApplicationChangedSubject: PublishSubject<GroupApplicationInfo> = .init()
     public let contactUnreadSubject: PublishSubject<Int> = .init()
-    
+
     let conversationChangedSubject: BehaviorSubject<[ConversationInfo]> = .init(value: [])
     let friendInfoChangedSubject: BehaviorSubject<UserInfo?> = .init(value: nil)
-    
-    let syncServerStartSubject: PublishSubject<Void> = PublishSubject.init()
-    let syncServerEndSubject: PublishSubject<Void> = PublishSubject.init()
+
+    let syncServerStartSubject: PublishSubject<Void> = PublishSubject()
+    let syncServerEndSubject: PublishSubject<Void> = PublishSubject()
     let newConversationSubject: BehaviorSubject<[ConversationInfo]> = .init(value: [])
     public let totalUnreadSubject: BehaviorSubject<Int> = .init(value: 0)
     let newMsgReceivedSubject: PublishSubject<MessageInfo> = .init()
@@ -30,14 +30,13 @@ public class IMController: NSObject {
     let groupReadReceiptReceived: BehaviorSubject<[ReceiptInfo]> = .init(value: [])
     let msgRevokeReceived: PublishSubject<String> = .init()
     let currentUserRelay: BehaviorRelay<UserInfo?> = .init(value: nil)
-    
+
     private(set) var uid: String = ""
-    
+
     public func setup(apiAdrr: String, wsAddr: String) {
-        let manager = OpenIMSDK.OIMManager.init()
-  
+        let manager = OpenIMSDK.OIMManager()
+
         manager.initSDK(withApiAdrr: apiAdrr, wsAddr: wsAddr, dataDir: nil, logLevel: 6, objectStorage: "minio", onConnecting: {
-            
             print("onConnecting")
         }, onConnectFailure: { (errCode: Int, errMsg: String?) in
             print("onConnectFailed code:\(errCode), msg:\(String(describing: errMsg))")
@@ -54,67 +53,70 @@ public class IMController: NSObject {
         OpenIMSDK.OIMManager.callbacker.addGroupListener(listener: self)
         OpenIMSDK.OIMManager.callbacker.addConversationListener(listener: self)
         OpenIMSDK.OIMManager.callbacker.addAdvancedMsgListener(listener: self)
-        
+
         SVProgressHUD.setDefaultStyle(SVProgressHUDStyle.dark)
         SVProgressHUD.setMaximumDismissTimeInterval(1)
-        
+
         UINavigationBar.appearance().isTranslucent = true
         UINavigationBar.appearance().isOpaque = true
-        
+
         if #available(iOS 13.0, *) {
             let app = UINavigationBarAppearance()
             app.configureWithOpaqueBackground()
             app.titleTextAttributes = [
-                  NSAttributedString.Key.font: UIFont.systemFont(ofSize: 18),
-                  NSAttributedString.Key.foregroundColor: StandardUI.color_333333
+                NSAttributedString.Key.font: UIFont.systemFont(ofSize: 18),
+                NSAttributedString.Key.foregroundColor: StandardUI.color_333333,
             ]
             app.backgroundColor = UIColor.white
             app.shadowColor = .clear
             UINavigationBar.appearance().scrollEdgeAppearance = app
             UINavigationBar.appearance().standardAppearance = app
         }
-        
+
         IQKeyboardManager.shared.enable = true
         IQKeyboardManager.shared.enableAutoToolbar = false
         IQKeyboardManager.shared.shouldResignOnTouchOutside = true
         IQKeyboardManager.shared.disabledDistanceHandlingClasses = [
-            MessageListViewController.self
+            MessageListViewController.self,
         ]
         IQKeyboardManager.shared.disabledToolbarClasses = [
-            MessageListViewController.self
+            MessageListViewController.self,
         ]
         IQKeyboardManager.shared.disabledTouchResignedClasses = [
             SearchResultViewController.self,
             SearchFriendViewController.self,
-            SearchGroupViewController.self
+            SearchGroupViewController.self,
         ]
     }
-    
+
     public func login(uid: String, token: String, onSuccess: @escaping (String?) -> Void, onFail: @escaping (Int, String?) -> Void) {
         Self.shared.imManager.login(uid, token: token) { [weak self] (resp: String?) in
             self?.uid = uid
-            let event = EventLoginSucceed.init()
+            let event = EventLoginSucceed()
             JNNotificationCenter.shared.post(event)
             onSuccess(resp)
         } onFailure: { (code: Int, msg: String?) in
             onFail(code, msg)
         }
     }
-    
+
     struct NetError: Error {
         let code: Int
         let message: String?
     }
-    
-    typealias MessagesCallBack = (([MessageInfo]) -> Void)
+
+    typealias MessagesCallBack = ([MessageInfo]) -> Void
 }
 
-//MARK: - 对外协议
+// MARK: - 对外协议
+
 public protocol ContactsDataSource: AnyObject {
     func setFrequentUsers(_ users: [OIMUserInfo])
     func getFrequentUsers() -> [OIMUserInfo]
 }
-//MARK: - 联系人方法
+
+// MARK: - 联系人方法
+
 extension IMController {
     /// 根据id查找群
     /// - Parameter ids: 群id
@@ -125,13 +127,13 @@ extension IMController {
                 observer.onNext(groups?.first?.groupID)
                 observer.onCompleted()
             }, onFailure: { (code: Int, msg: String?) in
-                observer.onError(NetError.init(code: code, message: msg))
+                observer.onError(NetError(code: code, message: msg))
             })
-            
+
             return Disposables.create()
         }
     }
-    
+
     func getJoinedGroupList(completion: @escaping ([GroupInfo]) -> Void) {
         Self.shared.imManager.getJoinedGroupListWith { (groups: [OIMGroupInfo]?) in
             guard let groups = groups else {
@@ -139,13 +141,13 @@ extension IMController {
                 return
             }
 
-            let joined: [GroupInfo] = groups.compactMap{$0.toGroupInfo()}
+            let joined: [GroupInfo] = groups.compactMap { $0.toGroupInfo() }
             completion(joined)
-        } onFailure: { (code, msg) in
+        } onFailure: { code, msg in
             print("拉取我的群组错误,code:\(code), msg: \(msg)")
         }
     }
-    
+
     /// 根据id查找用户
     /// - Parameter ids: 用户id
     /// - Returns: 第一个用户id
@@ -155,22 +157,22 @@ extension IMController {
                 observer.onNext(users?.first?.toFullUserInfo())
                 observer.onCompleted()
             } onFailure: { (code: Int, msg: String?) in
-                observer.onError(NetError.init(code: code, message: msg))
+                observer.onError(NetError(code: code, message: msg))
             }
             return Disposables.create()
         }
     }
-    
+
     /// 获取好友申请列表
     /// - Parameter completion: 申请数组
     func getFriendApplicationList(completion: @escaping ([FriendApplication]) -> Void) {
         Self.shared.imManager.getFriendApplicationListWith { (applications: [OIMFriendApplication]?) in
             let arr = applications ?? []
-            let ret = arr.compactMap {$0.toFriendApplication()}
+            let ret = arr.compactMap { $0.toFriendApplication() }
             completion(ret)
         }
     }
-    
+
     /// 接受好友申请
     /// - Parameters:
     ///   - uid: 指定好友ID
@@ -181,116 +183,123 @@ extension IMController {
             completion(resp)
         }
     }
-    
+
     func getGroupApplicationList(completion: @escaping ([GroupApplicationInfo]) -> Void) {
         Self.shared.imManager.getGroupApplicationListWith { (applications: [OIMGroupApplicationInfo]?) in
             let arr = applications ?? []
-            let ret = arr.compactMap {$0.toGroupApplicationInfo()}
+            let ret = arr.compactMap { $0.toGroupApplicationInfo() }
             completion(ret)
         }
     }
-    
+
     func getFriendList(completion: @escaping ([UserInfo]) -> Void) {
         Self.shared.imManager.getFriendListWith { (friends: [OIMFullUserInfo]?) in
             let arr = friends ?? []
-            let ret = arr.compactMap {$0.toUserInfo()}
+            let ret = arr.compactMap { $0.toUserInfo() }
             completion(ret)
         }
     }
-    
+
     func getGroupMemberList(groupId: String, filter: GroupMemberRole = .undefine, offset: Int, count: Int, onSuccess: @escaping CallBack.GroupMembersReturnVoid) {
         Self.shared.imManager.getGroupMemberList(groupId, filter: filter.rawValue, offset: offset, count: count) { (memberInfos: [OIMGroupMemberInfo]?) in
-            let members: [GroupMemberInfo] = memberInfos?.compactMap {$0.toGroupMemberInfo()} ?? []
+            let members: [GroupMemberInfo] = memberInfos?.compactMap { $0.toGroupMemberInfo() } ?? []
             onSuccess(members)
         }
     }
-    
+
     func getGroupMembersInfo(groupId: String, uids: [String], onSuccess: @escaping CallBack.GroupMembersReturnVoid) {
         Self.shared.imManager.getGroupMembersInfo(groupId, uids: uids) { (groupMembers: [OIMGroupMemberInfo]?) in
-            let members: [GroupMemberInfo] = groupMembers?.compactMap {$0.toGroupMemberInfo()} ?? []
+            let members: [GroupMemberInfo] = groupMembers?.compactMap { $0.toGroupMemberInfo() } ?? []
             onSuccess(members)
         } onFailure: { code, msg in
             print("获取组成员信息失败:\(code),\(msg)")
         }
     }
-    
+
     func getGroupInfo(groupIds: [String], onSuccess: @escaping CallBack.GroupInfosReturnVoid) {
         Self.shared.imManager.getGroupsInfo(groupIds) { (groupInfos: [OIMGroupInfo]?) in
-            let groups: [GroupInfo] = groupInfos?.compactMap{$0.toGroupInfo()} ?? []
+            let groups: [GroupInfo] = groupInfos?.compactMap { $0.toGroupInfo() } ?? []
             onSuccess(groups)
         } onFailure: { code, msg in
             print("获取组信息失败:\(code), \(msg)")
         }
     }
-    
+
     func setGroupInfo(group: GroupInfo, onSuccess: @escaping CallBack.StringOptionalReturnVoid) {
         Self.shared.imManager.setGroupInfo(group.groupID, groupInfo: group.toOIMGroupBaseInfo(), onSuccess: onSuccess) { code, msg in
             print("更新群信息失败：\(code), \(msg)")
         }
     }
-    
+
     func setGroupMemberNicknameOf(userid: String, inGroupId: String, with name: String, onSuccess: @escaping CallBack.StringOptionalReturnVoid) {
         Self.shared.imManager.setGroupMemberNickname(inGroupId, userID: userid, groupNickname: name, onSuccess: onSuccess) { code, msg in
             print("设置群成员昵称失败：\(code), \(msg)")
         }
     }
-    
+
     func dismissGroup(id: String, onSuccess: @escaping CallBack.StringOptionalReturnVoid) {
         Self.shared.imManager.dismissGroup(id, onSuccess: onSuccess) { code, msg in
             print("解散群聊失败:\(code), \(msg)")
         }
     }
-    
+
     func quitGroup(id: String, onSuccess: @escaping CallBack.StringOptionalReturnVoid) {
         Self.shared.imManager.quitGroup(id, onSuccess: onSuccess) { code, msg in
             print("退出群聊失败:\(code), \(msg)")
         }
     }
-    
+
     func joinGroup(id: String, reqMsg: String?, onSuccess: @escaping CallBack.StringOptionalReturnVoid) {
         Self.shared.imManager.joinGroup(id, reqMsg: reqMsg, onSuccess: onSuccess) { code, msg in
             print("加入群聊失败:\(code), \(msg)")
         }
     }
-    
+
     func inviteUsersToGroup(groupId: String, uids: [String], onSuccess: @escaping CallBack.VoidReturnVoid) {
-        Self.shared.imManager.inviteUser(toGroup: groupId, reason: "", uids: uids) { (result: [OIMSimpleResultInfo]?) in
+        Self.shared.imManager.inviteUser(toGroup: groupId, reason: "", uids: uids) { (_: [OIMSimpleResultInfo]?) in
             onSuccess()
         } onFailure: { code, msg in
             print("邀请好友加入失败：\(code), \(msg)")
         }
     }
-    
+
     func addFriend(uid: String, reqMsg: String?, onSuccess: @escaping CallBack.StringOptionalReturnVoid) {
         Self.shared.imManager.addFriend(uid, reqMessage: reqMsg, onSuccess: onSuccess)
     }
 }
-//MARK: - 消息方法
+
+// MARK: - 消息方法
+
 extension IMController {
     func getAllConversationList(completion: @escaping ([ConversationInfo]) -> Void) {
         Self.shared.imManager.getAllConversationListWith { (conversations: [OIMConversationInfo]?) in
             let arr = conversations ?? []
-            let ret = arr.compactMap {$0.toConversationInfo()}
+            let ret = arr.compactMap { $0.toConversationInfo() }
             completion(ret)
         }
     }
-    ///删除指定会话（本地删除）
+
+    /// 删除指定会话（本地删除）
     func deleteConversationFromLocalStorage(conversationId: String, completion: ((String?) -> Void)?) {
         Self.shared.imManager.deleteConversation(fromLocalStorage: conversationId, onSuccess: completion)
     }
-    ///删除指定会话（服务器和本地均删除）
+
+    /// 删除指定会话（服务器和本地均删除）
     func deleteConversation(conversationId: String, completion: ((String?) -> Void)?) {
         Self.shared.imManager.deleteConversation(conversationId, onSuccess: completion)
     }
+
     func getTotalUnreadMsgCount(completion: ((Int) -> Void)?) {
         Self.shared.imManager.getTotalUnreadMsgCountWith(onSuccess: completion, onFailure: nil)
     }
+
     func getConversationRecvMessageOpt(conversationIds: [String], completion: (([ConversationNotDisturbInfo]?) -> Void)?) {
         Self.shared.imManager.getConversationRecvMessageOpt(conversationIds) { (conversationInfos: [OIMConversationNotDisturbInfo]?) in
-            let arr = conversationInfos?.compactMap{$0.toConversationNotDisturbInfo()}
+            let arr = conversationInfos?.compactMap { $0.toConversationNotDisturbInfo() }
             completion?(arr)
         }
     }
+
     func setConversationRecvMessageOpt(conversationIds: [String], status: ReceiveMessageOpt, completion: ((String?) -> Void)?) {
         let opt: OIMReceiveMessageOpt
         switch status {
@@ -301,30 +310,30 @@ extension IMController {
         case .notNotify:
             opt = .notNotify
         }
-        
+
         Self.shared.imManager.setConversationRecvMessageOpt(conversationIds, status: opt, onSuccess: completion) { code, msg in
             print("修改免打扰状态失败:\(code), \(msg)")
         }
     }
-    
+
     func pinConversation(id: String, isPinned: Bool, completion: ((String?) -> Void)?) {
         Self.shared.imManager.pinConversation(id, isPinned: !isPinned, onSuccess: completion) { code, msg in
             print("pin conversation failed: \(code), \(msg)")
         }
     }
-    
+
     func getHistoryMessageList(userId: String?, groupId: String?, startCliendMsgId: String?, count: Int, completion: @escaping MessagesCallBack) {
         Self.shared.imManager.getHistoryMessageList(withUserId: userId, groupID: groupId, startClientMsgID: startCliendMsgId, count: count) { (messages: [OIMMessageInfo]?) in
-            let arr = messages?.compactMap{$0.toMessageInfo()} ?? []
+            let arr = messages?.compactMap { $0.toMessageInfo() } ?? []
             completion(arr)
         }
     }
-    
+
     func send(message: MessageInfo, to conversation: ConversationInfo, onComplete: @escaping CallBack.MessageReturnVoid) {
         let mMessage = message.toOIMMessageInfo()
-        self.send(message: mMessage, to: conversation, onComplete: onComplete)
+        send(message: mMessage, to: conversation, onComplete: onComplete)
     }
-    
+
     private func send(message: OIMMessageInfo, to conversation: ConversationInfo, onComplete: @escaping CallBack.MessageReturnVoid) {
         let model = message.toMessageInfo()
         model.isRead = false
@@ -338,13 +347,13 @@ extension IMController {
                 }
             } onProgress: { (progress: Int) in
                 print("sending message progress: \(progress)")
-            } onFailure: { (code: Int, msg: String?) in
+            } onFailure: { (_: Int, msg: String?) in
                 print("send message error:", msg)
                 model.status = .sendFailure
                 onComplete(model)
             }
         }
-        
+
         if let gid = conversation.groupID, gid.isEmpty == false {
             Self.shared.imManager.sendMessage(message, recvID: nil, groupID: gid, offlinePushInfo: nil) { (newMessage: OIMMessageInfo?) in
                 if let respMessage = newMessage {
@@ -355,14 +364,14 @@ extension IMController {
                 }
             } onProgress: { (progress: Int) in
                 print("sending message progress: \(progress)")
-            } onFailure: { (code: Int, msg: String?) in
+            } onFailure: { (_: Int, msg: String?) in
                 print("send message error:", msg)
                 model.status = .sendFailure
                 onComplete(model)
             }
         }
     }
-    
+
     func sendTextMessage(text: String, quoteMessage: MessageInfo?, to conversation: ConversationInfo, sending: CallBack.MessageReturnVoid, onComplete: @escaping CallBack.MessageReturnVoid) {
         let message: OIMMessageInfo
         if let quoteMessage = quoteMessage {
@@ -375,7 +384,7 @@ extension IMController {
         sending(message.toMessageInfo())
         send(message: message, to: conversation, onComplete: onComplete)
     }
-    
+
     func sendImageMessage(image: UIImage, to conversation: ConversationInfo, sending: CallBack.MessageReturnVoid, onComplete: @escaping CallBack.MessageReturnVoid) {
         let result: FileHelper.FileWriteResult = FileHelper.shared.saveImage(image: image)
         if result.isSuccess {
@@ -385,7 +394,7 @@ extension IMController {
             send(message: message, to: conversation, onComplete: onComplete)
         }
     }
-    
+
     func sendVideoMessage(videoPath: URL, duration: Int, snapshotPath: String, to conversation: ConversationInfo, sending: CallBack.MessageReturnVoid, onComplete: @escaping CallBack.MessageReturnVoid) {
         let result: FileHelper.FileWriteResult = FileHelper.shared.saveVideoFrom(videoPath: videoPath.path)
         if result.isSuccess {
@@ -395,7 +404,7 @@ extension IMController {
             send(message: message, to: conversation, onComplete: onComplete)
         }
     }
-    
+
     func sendAudioMessage(audioPath: String, duration: Int, to conversation: ConversationInfo, sending: CallBack.MessageReturnVoid, onComplete: @escaping CallBack.MessageReturnVoid) {
         let result: FileHelper.FileWriteResult = FileHelper.shared.saveAudioFrom(audioPath: audioPath)
         if result.isSuccess {
@@ -405,7 +414,7 @@ extension IMController {
             send(message: message, to: conversation, onComplete: onComplete)
         }
     }
-    
+
     func sendCardMessage(card: BusinessCard, to conversation: ConversationInfo, sending: CallBack.MessageReturnVoid, onComplete: @escaping CallBack.MessageReturnVoid) {
         let json = JsonTool.toJson(fromObject: card)
         let message = OIMMessageInfo.createCardMessage(json)
@@ -413,76 +422,76 @@ extension IMController {
         sending(message.toMessageInfo())
         send(message: message, to: conversation, onComplete: onComplete)
     }
-    
+
     func revokeMessage(_ message: MessageInfo, onSuccess: @escaping CallBack.StringOptionalReturnVoid) {
         let oMessage = message.toOIMMessageInfo()
         Self.shared.imManager.revokeMessage(oMessage, onSuccess: onSuccess) { code, msg in
             print("消息撤回失败:\(code), msg:\(msg)")
         }
     }
-    
+
     func deleteMessage(_ message: MessageInfo, onSuccess: @escaping CallBack.StringOptionalReturnVoid) {
         let oMessage = message.toOIMMessageInfo()
         Self.shared.imManager.deleteMessage(oMessage, onSuccess: onSuccess, onFailure: { code, msg in
             print("消息删除失败:\(code), msg:\(msg)")
         })
     }
-    
+
     func markC2CMessageReaded(userId: String, msgIdList: [String]) {
         Self.shared.imManager.markC2CMessage(asRead: userId, msgIDList: msgIdList, onSuccess: nil)
     }
-    
+
     func markGroupMessageReaded(groupId: String, msgIdList: [String]) {
         Self.shared.imManager.markGroupMessage(asRead: groupId, msgIDList: msgIdList, onSuccess: nil)
     }
-    
+
     func createGroupConversation(users: [UserInfo], onSuccess: @escaping CallBack.GroupInfoOptionalReturnVoid) {
         var members: [OIMGroupMemberInfo] = []
         let users = users.filter { (user: UserInfo) in
-            return user.userID != IMController.shared.uid
+            user.userID != IMController.shared.uid
         }
         for user in users {
-            let memberInfo = OIMGroupMemberInfo.init()
+            let memberInfo = OIMGroupMemberInfo()
             memberInfo.userID = user.userID
             memberInfo.roleLevel = .member
             members.append(memberInfo)
         }
-        
-        let me = OIMGroupMemberInfo.init()
-        me.userID = self.uid
-        me.faceURL = self.currentUserRelay.value?.faceURL
-        me.nickname = self.currentUserRelay.value?.nickname
+
+        let me = OIMGroupMemberInfo()
+        me.userID = uid
+        me.faceURL = currentUserRelay.value?.faceURL
+        me.nickname = currentUserRelay.value?.nickname
         me.roleLevel = .super
         members.append(me)
-        
-        let createInfo = OIMGroupCreateInfo.init()
+
+        let createInfo = OIMGroupCreateInfo()
         createInfo.groupName = me.nickname?.append(string: "创建的群聊".innerLocalized())
-        //1是单聊，2是群聊，等待SDK更新为枚举类型
+        // 1是单聊，2是群聊，等待SDK更新为枚举类型
         createInfo.groupType = 2
         Self.shared.imManager.createGroup(createInfo, memberList: members) { (groupInfo: OIMGroupInfo?) in
             print("创建群聊成功")
             onSuccess(groupInfo?.toGroupInfo())
         }
     }
-    
+
     func clearC2CHistoryMessages(userId: String, onSuccess: @escaping CallBack.StringOptionalReturnVoid) {
-        Self.shared.imManager.clearC2CHistoryMessage(userId, onSuccess: onSuccess) { (code, msg) in
+        Self.shared.imManager.clearC2CHistoryMessage(userId, onSuccess: onSuccess) { code, msg in
             print("清空C2C聊天记录失败:\(code), \(msg)")
         }
     }
-    
+
     func clearGroupHistoryMessages(groupId: String, onSuccess: @escaping CallBack.StringOptionalReturnVoid) {
-        Self.shared.imManager.clearGroupHistoryMessage(groupId, onSuccess: onSuccess) { (code, msg) in
+        Self.shared.imManager.clearGroupHistoryMessage(groupId, onSuccess: onSuccess) { code, msg in
             print("清空群聊天记录失败:\(code), \(msg)")
         }
     }
-    
+
     func uploadFile(fullPath: String, onProgress: @escaping CallBack.ProgressReturnVoid, onSuccess: @escaping CallBack.StringOptionalReturnVoid) {
         Self.shared.imManager.uploadFile(withFullPath: fullPath, onProgress: onProgress, onSuccess: onSuccess) { code, msg in
             print("上传文件失败:\(code), \(msg)")
         }
     }
-    
+
     func searchRecord(param: SearchParam, onSuccess: @escaping CallBack.SearchResultInfoOptionalReturnVoid) {
         Self.shared.imManager.searchLocalMessages(param.toOIMSearchParam()) { (result: OIMSearchResultInfo?) in
             onSuccess(result?.toSearchResultInfo())
@@ -490,10 +499,11 @@ extension IMController {
     }
 }
 
-//MARK: - 会话方法
+// MARK: - 会话方法
+
 extension IMController {
     func getConversation(sessionType: ConversationType, sourceId: String, onSuccess: @escaping CallBack.ConversationInfoOptionalReturnVoid) {
-        let conversationType = OIMConversationType.init(rawValue: sessionType.rawValue) ?? OIMConversationType.undefine
+        let conversationType = OIMConversationType(rawValue: sessionType.rawValue) ?? OIMConversationType.undefine
         Self.shared.imManager.getOneConversation(withSessionType: conversationType, sourceID: sourceId) { (conversation: OIMConversationInfo?) in
             onSuccess(conversation?.toConversationInfo())
         } onFailure: { code, msg in
@@ -502,9 +512,10 @@ extension IMController {
     }
 }
 
-//MARK: - User方法
+// MARK: - User方法
+
 extension IMController {
-    ///获取当前登录用户信息
+    /// 获取当前登录用户信息
     func getSelfInfo(onSuccess: @escaping CallBack.UserInfoOptionalReturnVoid) {
         Self.shared.imManager.getSelfInfoWith { [weak self] (userInfo: OIMUserInfo?) in
             let user = userInfo?.toUserInfo()
@@ -514,20 +525,20 @@ extension IMController {
             print("拉取登录用户信息失败:\(code), msg:\(msg)")
         }
     }
-    
+
     func getUserInfo(uids: [String], onSuccess: @escaping CallBack.FullUserInfosReturnVoid) {
         Self.shared.imManager.getUsersInfo(uids) { (userInfos: [OIMFullUserInfo]?) in
-            let users = userInfos?.compactMap{$0.toFullUserInfo()} ?? []
+            let users = userInfos?.compactMap { $0.toFullUserInfo() } ?? []
             onSuccess(users)
         }
     }
-    
+
     func setSelfInfo(userInfo: UserInfo, onSuccess: @escaping CallBack.StringOptionalReturnVoid) {
         Self.shared.imManager.setSelfInfo(userInfo.toOIMUserInfo(), onSuccess: onSuccess) { code, msg in
             print("更新个人信息失败:\(code), \(msg)")
         }
     }
-    
+
     func logout(onSuccess: @escaping CallBack.StringOptionalReturnVoid) {
         Self.shared.imManager.logoutWith(onSuccess: onSuccess) { code, msg in
             print("退出登录失败:\(code), \(msg)")
@@ -536,18 +547,23 @@ extension IMController {
 }
 
 // MARK: - Listener
+
 extension IMController: OIMFriendshipListener {
     @objc public func onFriendApplicationAdded(_ application: FriendApplication) {
         friendApplicationChangedSubject.onNext(application)
     }
 }
-//MARK:  OIMGroupListener
+
+// MARK: OIMGroupListener
+
 extension IMController: OIMGroupListener {
     public func onGroupApplicationAdded(_ groupApplication: GroupApplicationInfo) {
         groupApplicationChangedSubject.onNext(groupApplication)
     }
 }
-//MARK:  OIMConversationListener
+
+// MARK: OIMConversationListener
+
 extension IMController: OIMConversationListener {
     public func onConversationChanged(_ conversations: [OIMConversationInfo]) {
         let conversations: [ConversationInfo] = conversations.compactMap {
@@ -555,46 +571,49 @@ extension IMController: OIMConversationListener {
         }
         conversationChangedSubject.onNext(conversations)
     }
-    
+
     public func onSyncServerStart() {
         syncServerStartSubject.onNext(())
     }
-    
+
     public func onSyncServerFinish() {
         syncServerEndSubject.onNext(())
     }
-    
+
     public func onNewConversation(_ conversations: [OIMConversationInfo]) {
-        let arr = conversations.compactMap{$0.toConversationInfo()}
+        let arr = conversations.compactMap { $0.toConversationInfo() }
         newConversationSubject.onNext(arr)
     }
-    
+
     public func onTotalUnreadMessageCountChanged(_ totalUnreadCount: Int) {
         totalUnreadSubject.onNext(totalUnreadCount)
     }
 }
 
-//MARK: OIMAdvancedMsgListener
+// MARK: OIMAdvancedMsgListener
+
 extension IMController: OIMAdvancedMsgListener {
     public func onRecvNewMessage(_ msg: OIMMessageInfo) {
         newMsgReceivedSubject.onNext(msg.toMessageInfo())
     }
-    
+
     public func onRecvC2CReadReceipt(_ receiptList: [OIMReceiptInfo]) {
-        c2cReadReceiptReceived.onNext(receiptList.compactMap{$0.toReceiptInfo()})
+        c2cReadReceiptReceived.onNext(receiptList.compactMap { $0.toReceiptInfo() })
     }
-    
+
     public func onRecvGroupReadReceipt(_ groupMsgReceiptList: [OIMReceiptInfo]) {
-        groupReadReceiptReceived.onNext(groupMsgReceiptList.compactMap{$0.toReceiptInfo()})
+        groupReadReceiptReceived.onNext(groupMsgReceiptList.compactMap { $0.toReceiptInfo() })
     }
-    
+
     public func onRecvMessageRevoked(_ msgID: String) {
         msgRevokeReceived.onNext(msgID)
     }
 }
 
 // MARK: - Models
+
 // MARK: 主要模型
+
 public class UserInfo: Encodable {
     var userID: String = ""
     var nickname: String?
@@ -641,20 +660,21 @@ public class GroupApplicationInfo {
 
 /// 申请状态
 public enum ApplicationStatus: Int {
-    ///已拒绝
+    /// 已拒绝
     case decline = -1
-    ///等待处理
+    /// 等待处理
     case normal = 0
-    ///已同意
+    /// 已同意
     case accept = 1
 }
-///消息接收选项
+
+/// 消息接收选项
 public enum ReceiveMessageOpt: Int {
-    ///在线正常接收消息，离线时会使用 APNs
+    /// 在线正常接收消息，离线时会使用 APNs
     case receive = 0
-    ///不会接收到消息，离线不会有推送通知
+    /// 不会接收到消息，离线不会有推送通知
     case notReceive = 1
-    ///在线正常接收消息，离线不会有推送通知
+    /// 在线正常接收消息，离线不会有推送通知
     case notNotify = 2
 }
 
@@ -694,13 +714,13 @@ public class MessageInfo: Encodable {
     var senderFaceUrl: String?
     var groupID: String?
     var content: String?
-    ///消息唯一序列号
+    /// 消息唯一序列号
     var seq: Int = 0
     var isRead: Bool = false
     var status: MessageStatus = .undefine
     var attachedInfo: String?
     var ex: String?
-    var offlinePushInfo: OfflinePushInfo = OfflinePushInfo()
+    var offlinePushInfo: OfflinePushInfo = .init()
     var pictureElem: PictureElem?
     var soundElem: SoundElem?
     var videoElem: VideoElem?
@@ -714,7 +734,7 @@ public class MessageInfo: Encodable {
     var faceElem: FaceElem?
     var attachedInfoElem: AttachedInfoElem?
     var isPlaying = false
-    
+
     func getAbstruct() -> String? {
         switch contentType {
         case .text:
@@ -725,8 +745,6 @@ public class MessageInfo: Encodable {
             return contentType.abstruct
         }
     }
-    
-    
 }
 
 public class GroupMemberBaseInfo: Encodable {
@@ -737,7 +755,7 @@ public class GroupMemberBaseInfo: Encodable {
 public enum GroupMemberRole: Int, Encodable {
     case undefine = 0
     case member = 1
-    ///群主
+    /// 群主
     case `super` = 2
     case admin = 3
 }
@@ -750,7 +768,7 @@ public class GroupMemberInfo: GroupMemberBaseInfo {
     var joinSource: Int = 0
     var operatorUserID: String?
     var ex: String?
-    
+
     var isSelf: Bool {
         return userID == IMController.shared.uid
     }
@@ -758,31 +776,34 @@ public class GroupMemberInfo: GroupMemberBaseInfo {
 
 public enum MessageContentType: Int, Codable {
     case unknown = -1
-    //MARK: 消息类型
+
+    // MARK: 消息类型
+
     case text = 101
     case image
     case audio
     case video
     case file
-    ///@消息
+    /// @消息
     case at
-    ///合并消息
+    /// 合并消息
     case merge
-    ///名片消息
+    /// 名片消息
     case card
     case location
     case custom
-    ///撤回消息回执
+    /// 撤回消息回执
     case revokeReciept
-    ///C2C单聊已读回执
+    /// C2C单聊已读回执
     case C2CReciept
-    ///正在输入状态
+    /// 正在输入状态
     case typing
     case quote
-    ///动图消息
+    /// 动图消息
     case face
-    
-    //MARK: 通知类型
+
+    // MARK: 通知类型
+
     case friendAppApproved = 1201
     case friendAppRejected
     case friendApplication
@@ -811,11 +832,11 @@ public enum MessageContentType: Int, Codable {
     case memberKicked
     case memberInvited
     case memberEnter
-    ///解散群通知
+    /// 解散群通知
     case dismissGroup
-    ///阅后即焚
+    /// 阅后即焚
     case privateMessage
-    
+
     var abstruct: String? {
         switch self {
         case .image:
@@ -854,11 +875,11 @@ public enum MessageLevel: Int, Codable {
 }
 
 public enum ConversationType: Int, Codable {
-    ///未定义
+    /// 未定义
     case undefine
-    ///单聊
+    /// 单聊
     case c2c
-    ///群聊
+    /// 群聊
     case group
 }
 
@@ -872,11 +893,11 @@ public class GroupBaseInfo: Encodable {
 public class GroupInfo: GroupBaseInfo {
     var groupID: String = ""
     var ownerUserID: String?
-    var createTime:Int = 0
+    var createTime: Int = 0
     var memberCount: Int = 0
     var creatorUserID: String?
     var groupType: ConversationType = .undefine
-    
+
     var isSelf: Bool {
         return creatorUserID == IMController.shared.uid
     }
@@ -889,7 +910,9 @@ public class ConversationNotDisturbInfo {
         self.conversationId = conversationId
     }
 }
+
 // MARK: 次要模型
+
 public class FaceElem: Encodable {
     var index: Int = 0
     var data: String?
@@ -910,7 +933,7 @@ public class NotificationElem: Encodable {
     private(set) var opUser: GroupMemberInfo?
     private(set) var quitUser: GroupMemberInfo?
     private(set) var entrantUser: GroupMemberInfo?
-    ///群改变新群主的信息
+    /// 群改变新群主的信息
     private(set) var groupNewOwner: GroupMemberInfo?
     private(set) var group: GroupInfo?
     private(set) var kickedUserList: [GroupMemberInfo]?
@@ -936,13 +959,13 @@ public class OfflinePushInfo: Codable {
 }
 
 public class PictureElem: Codable {
-    ///本地资源地址
+    /// 本地资源地址
     var sourcePath: String?
-    ///本地图片详情
+    /// 本地图片详情
     var sourcePicture: PictureInfo?
-    ///大图详情
+    /// 大图详情
     var bigPicture: PictureInfo?
-    ///缩略图详情
+    /// 缩略图详情
     var snapshotPicture: PictureInfo?
 }
 
@@ -952,15 +975,15 @@ public class PictureInfo: Codable {
     var size: Int = 0
     var width: CGFloat = 0
     var height: CGFloat = 0
-    ///图片oss地址
+    /// 图片oss地址
     var url: String?
 }
 
 public class SoundElem: Codable {
     var uuID: String?
-    ///本地资源地址
+    /// 本地资源地址
     var soundPath: String?
-    ///oss地址
+    /// oss地址
     var sourceUrl: String?
     var dataSize: Int = 0
     var duration: Int = 0
@@ -973,12 +996,12 @@ public class VideoElem: Codable {
     var videoType: String?
     var videoSize: Int = 0
     var duration: Int = 0
-    ///视频快照本地地址
+    /// 视频快照本地地址
     var snapshotPath: String?
-    ///视频快照唯一ID
+    /// 视频快照唯一ID
     var snapshotUUID: String?
     var snapshotSize: Int = 0
-    ///视频快照oss地址
+    /// 视频快照oss地址
     var snapshotUrl: String?
     var snapshotWidth: CGFloat = 0
     var snapshotHeight: CGFloat = 0
@@ -987,7 +1010,7 @@ public class VideoElem: Codable {
 public class FileElem: Encodable {
     var filePath: String?
     var uuID: String?
-    ///oss地址
+    /// oss地址
     var sourceUrl: String?
     var fileName: String?
     var fileSize: Int = 0
@@ -1011,6 +1034,7 @@ public class AtInfo: Encodable {
     var atUserID: String?
     var groupNickname: String?
 }
+
 public class LocationElem: Encodable {
     var desc: String?
     var longitude: Double = 0
@@ -1037,7 +1061,7 @@ struct BusinessCard: Codable {
 class ReceiptInfo {
     var userID: String?
     var groupID: String?
-    ///已读消息id
+    /// 已读消息id
     var msgIDList: [String]?
     var readTime: Int = 0
     var msgFrom: MessageLevel = .user
@@ -1049,7 +1073,7 @@ class FullUserInfo {
     var publicInfo: PublicUserInfo?
     var friendInfo: FriendInfo?
     var blackInfo: BlackInfo?
-    
+
     var userID: String?
     var showName: String?
     var faceURL: String?
@@ -1060,7 +1084,7 @@ public enum Gender: Int, Encodable {
     case undefine = -1
     case male = 0
     case female = 1
-    
+
     var description: String {
         switch self {
         case .male:
@@ -1121,7 +1145,9 @@ class SearchResultItemInfo {
     var messageCount: Int = 0
     var messageList: [MessageInfo] = []
 }
+
 // MARK: - 模型转换(From SDK)
+
 extension MessageInfo {
     func toOIMMessageInfo() -> OIMMessageInfo {
         let json: String = JsonTool.toJson(fromObject: self)
@@ -1130,7 +1156,7 @@ extension MessageInfo {
         }
         return OIMMessageInfo()
     }
-    
+
     var isSelf: Bool {
         return sendID == IMController.shared.uid
     }
@@ -1138,34 +1164,35 @@ extension MessageInfo {
 
 extension MessageContentType {
     func toOIMMessageContentType() -> OIMMessageContentType {
-        let type = OIMMessageContentType.init(rawValue: self.rawValue) ?? OIMMessageContentType.text
+        let type = OIMMessageContentType(rawValue: rawValue) ?? OIMMessageContentType.text
         return type
     }
 }
+
 extension OIMGroupInfo {
     func toGroupInfo() -> GroupInfo {
         let item = GroupInfo()
-        item.groupID = self.groupID ?? ""
-        item.faceURL = self.faceURL
-        item.createTime = self.createTime
-        item.creatorUserID = self.creatorUserID
-        item.memberCount = self.memberCount
-        item.ownerUserID = self.ownerUserID
-        item.introduction = self.introduction
-        item.notification = self.notification
-        item.groupName = self.groupName
-        item.groupType = ConversationType.init(rawValue: groupType) ?? .undefine
+        item.groupID = groupID ?? ""
+        item.faceURL = faceURL
+        item.createTime = createTime
+        item.creatorUserID = creatorUserID
+        item.memberCount = memberCount
+        item.ownerUserID = ownerUserID
+        item.introduction = introduction
+        item.notification = notification
+        item.groupName = groupName
+        item.groupType = ConversationType(rawValue: groupType) ?? .undefine
         return item
     }
 }
 
 extension OIMUserInfo {
     func toUserInfo() -> UserInfo {
-        let item = UserInfo.init()
-        item.faceURL = self.faceURL
-        item.nickname = self.nickname
-        item.userID = self.userID ?? ""
-        item.gender = Gender.init(rawValue: gender?.intValue ?? 0)
+        let item = UserInfo()
+        item.faceURL = faceURL
+        item.nickname = nickname
+        item.userID = userID ?? ""
+        item.gender = Gender(rawValue: gender?.intValue ?? 0)
         item.phoneNumber = phoneNumber
         item.birth = birth?.intValue
         item.email = email
@@ -1178,21 +1205,21 @@ extension OIMUserInfo {
 extension OIMGroupApplicationInfo {
     func toGroupApplicationInfo() -> GroupApplicationInfo {
         let item = GroupApplicationInfo()
-        item.groupID = self.groupID ?? ""
-        item.groupName = self.groupName
-        item.groupFaceURL = self.groupFaceURL
-        item.creatorUserID = self.creatorUserID ?? ""
-        item.ownerUserID = self.ownerUserID ?? ""
-        item.memberCount = self.memberCount
-        item.userID = self.userID
-        item.nickname = self.nickname
-        item.userFaceURL = self.userFaceURL
-        item.reqMsg = self.reqMsg
-        item.reqTime = self.reqTime
-        item.handleUserID = self.handleUserID
-        item.handledMsg = self.handledMsg
-        item.handledTime = self.handledTime
-        item.handleResult = ApplicationStatus.init(rawValue: self.handleResult.rawValue) ?? .normal
+        item.groupID = groupID ?? ""
+        item.groupName = groupName
+        item.groupFaceURL = groupFaceURL
+        item.creatorUserID = creatorUserID ?? ""
+        item.ownerUserID = ownerUserID ?? ""
+        item.memberCount = memberCount
+        item.userID = userID
+        item.nickname = nickname
+        item.userFaceURL = userFaceURL
+        item.reqMsg = reqMsg
+        item.reqTime = reqTime
+        item.handleUserID = handleUserID
+        item.handledMsg = handledMsg
+        item.handledTime = handledTime
+        item.handleResult = ApplicationStatus(rawValue: handleResult.rawValue) ?? .normal
         return item
     }
 }
@@ -1200,37 +1227,37 @@ extension OIMGroupApplicationInfo {
 extension OIMFriendApplication {
     func toFriendApplication() -> FriendApplication {
         let item = FriendApplication()
-        item.fromUserID = self.fromUserID ?? ""
-        item.fromNickname = self.fromNickname
-        item.fromFaceURL = self.fromFaceURL
-        item.toUserID = self.toUserID ?? ""
-        item.toNickname = self.toNickname
-        item.toFaceURL = self.toFaceURL
-        item.handleResult = ApplicationStatus.init(rawValue: self.handleResult.rawValue) ?? .normal
-        //注意此处值类型的不对应
-        item.reqMsg = self.ex
-        item.handlerUserID = self.handlerUserID
-        item.handleMsg = self.handleMsg
-        item.handleTime = self.handleTime
+        item.fromUserID = fromUserID ?? ""
+        item.fromNickname = fromNickname
+        item.fromFaceURL = fromFaceURL
+        item.toUserID = toUserID ?? ""
+        item.toNickname = toNickname
+        item.toFaceURL = toFaceURL
+        item.handleResult = ApplicationStatus(rawValue: handleResult.rawValue) ?? .normal
+        // 注意此处值类型的不对应
+        item.reqMsg = ex
+        item.handlerUserID = handlerUserID
+        item.handleMsg = handleMsg
+        item.handleTime = handleTime
         return item
     }
 }
 
 extension OIMFullUserInfo {
     func toUserInfo() -> UserInfo {
-        let item = UserInfo.init()
-        item.faceURL = self.faceURL
-        //注意此处值类型的不对应
-        item.nickname = self.showName
-        item.userID = self.userID ?? ""
+        let item = UserInfo()
+        item.faceURL = faceURL
+        // 注意此处值类型的不对应
+        item.nickname = showName
+        item.userID = userID ?? ""
         return item
     }
 }
 
 extension OIMConversationInfo {
     func toConversationInfo() -> ConversationInfo {
-        let item = ConversationInfo.init(conversationID: self.conversationID ?? "")
-        item.userID = self.userID
+        let item = ConversationInfo(conversationID: conversationID ?? "")
+        item.userID = userID
         item.groupID = groupID
         item.showName = showName
         item.faceURL = faceURL
@@ -1330,7 +1357,7 @@ extension OIMMessageLevel {
 
 extension OIMMessageContentType {
     func toMessageContentType() -> MessageContentType {
-        let item = MessageContentType.init(rawValue: self.rawValue) ?? MessageContentType.unknown
+        let item = MessageContentType(rawValue: rawValue) ?? MessageContentType.unknown
         return item
     }
 }
@@ -1442,7 +1469,7 @@ extension OIMMergeElem {
         let item = MergeElem()
         item.title = title
         item.abstractList = abstractList
-        item.multiMessage = multiMessage?.compactMap{$0.toMessageInfo()}
+        item.multiMessage = multiMessage?.compactMap { $0.toMessageInfo() }
         return item
     }
 }
@@ -1452,7 +1479,7 @@ extension OIMAtElem {
         let item = AtElem()
         item.text = text
         item.atUserList = atUserList
-        item.atUsersInfo = atUsersInfo?.compactMap{$0.toAtInfo()}
+        item.atUsersInfo = atUsersInfo?.compactMap { $0.toAtInfo() }
         item.isAtSelf = isAtSelf
         return item
     }
@@ -1491,7 +1518,7 @@ extension OIMCustomElem {
         let item = CustomElem()
         item.data = data
         item.ext = self.extension
-        item.description = self.description
+        item.description = description
         return item
     }
 }
@@ -1529,8 +1556,8 @@ extension OIMNotificationElem {
                                     entrantUser: entrantUser?.toGroupMemberInfo(),
                                     groupNewOwner: groupNewOwner?.toGroupMemberInfo(),
                                     group: group?.toGroupInfo(),
-                                    kickedUserList: kickedUserList?.compactMap{$0.toGroupMemberInfo()},
-                                    invitedUserList: invitedUserList?.compactMap{$0.toGroupMemberInfo()})
+                                    kickedUserList: kickedUserList?.compactMap { $0.toGroupMemberInfo() },
+                                    invitedUserList: invitedUserList?.compactMap { $0.toGroupMemberInfo() })
         item.detail = detail
         item.defaultTips = defaultTips
         return item
@@ -1570,7 +1597,7 @@ extension OIMGroupMemberRole {
 
 extension OIMConversationNotDisturbInfo {
     func toConversationNotDisturbInfo() -> ConversationNotDisturbInfo {
-        let item = ConversationNotDisturbInfo.init(conversationId: conversationID ?? "")
+        let item = ConversationNotDisturbInfo(conversationId: conversationID ?? "")
         item.result = result.toReceiveMessageOpt()
         return item
     }
@@ -1579,7 +1606,7 @@ extension OIMConversationNotDisturbInfo {
 extension OIMReceiptInfo {
     func toReceiptInfo() -> ReceiptInfo {
         let item = ReceiptInfo()
-        item.userID = self.userID
+        item.userID = userID
         item.groupID = groupID
         item.msgIDList = msgIDList
         item.readTime = readTime
@@ -1599,7 +1626,7 @@ extension OIMFullUserInfo {
         item.userID = userID
         item.showName = showName
         item.faceURL = faceURL
-        item.gender = Gender.init(rawValue: gender.rawValue) ?? .male
+        item.gender = Gender(rawValue: gender.rawValue) ?? .male
         return item
     }
 }
@@ -1645,7 +1672,7 @@ extension OIMPublicUserInfo {
         item.userID = userID
         item.nickname = nickname
         item.faceURL = faceURL
-        item.gender = Gender.init(rawValue: gender.rawValue) ?? .male
+        item.gender = Gender(rawValue: gender.rawValue) ?? .male
         return item
     }
 }
@@ -1654,21 +1681,23 @@ extension OIMSearchResultInfo {
     func toSearchResultInfo() -> SearchResultInfo {
         let item = SearchResultInfo()
         item.totalCount = totalCount
-        item.searchResultItems = searchResultItems.compactMap{$0.toSearchResultItemInfo()}
+        item.searchResultItems = searchResultItems.compactMap { $0.toSearchResultItemInfo() }
         return item
     }
 }
 
 extension OIMSearchResultItemInfo {
     func toSearchResultItemInfo() -> SearchResultItemInfo {
-        let item = SearchResultItemInfo.init()
+        let item = SearchResultItemInfo()
         item.conversationID = conversationID
         item.messageCount = messageCount
-        item.messageList = messageList.compactMap{$0.toMessageInfo()}
+        item.messageList = messageList.compactMap { $0.toMessageInfo() }
         return item
     }
 }
+
 // MARK: - 模型转换(From OIMUIKit)
+
 extension UserInfo {
     func toOIMUserInfo() -> OIMUserInfo {
         let json = JsonTool.toJson(fromObject: self)
@@ -1681,7 +1710,7 @@ extension UserInfo {
 
 extension GroupBaseInfo {
     func toOIMGroupBaseInfo() -> OIMGroupBaseInfo {
-        let item = OIMGroupBaseInfo.init()
+        let item = OIMGroupBaseInfo()
         item.faceURL = faceURL
         item.groupName = groupName
         item.introduction = introduction
@@ -1691,10 +1720,10 @@ extension GroupBaseInfo {
 
 extension SearchParam {
     func toOIMSearchParam() -> OIMSearchParam {
-        let item = OIMSearchParam.init()
+        let item = OIMSearchParam()
         item.conversationID = conversationID
         item.keywordList = keywordList
-        item.messageTypeList = messageTypeList?.compactMap{$0.rawValue}
+        item.messageTypeList = messageTypeList?.compactMap { $0.rawValue }
         item.searchTimePeriod = searchTimePeriod
         item.searchTimePosition = searchTimePosition
         item.pageIndex = pageIndex

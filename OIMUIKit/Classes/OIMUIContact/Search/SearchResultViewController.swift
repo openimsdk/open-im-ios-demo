@@ -1,15 +1,14 @@
 
-import UIKit
 import RxSwift
+import UIKit
 
 class SearchResultViewController: UIViewController, UISearchResultsUpdating {
-    
     private lazy var searchResultView: SearchResultView = {
         let v = SearchResultView()
         v.isHidden = true
         return v
     }()
-    
+
     private lazy var searchResultEmptyView: UIView = {
         let v = UIView()
         let label: UILabel = {
@@ -27,26 +26,26 @@ class SearchResultViewController: UIViewController, UISearchResultsUpdating {
 
     private let _disposebag = DisposeBag()
     private let _searchType: SearchType
-    
+
     init(searchType: SearchType) {
         _searchType = searchType
         super.init(nibName: nil, bundle: nil)
-        
     }
-    
-    required init?(coder: NSCoder) {
+
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.edgesForExtendedLayout = [UIRectEdge.left, .right, .bottom]
+        edgesForExtendedLayout = [UIRectEdge.left, .right, .bottom]
         initView()
         bindData()
     }
-    
+
     private func initView() {
-        self.view.backgroundColor = .groupTableViewBackground
+        view.backgroundColor = .groupTableViewBackground
 
         view.addSubview(searchResultView)
         searchResultView.snp.makeConstraints { make in
@@ -54,7 +53,7 @@ class SearchResultViewController: UIViewController, UISearchResultsUpdating {
             make.left.right.equalToSuperview()
             make.height.equalTo(52)
         }
-        
+
         view.addSubview(searchResultEmptyView)
         searchResultEmptyView.snp.makeConstraints { make in
             make.top.equalToSuperview()
@@ -62,29 +61,29 @@ class SearchResultViewController: UIViewController, UISearchResultsUpdating {
             make.height.equalTo(60)
         }
     }
-    
+
     private func bindData() {
-        self.searchResultView.tap.rx.event.subscribe(onNext: { [weak self] _ in
+        searchResultView.tap.rx.event.subscribe(onNext: { [weak self] _ in
             guard let sself = self else { return }
             switch sself._searchType {
             case .user:
-                let vc = UserDetailTableViewController.init(userId: sself.keyword, groupId: nil)
+                let vc = UserDetailTableViewController(userId: sself.keyword, groupId: nil)
                 sself.presentingViewController?.navigationController?.pushViewController(vc, animated: true)
                 self?.dismiss(animated: true, completion: nil)
             case .group:
-                let vc = GroupDetailViewController.init(groupId: sself.keyword)
+                let vc = GroupDetailViewController(groupId: sself.keyword)
                 sself.presentingViewController?.navigationController?.pushViewController(vc, animated: true)
                 self?.dismiss(animated: true, completion: nil)
             }
         }).disposed(by: _disposebag)
     }
-    
+
     enum SearchType {
-        ///群组
+        /// 群组
         case group
-        ///用户
+        /// 用户
         case user
-        
+
         var title: String {
             switch self {
             case .group:
@@ -94,10 +93,10 @@ class SearchResultViewController: UIViewController, UISearchResultsUpdating {
             }
         }
     }
+
     private var userInfo: FullUserInfo?
     private var keyword: String = ""
     func updateSearchResults(for searchController: UISearchController) {
-        
         let keyword = searchController.searchBar.text
         guard let keyword = keyword, !keyword.isEmpty else {
             return

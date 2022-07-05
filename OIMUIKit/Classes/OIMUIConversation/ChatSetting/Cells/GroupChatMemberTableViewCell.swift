@@ -1,11 +1,6 @@
 
-
-
-
-
-
-import UIKit
 import RxSwift
+import UIKit
 
 class GroupChatMemberTableViewCell: UITableViewCell {
     var disposeBag = DisposeBag()
@@ -14,50 +9,50 @@ class GroupChatMemberTableViewCell: UITableViewCell {
         v.font = UIFont.systemFont(ofSize: 13)
         return v
     }()
-    
+
     let countLabel: UILabel = {
         let v = UILabel()
         v.font = UIFont.systemFont(ofSize: 13)
         v.textColor = StandardUI.color_999999
         return v
     }()
-        
+
     lazy var memberCollectionView: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         let maxCount: CGFloat = 7
         let itemWidth: CGFloat = (kScreenWidth - StandardUI.margin_22 * 2 - 10 * (maxCount - 1)) / maxCount
-        layout.itemSize = CGSize.init(width: itemWidth, height: itemWidth)
+        layout.itemSize = CGSize(width: itemWidth, height: itemWidth)
         layout.scrollDirection = .horizontal
         layout.minimumInteritemSpacing = 6
-        let v = UICollectionView.init(frame: .zero, collectionViewLayout: layout)
+        let v = UICollectionView(frame: .zero, collectionViewLayout: layout)
         v.register(ImageCollectionViewCell.self, forCellWithReuseIdentifier: ImageCollectionViewCell.className)
-        v.contentInset = UIEdgeInsets.init(top: 0, left: StandardUI.margin_22, bottom: 0, right: StandardUI.margin_22)
+        v.contentInset = UIEdgeInsets(top: 0, left: StandardUI.margin_22, bottom: 0, right: StandardUI.margin_22)
         v.backgroundColor = .white
         return v
     }()
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
-        self.selectionStyle = .none
+        selectionStyle = .none
         contentView.addSubview(titleLabel)
         titleLabel.snp.makeConstraints { make in
             make.left.equalToSuperview().offset(StandardUI.margin_22)
             make.top.equalToSuperview().offset(12)
         }
-        
-        let arrowImageView = UIImageView.init(image: UIImage.init(nameInBundle: "common_arrow_right"))
+
+        let arrowImageView = UIImageView(image: UIImage(nameInBundle: "common_arrow_right"))
         contentView.addSubview(arrowImageView)
         arrowImageView.snp.makeConstraints { make in
             make.right.equalToSuperview().offset(-StandardUI.margin_22)
             make.centerY.equalTo(titleLabel)
         }
-        
+
         contentView.addSubview(countLabel)
         countLabel.snp.makeConstraints { make in
             make.right.equalTo(arrowImageView.snp.left).offset(-6)
             make.centerY.equalTo(titleLabel)
         }
-        
+
         contentView.addSubview(memberCollectionView)
         memberCollectionView.snp.makeConstraints { make in
             make.top.equalTo(titleLabel.snp.bottom).offset(10)
@@ -66,11 +61,12 @@ class GroupChatMemberTableViewCell: UITableViewCell {
             make.bottom.equalToSuperview().offset(-10)
         }
     }
-    
-    required init?(coder: NSCoder) {
+
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     class ImageCollectionViewCell: UICollectionViewCell {
         let imageView: UIImageView = {
             let v = UIImageView()
@@ -78,20 +74,22 @@ class GroupChatMemberTableViewCell: UITableViewCell {
             v.clipsToBounds = true
             return v
         }()
+
         override init(frame: CGRect) {
             super.init(frame: frame)
-            
+
             contentView.addSubview(imageView)
             imageView.snp.makeConstraints { make in
                 make.edges.equalToSuperview()
             }
         }
-        
-        required init?(coder: NSCoder) {
+
+        @available(*, unavailable)
+        required init?(coder _: NSCoder) {
             fatalError("init(coder:) has not been implemented")
         }
     }
-    
+
     override func prepareForReuse() {
         super.prepareForReuse()
         disposeBag = DisposeBag()

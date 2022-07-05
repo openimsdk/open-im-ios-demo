@@ -1,21 +1,22 @@
 
-import UIKit
+import RxDataSources
 import RxSwift
 import SVProgressHUD
-import RxDataSources
+import UIKit
 
 class GroupDetailViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
     private let _viewModel: GroupDetailViewModel
     private let _disposeBag = DisposeBag()
     init(groupId: String) {
-        _viewModel = GroupDetailViewModel.init(groupId: groupId)
+        _viewModel = GroupDetailViewModel(groupId: groupId)
         super.init(nibName: nil, bundle: nil)
     }
-    
-    required init?(coder: NSCoder) {
+
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     private lazy var tableView: UITableView = {
         let v = UITableView()
         v.tableFooterView = UIView()
@@ -33,7 +34,7 @@ class GroupDetailViewController: UIViewController, UITableViewDataSource, UITabl
         v.register(QuitTableViewCell.self, forCellReuseIdentifier: QuitTableViewCell.className)
         return v
     }()
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         initView()
@@ -41,39 +42,39 @@ class GroupDetailViewController: UIViewController, UITableViewDataSource, UITabl
         tableView.reloadData()
         _viewModel.getGroupInfo()
     }
-    
+
     private var sectionItems: [[RowType]] = [
         [.header],
-        [.identifier]
+        [.identifier],
     ]
-    
+
     private func initView() {
         view.addSubview(tableView)
         tableView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
     }
-    
+
     private func bindData() {
         _viewModel.isInGroupSubject.subscribe(onNext: { [weak self] (isInGroup: Bool) in
             if !isInGroup {
                 self?.sectionItems = [
                     [.header],
                     [.identifier],
-                    [.joinGroup]
+                    [.joinGroup],
                 ]
             } else {
                 self?.sectionItems = [
                     [.header],
                     [.identifier],
-                    [.enterGroupChat]
+                    [.enterGroupChat],
                 ]
             }
             self?.tableView.reloadData()
         }).disposed(by: _disposeBag)
     }
-    
-    func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+
+    func tableView(_: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         if let rowType = sectionItems[section].first {
             if rowType == .joinGroup {
                 return 100
@@ -81,27 +82,27 @@ class GroupDetailViewController: UIViewController, UITableViewDataSource, UITabl
         }
         return 12
     }
-    
-    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+
+    func tableView(_: UITableView, viewForHeaderInSection _: Int) -> UIView? {
         return UIView()
     }
-    
-    func tableView(_ tableView: UITableView, viewForFooterInSection section: Int) -> UIView? {
+
+    func tableView(_: UITableView, viewForFooterInSection _: Int) -> UIView? {
         return UIView()
     }
-    
-    func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+
+    func tableView(_: UITableView, heightForFooterInSection _: Int) -> CGFloat {
         return CGFloat.leastNormalMagnitude
     }
-    
-    func numberOfSections(in tableView: UITableView) -> Int {
+
+    func numberOfSections(in _: UITableView) -> Int {
         return sectionItems.count
     }
-    
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+
+    func tableView(_: UITableView, numberOfRowsInSection section: Int) -> Int {
         return sectionItems[section].count
     }
-    
+
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let rowType = sectionItems[indexPath.section][indexPath.row]
         switch rowType {
@@ -118,17 +119,17 @@ class GroupDetailViewController: UIViewController, UITableViewDataSource, UITabl
             cell.memberCollectionView.dataSource = nil
             cell.memberCollectionView.delegate = nil
             _viewModel.membersRelay.asDriver(onErrorJustReturn: []).drive(cell.memberCollectionView.rx.items) { (collectionView: UICollectionView, row, item: UserInfo) in
-                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: GroupChatMemberTableViewCell.ImageCollectionViewCell.className, for: IndexPath.init(row: row, section: 0)) as! GroupChatMemberTableViewCell.ImageCollectionViewCell
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: GroupChatMemberTableViewCell.ImageCollectionViewCell.className, for: IndexPath(row: row, section: 0)) as! GroupChatMemberTableViewCell.ImageCollectionViewCell
                 if item.isButton {
-                    cell.imageView.image = UIImage.init(nameInBundle: "setting_add_btn_icon")
+                    cell.imageView.image = UIImage(nameInBundle: "setting_add_btn_icon")
                 } else {
                     cell.imageView.setImage(with: item.faceURL, placeHolder: "contact_my_friend_icon")
                 }
                 return cell
             }.disposed(by: _disposeBag)
-            _viewModel.membersCountRelay.map{"\($0)人"}.bind(to: cell.countLabel.rx.text).disposed(by: cell.disposeBag)
+            _viewModel.membersCountRelay.map { "\($0)人" }.bind(to: cell.countLabel.rx.text).disposed(by: cell.disposeBag)
             cell.titleLabel.text = rowType.title
-            
+
             cell.memberCollectionView.rx.modelSelected(UserInfo.self).subscribe(onNext: { [weak self] (userInfo: UserInfo) in
                 guard let sself = self else { return }
                 if userInfo.isButton {
@@ -136,7 +137,7 @@ class GroupDetailViewController: UIViewController, UITableViewDataSource, UITabl
                     vc.blockedUsers = sself._viewModel.allMembers
                     vc.selectedContactsBlock = { [weak vc, weak self] (users: [UserInfo]) in
                         guard let sself = self, let groupID = sself._viewModel.groupInfoRelay.value?.groupID else { return }
-                        let uids = users.compactMap{$0.userID}
+                        let uids = users.compactMap { $0.userID }
                         IMController.shared.inviteUsersToGroup(groupId: groupID, uids: uids) {
                             vc?.navigationController?.popViewController(animated: true)
                         }
@@ -162,13 +163,13 @@ class GroupDetailViewController: UIViewController, UITableViewDataSource, UITabl
             return cell
         }
     }
-    
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+
+    func tableView(_: UITableView, didSelectRowAt indexPath: IndexPath) {
         let rowType = sectionItems[indexPath.section][indexPath.row]
         switch rowType {
         case .members:
-            let vc = MemberListViewController.init(viewModel: MemberListViewModel.init(groupId: self._viewModel.groupId ?? ""))
-            self.navigationController?.pushViewController(vc, animated: true)
+            let vc = MemberListViewController(viewModel: MemberListViewModel(groupId: _viewModel.groupId ?? ""))
+            navigationController?.pushViewController(vc, animated: true)
         case .identifier:
             UIPasteboard.general.string = _viewModel.groupId
             SVProgressHUD.showSuccess(withStatus: "群聊ID已复制".innerLocalized())
@@ -176,7 +177,6 @@ class GroupDetailViewController: UIViewController, UITableViewDataSource, UITabl
             _viewModel.joinCurrentGroup { [weak self] _ in
                 SVProgressHUD.showSuccess(withStatus: "加群申请已发送".innerLocalized())
             }
-            break
         case .enterGroupChat:
             IMController.shared.getConversation(sessionType: .group, sourceId: _viewModel.groupId) { [weak self] (conversation: ConversationInfo?) in
                 guard let sself = self else { return }
@@ -184,22 +184,22 @@ class GroupDetailViewController: UIViewController, UITableViewDataSource, UITabl
                     return
                 }
 
-                let model = MessageListViewModel.init(groupId: sself._viewModel.groupId, conversation: conversation)
-                let vc = MessageListViewController.init(viewModel: model)
+                let model = MessageListViewModel(groupId: sself._viewModel.groupId, conversation: conversation)
+                let vc = MessageListViewController(viewModel: model)
                 self?.navigationController?.pushViewController(vc, animated: true)
             }
         default:
             break
         }
     }
-    
+
     enum RowType {
         case header
         case members
         case identifier
         case joinGroup
         case enterGroupChat
-        
+
         var title: String {
             switch self {
             case .header:
@@ -215,10 +215,10 @@ class GroupDetailViewController: UIViewController, UITableViewDataSource, UITabl
             }
         }
     }
-    
+
     deinit {
         #if DEBUG
-        print("dealloc \(type(of: self))")
+            print("dealloc \(type(of: self))")
         #endif
     }
 }

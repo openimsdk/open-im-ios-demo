@@ -1,13 +1,7 @@
 
-
-
-
-
-
 import UIKit
 
 class LayoutButton: UIButton {
-
     enum Position {
         case top
         case bottom
@@ -21,7 +15,6 @@ class LayoutButton: UIButton {
     private var _originBounds: CGRect = .zero
 
     convenience init(imagePosition position: Position, atSpace space: CGFloat = 0) {
-
         self.init(type: .custom)
         self.position = position
         self.space = space
@@ -46,10 +39,10 @@ class LayoutButton: UIButton {
 
     override func layoutSubviews() {
         super.layoutSubviews()
-        if _originBounds == self.bounds {
+        if _originBounds == bounds {
             return
         }
-        _originBounds = self.bounds
+        _originBounds = bounds
 
         if let position = position {
             switch position {
@@ -81,5 +74,4 @@ class LayoutButton: UIButton {
             }
         }
     }
-
 }

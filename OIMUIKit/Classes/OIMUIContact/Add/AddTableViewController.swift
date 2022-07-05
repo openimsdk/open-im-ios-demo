@@ -1,58 +1,53 @@
 
 
-
-
-
-
-import UIKit
 import SVProgressHUD
+import UIKit
 
 open class AddTableViewController: UITableViewController {
-
-    open override func viewDidLoad() {
+    override open func viewDidLoad() {
         super.viewDidLoad()
         configureTableView()
-        self.navigationItem.title = "添加".innerLocalized()
+        navigationItem.title = "添加".innerLocalized()
     }
-    
+
     private func configureTableView() {
         tableView.rowHeight = 74
         if #available(iOS 15.0, *) {
             tableView.sectionHeaderTopPadding = 0
         }
         tableView.separatorColor = StandardUI.color_F1F1F1
-        tableView.separatorInset = UIEdgeInsets.init(top: 0, left: 71, bottom: 0, right: 22)
+        tableView.separatorInset = UIEdgeInsets(top: 0, left: 71, bottom: 0, right: 22)
         tableView.register(AddEntranceTableViewCell.self, forCellReuseIdentifier: AddEntranceTableViewCell.className)
     }
-    
+
     private let sectionItems: [SectionModel] = [
-        SectionModel.init(name: "创建和加入群聊".innerLocalized(), items: [EntranceType.createGroup, EntranceType.joinGroup]),
-        SectionModel.init(name: "添加好友".innerLocalized(), items: [EntranceType.searchUser, EntranceType.scanQrcode])
+        SectionModel(name: "创建和加入群聊".innerLocalized(), items: [EntranceType.createGroup, EntranceType.joinGroup]),
+        SectionModel(name: "添加好友".innerLocalized(), items: [EntranceType.searchUser, EntranceType.scanQrcode]),
     ]
-    open override func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+    override open func tableView(_: UITableView, viewForHeaderInSection section: Int) -> UIView? {
         let item = sectionItems[section]
         let header = ViewUtil.createSectionHeaderWith(text: item.name)
         return header
     }
-    
-    open override func numberOfSections(in tableView: UITableView) -> Int {
+
+    override open func numberOfSections(in _: UITableView) -> Int {
         return sectionItems.count
     }
-    
-    open override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+
+    override open func tableView(_: UITableView, numberOfRowsInSection section: Int) -> Int {
         let sectionModel = sectionItems[section]
         return sectionModel.items.count
     }
-    
-    open override func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
+
+    override open func tableView(_: UITableView, heightForHeaderInSection _: Int) -> CGFloat {
         return 37
     }
-    
-    open override func tableView(_ tableView: UITableView, heightForFooterInSection section: Int) -> CGFloat {
+
+    override open func tableView(_: UITableView, heightForFooterInSection _: Int) -> CGFloat {
         return CGFloat.leastNormalMagnitude
     }
-    
-    open override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+
+    override open func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: AddEntranceTableViewCell.className) as! AddEntranceTableViewCell
         let item = sectionItems[indexPath.section].items[indexPath.row]
         cell.avatarImageView.image = item.iconImage
@@ -60,8 +55,8 @@ open class AddTableViewController: UITableViewController {
         cell.subtitleLabel.text = item.subtitle
         return cell
     }
-    
-    open override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+
+    override open func tableView(_: UITableView, didSelectRowAt indexPath: IndexPath) {
         let item: EntranceType = sectionItems[indexPath.section].items[indexPath.row]
         switch item {
         case .createGroup:
@@ -72,37 +67,37 @@ open class AddTableViewController: UITableViewController {
                     IMController.shared.getConversation(sessionType: groupInfo.groupType, sourceId: groupInfo.groupID) { (conversation: ConversationInfo?) in
                         guard let conversation = conversation else { return }
 
-                        let viewModel: MessageListViewModel = MessageListViewModel.init(groupId: groupInfo.groupID, conversation: conversation)
-                        let chatVC = MessageListViewController.init(viewModel: viewModel)
+                        let viewModel = MessageListViewModel(groupId: groupInfo.groupID, conversation: conversation)
+                        let chatVC = MessageListViewController(viewModel: viewModel)
                         chatVC.hidesBottomBarWhenPushed = true
                         self?.navigationController?.pushViewController(chatVC, animated: true)
                         if let root = self?.navigationController?.viewControllers.first {
                             self?.navigationController?.viewControllers.removeAll(where: { controller in
-                                return controller != root && controller != chatVC
+                                controller != root && controller != chatVC
                             })
                         }
                     }
                 }
             }
-            self.navigationController?.pushViewController(vc, animated: true)
+            navigationController?.pushViewController(vc, animated: true)
         case .joinGroup:
             let vc = SearchGroupViewController()
-            self.navigationController?.pushViewController(vc, animated: true)
+            navigationController?.pushViewController(vc, animated: true)
         case .searchUser:
             let vc = SearchFriendViewController()
-            self.navigationController?.pushViewController(vc, animated: true)
+            navigationController?.pushViewController(vc, animated: true)
         case .scanQrcode:
             let vc = ScanViewController()
             vc.scanDidComplete = { [weak self] (result: String) in
                 if result.contains(IMController.addFriendPrefix) {
                     let uid = result.replacingOccurrences(of: IMController.addFriendPrefix, with: "")
-                    let vc = UserDetailTableViewController.init(userId: uid, groupId: nil)
+                    let vc = UserDetailTableViewController(userId: uid, groupId: nil)
                     vc.hidesBottomBarWhenPushed = true
                     self?.navigationController?.pushViewController(vc, animated: true)
                     self?.dismiss(animated: true)
                 } else if result.contains(IMController.joinGroupPrefix) {
                     let groupID = result.replacingOccurrences(of: IMController.joinGroupPrefix, with: "")
-                    let vc = GroupDetailViewController.init(groupId: groupID)
+                    let vc = GroupDetailViewController(groupId: groupID)
                     vc.hidesBottomBarWhenPushed = true
                     self?.navigationController?.pushViewController(vc, animated: true)
                     self?.dismiss(animated: true)
@@ -111,34 +106,34 @@ open class AddTableViewController: UITableViewController {
                 }
             }
             vc.modalPresentationStyle = .fullScreen
-            self.present(vc, animated: true)
+            present(vc, animated: true)
         }
     }
-    
+
     struct SectionModel {
         let name: String
         let items: [EntranceType]
     }
-    
+
     enum EntranceType {
         case createGroup
         case joinGroup
         case searchUser
         case scanQrcode
-        
+
         var iconImage: UIImage? {
             switch self {
             case .createGroup:
-                return UIImage.init(nameInBundle: "add_create_group_icon")
+                return UIImage(nameInBundle: "add_create_group_icon")
             case .joinGroup:
-                return UIImage.init(nameInBundle: "add_join_group_icon")
+                return UIImage(nameInBundle: "add_join_group_icon")
             case .searchUser:
-                return UIImage.init(nameInBundle: "add_search_friend_icon")
+                return UIImage(nameInBundle: "add_search_friend_icon")
             case .scanQrcode:
-                return UIImage.init(nameInBundle: "add_scan_icon")
+                return UIImage(nameInBundle: "add_scan_icon")
             }
         }
-        
+
         var title: String {
             switch self {
             case .createGroup:
@@ -151,7 +146,7 @@ open class AddTableViewController: UITableViewController {
                 return "扫一扫".innerLocalized()
             }
         }
-        
+
         var subtitle: String {
             switch self {
             case .createGroup:

@@ -1,11 +1,4 @@
 
-
-
-
-
-
-
-
 import UIKit
 
 class ViewUtil {
@@ -29,10 +22,10 @@ class ViewUtil {
         }()
         return container
     }
-    
+
     static func createSpacer(height: CGFloat) -> UIView {
         let container: UIView = {
-            let v = UIView.init(frame: CGRect.init(x: 0, y: 0, width: kScreenWidth, height: height))
+            let v = UIView(frame: CGRect(x: 0, y: 0, width: kScreenWidth, height: height))
             v.backgroundColor = StandardUI.color_F1F1F1
             return v
         }()

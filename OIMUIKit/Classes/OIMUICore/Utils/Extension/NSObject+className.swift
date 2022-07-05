@@ -1,11 +1,4 @@
 
-
-
-
-
-
-
-
 import Foundation
 
 extension NSObject {
@@ -14,6 +7,6 @@ extension NSObject {
     }
 
     class var className: String {
-        return String.init(describing: self)
+        return String(describing: self)
     }
 }

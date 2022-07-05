@@ -1,25 +1,19 @@
 
-
-
-
-
-
-import UIKit
-import SVProgressHUD
-import RxSwift
 import Photos
+import RxSwift
+import SVProgressHUD
+import UIKit
 
 class ProfileTableViewController: UITableViewController {
-    
     private let rowItems: [RowType] = RowType.allCases
-    
+
     private let _viewModel = MineViewModel()
     private let _disposeBag = DisposeBag()
-    
+
     private lazy var _photoHelper: PhotoHelper = {
         let v = PhotoHelper()
         v.setConfigToPickAvatar()
-        v.didPhotoSelected = { [weak self] (images: [UIImage], assets: [PHAsset], isOriginPhoto: Bool) in
+        v.didPhotoSelected = { [weak self] (images: [UIImage], _: [PHAsset], _: Bool) in
             guard let first = images.first else { return }
             let result = FileHelper.shared.saveImage(image: first)
             if result.isSuccess {
@@ -30,8 +24,8 @@ class ProfileTableViewController: UITableViewController {
                 })
             }
         }
-        
-        v.didCameraFinished = { [weak self] (photo: UIImage?, videoPath: URL?) in
+
+        v.didCameraFinished = { [weak self] (photo: UIImage?, _: URL?) in
             guard let sself = self else { return }
             if let photo = photo {
                 let result = FileHelper.shared.saveImage(image: photo)
@@ -46,29 +40,30 @@ class ProfileTableViewController: UITableViewController {
         }
         return v
     }()
+
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.navigationItem.title = "我的信息".innerLocalized()
+        navigationItem.title = "我的信息".innerLocalized()
         configureTableView()
         bindData()
     }
-    
+
     private func configureTableView() {
         tableView.register(OptionTableViewCell.self, forCellReuseIdentifier: OptionTableViewCell.className)
         tableView.register(OptionImageTableViewCell.self, forCellReuseIdentifier: OptionImageTableViewCell.className)
         tableView.rowHeight = 60
     }
-    
+
     private func bindData() {
         _viewModel.currentUserRelay.subscribe(onNext: { [weak self] _ in
             self?.tableView.reloadData()
         }).disposed(by: _disposeBag)
     }
 
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_: UITableView, numberOfRowsInSection _: Int) -> Int {
         return rowItems.count
     }
-    
+
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let rowType: RowType = rowItems[indexPath.row]
         let user = _viewModel.currentUserRelay.value
@@ -81,7 +76,7 @@ class ProfileTableViewController: UITableViewController {
             return cell
         case .qrcode:
             let cell = tableView.dequeueReusableCell(withIdentifier: OptionImageTableViewCell.className) as! OptionImageTableViewCell
-            cell.iconImageView.image = UIImage.init(nameInBundle: "common_qrcode_icon")
+            cell.iconImageView.image = UIImage(nameInBundle: "common_qrcode_icon")
             cell.titleLabel.text = rowType.title
             return cell
         case .nickname:
@@ -112,15 +107,15 @@ class ProfileTableViewController: UITableViewController {
             return cell
         }
     }
-    
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+
+    override func tableView(_: UITableView, didSelectRowAt indexPath: IndexPath) {
         let rowType: RowType = rowItems[indexPath.row]
         switch rowType {
         case .avatar:
             _photoHelper.presentPhotoLibrary(byController: self)
         case .nickname:
             let user = _viewModel.currentUserRelay.value
-            let vc = ModifyNicknameViewController.init()
+            let vc = ModifyNicknameViewController()
             vc.titleLabel.text = "修改昵称".innerLocalized()
             vc.subtitleLabel.text = nil
             vc.avatarImageView.setImage(with: user?.faceURL, placeHolder: "contact_my_friend_icon")
@@ -130,31 +125,31 @@ class ProfileTableViewController: UITableViewController {
                 self?._viewModel.updateNickname(text)
                 vc?.navigationController?.popViewController(animated: true)
             }).disposed(by: vc.disposeBag)
-            self.navigationController?.pushViewController(vc, animated: true)
+            navigationController?.pushViewController(vc, animated: true)
         case .gender:
-            let sheet = UIAlertController.init(title: nil, message: nil, preferredStyle: .actionSheet)
+            let sheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
             let maleAction: UIAlertAction = {
-                let v = UIAlertAction.init(title: "男".innerLocalized(), style: .default) { [weak self] _ in
+                let v = UIAlertAction(title: "男".innerLocalized(), style: .default) { [weak self] _ in
                     self?._viewModel.updateGender(.male)
                 }
                 return v
             }()
-            
+
             let femaleAction: UIAlertAction = {
-                let v = UIAlertAction.init(title: "女".innerLocalized(), style: .default) { [weak self] _ in
+                let v = UIAlertAction(title: "女".innerLocalized(), style: .default) { [weak self] _ in
                     self?._viewModel.updateGender(.female)
                 }
                 return v
             }()
-            let cancelAction = UIAlertAction.init(title: "取消".innerLocalized(), style: UIAlertAction.Style.cancel, handler: nil)
+            let cancelAction = UIAlertAction(title: "取消".innerLocalized(), style: UIAlertAction.Style.cancel, handler: nil)
             sheet.addAction(maleAction)
             sheet.addAction(femaleAction)
             sheet.addAction(cancelAction)
-            self.present(sheet, animated: true, completion: nil)
+            present(sheet, animated: true, completion: nil)
         case .birthday:
-            JNDatePickerView.show(onWindowOfView: self.view) { (pickerView: JNDatePickerView) in
+            JNDatePickerView.show(onWindowOfView: view) { (pickerView: JNDatePickerView) in
                 pickerView.datePicker.maximumDate = Date()
-                pickerView.datePicker.minimumDate = Date.init(timeIntervalSince1970: 0)
+                pickerView.datePicker.minimumDate = Date(timeIntervalSince1970: 0)
             } confirmAction: { [weak self] (selectedDate: Date) in
                 let timeStamp = selectedDate.timeIntervalSince1970
                 self?._viewModel.updateBirthday(timeStampSeconds: Int(timeStamp))
@@ -163,23 +158,23 @@ class ProfileTableViewController: UITableViewController {
             break
         case .qrcode:
             guard let user = _viewModel.currentUserRelay.value else { return }
-            let vc = QRCodeViewController.init(idString: IMController.addFriendPrefix.append(string: user.userID))
+            let vc = QRCodeViewController(idString: IMController.addFriendPrefix.append(string: user.userID))
             vc.nameLabel.text = user.nickname
             vc.avatarImageView.setImage(with: user.faceURL, placeHolder: "contact_my_friend_icon")
             vc.tipLabel.text = "扫一扫下面的二维码，添加我为好友"
-            self.navigationController?.pushViewController(vc, animated: true)
+            navigationController?.pushViewController(vc, animated: true)
         case .identifier:
             UIPasteboard.general.string = _viewModel.currentUserRelay.value?.userID
             SVProgressHUD.showSuccess(withStatus: "ID复制成功")
         }
     }
-    
+
     deinit {
         #if DEBUG
-        print("dealloc \(type(of: self))")
+            print("dealloc \(type(of: self))")
         #endif
     }
-    
+
     enum RowType: CaseIterable {
         case avatar
         case nickname
@@ -188,7 +183,7 @@ class ProfileTableViewController: UITableViewController {
         case phone
         case qrcode
         case identifier
-        
+
         var title: String {
             switch self {
             case .avatar:

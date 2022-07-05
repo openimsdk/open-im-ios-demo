@@ -1,9 +1,4 @@
 
-
-
-
-
-
 import Foundation
 import RxRelay
 
@@ -11,14 +6,14 @@ class FriendListViewModel {
     let lettersRelay: BehaviorRelay<[String]> = .init(value: [])
     var myFriends: [UserInfo] = []
     var contactSections: [[UserInfo]] = []
-    
+
     func getMyFriendList() {
         IMController.shared.getFriendList { [weak self] (users: [UserInfo]) in
             self?.myFriends = users
             self?.divideUsersInSection(users: users ?? [])
         }
     }
-    
+
     func getUsersAt(indexPaths: [IndexPath]) -> [UserInfo] {
         var users: [UserInfo] = []
         for indexPath in indexPaths {
@@ -27,13 +22,13 @@ class FriendListViewModel {
         }
         return users
     }
-    
+
     func createConversationWith(users: [UserInfo], onSuccess: @escaping CallBack.VoidReturnVoid) {
-        IMController.shared.createGroupConversation(users: users) { (groupInfo: GroupInfo?) in
+        IMController.shared.createGroupConversation(users: users) { (_: GroupInfo?) in
             onSuccess()
         }
     }
-    
+
     private func divideUsersInSection(users: [UserInfo]) {
         var letterSet: Set<String> = []
         for user in users {
@@ -41,10 +36,10 @@ class FriendListViewModel {
                 letterSet.insert(firstLetter)
             }
         }
-        
+
         let letterArr: [String] = Array(letterSet)
         let ret = letterArr.sorted { $0 < $1 }
-        
+
         for letter in ret {
             var sectionArr: [UserInfo] = []
             for user in users {

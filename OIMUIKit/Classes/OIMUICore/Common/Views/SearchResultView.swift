@@ -1,9 +1,4 @@
 
-
-
-
-
-
 import UIKit
 
 class SearchResultView: UIView {
@@ -13,38 +8,39 @@ class SearchResultView: UIView {
         v.textColor = StandardUI.color_333333
         return v
     }()
-    
+
     let tap = UITapGestureRecognizer()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        self.backgroundColor = .white
+        backgroundColor = .white
         let imageView: UIImageView = {
-            let v = UIImageView.init(image: UIImage.init(nameInBundle: "contacts_search_result_icon"))
+            let v = UIImageView(image: UIImage(nameInBundle: "contacts_search_result_icon"))
             v.setContentHuggingPriority(.required, for: .horizontal)
             v.setContentCompressionResistancePriority(.required, for: .horizontal)
             return v
         }()
-        self.addSubview(imageView)
+        addSubview(imageView)
         imageView.snp.makeConstraints { make in
             make.left.equalToSuperview().offset(StandardUI.margin_22)
             make.centerY.equalToSuperview()
         }
-        
-        self.addSubview(titleLabel)
+
+        addSubview(titleLabel)
         titleLabel.snp.makeConstraints { make in
             make.left.equalTo(imageView.snp.right).offset(6)
             make.centerY.equalToSuperview()
             make.right.equalToSuperview().offset(-18)
         }
-        
-        self.addGestureRecognizer(tap)
+
+        addGestureRecognizer(tap)
     }
-    
-    required init?(coder: NSCoder) {
+
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     func setTitle(_ title: String?) {
         guard let title = title else {
             return
@@ -52,5 +48,4 @@ class SearchResultView: UIView {
 
         titleLabel.text = "搜索：" + title
     }
-    
 }

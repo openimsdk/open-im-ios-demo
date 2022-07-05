@@ -1,24 +1,19 @@
 
-
-
-
-
-
-import UIKit
+import Photos
+import RxKeyboard
 import RxSwift
 import SnapKit
-import RxKeyboard
-import Photos
 import SVProgressHUD
+import UIKit
 
 class MessageListViewController: UIViewController {
     private lazy var chatBar: ChatToolBar = {
-        let v = ChatToolBar.init(moveTo: self.view, conversation: _viewModel.conversation)
+        let v = ChatToolBar(moveTo: self.view, conversation: _viewModel.conversation)
         v.padView.delegate = self
         v.delegate = self
         return v
     }()
-    
+
     private lazy var _tableView: UITableView = {
         let v = UITableView()
         if #available(iOS 15.0, *) {
@@ -29,7 +24,7 @@ class MessageListViewController: UIViewController {
             v.register(cellType.self, forCellReuseIdentifier: cellType.className)
         }
         let refresh: UIRefreshControl = {
-            let v = UIRefreshControl.init(frame: CGRect.init(x: 0, y: 0, width: 35, height: 35))
+            let v = UIRefreshControl(frame: CGRect(x: 0, y: 0, width: 35, height: 35))
             v.rx.controlEvent(.valueChanged).subscribe(onNext: { [weak self, weak v] in
                 self?._viewModel.loadMoreMessages(completion: nil)
                 v?.endRefreshing()
@@ -39,68 +34,72 @@ class MessageListViewController: UIViewController {
         v.refreshControl = refresh
         return v
     }()
-    
+
     private lazy var _photoHelper: PhotoHelper = {
         let v = PhotoHelper()
-        v.didPhotoSelected = { [weak self] (images: [UIImage], assets: [PHAsset], isOriginPhoto: Bool) in
+        v.didPhotoSelected = { [weak self] (images: [UIImage], assets: [PHAsset], _: Bool) in
             guard let sself = self else { return }
             var items: [PhotoHelper.MediaTuple] = []
             for (index, asset) in assets.enumerated() {
-                let item = PhotoHelper.MediaTuple.init(thumbnail: images[index], asset: asset)
+                let item = PhotoHelper.MediaTuple(thumbnail: images[index], asset: asset)
                 items.append(item)
             }
             self?._photoHelper.sendMediaTuple(assets: items, with: sself._viewModel)
         }
-        
+
         v.didCameraFinished = { [weak self] (photo: UIImage?, videoPath: URL?) in
             guard let sself = self else { return }
             if let photo = photo {
                 self?._viewModel.sendImage(image: photo)
             }
-            
+
             if let videoPath = videoPath {
                 self?._photoHelper.sendVideoAt(url: videoPath, messageSender: sself._viewModel)
             }
         }
         return v
     }()
-    
+
     private lazy var _audioPlayer: AVPlayer = {
-        let v = AVPlayer.init(playerItem: nil)
+        let v = AVPlayer(playerItem: nil)
         return v
     }()
+
     private let _disposeBag = DisposeBag()
-    
+
     private let _viewModel: MessageListViewModel
     private var _bottomConstraint: Constraint?
     init(viewModel: MessageListViewModel) {
         _viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
-    
-    required init?(coder: NSCoder) {
+
+    @available(*, unavailable)
+    required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+
     private weak var currentPlayingMessage: MessageInfo?
-    
+
     private let titleLabel: UILabel = {
         let v = UILabel()
         return v
     }()
-    
+
     private let subtitleLabel: UILabel = {
         let v = UILabel()
         v.font = UIFont.systemFont(ofSize: 13)
         v.text = "输入中...".innerLocalized()
         return v
     }()
+
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
-        
+
         lazy var rightBar: UIBarButtonItem = {
             let v = UIBarButtonItem()
-            v.image = UIImage.init(nameInBundle: "common_more_btn_icon")
+            v.image = UIImage(nameInBundle: "common_more_btn_icon")
             v.rx.tap.subscribe(onNext: { [weak self] in
                 guard let sself = self else { return }
                 let conversationType = sself._viewModel.conversation.conversationType
@@ -108,26 +107,26 @@ class MessageListViewController: UIViewController {
                 case .undefine:
                     break
                 case .c2c:
-                    let viewModel = SingleChatSettingViewModel.init(conversation: sself._viewModel.conversation)
-                    let vc = SingleChatSettingTableViewController.init(viewModel: viewModel, style: .grouped)
+                    let viewModel = SingleChatSettingViewModel(conversation: sself._viewModel.conversation)
+                    let vc = SingleChatSettingTableViewController(viewModel: viewModel, style: .grouped)
                     self?.navigationController?.pushViewController(vc, animated: true)
                 case .group:
-                    let vc = GroupChatSettingTableViewController.init(conversation: sself._viewModel.conversation, style: .grouped)
+                    let vc = GroupChatSettingTableViewController(conversation: sself._viewModel.conversation, style: .grouped)
                     self?.navigationController?.pushViewController(vc, animated: true)
                 }
             }).disposed(by: self._disposeBag)
             return v
         }()
         if let last = _viewModel.conversation.latestMsg {
-            if last.contentType == .memberQuit && last.sendID == IMController.shared.uid {
-                self.navigationItem.rightBarButtonItem = nil
+            if last.contentType == .memberQuit, last.sendID == IMController.shared.uid {
+                navigationItem.rightBarButtonItem = nil
             } else if last.contentType == .dismissGroup {
-                self.navigationItem.rightBarButtonItem = nil
+                navigationItem.rightBarButtonItem = nil
             } else {
-                self.navigationItem.rightBarButtonItem = rightBar
+                navigationItem.rightBarButtonItem = rightBar
             }
         } else {
-            self.navigationItem.rightBarButtonItem = rightBar
+            navigationItem.rightBarButtonItem = rightBar
         }
 
         initView()
@@ -136,7 +135,7 @@ class MessageListViewController: UIViewController {
             self?.scrollsToBottom(animated: false)
         })
         _viewModel.markAllMessageReaded()
-        
+
         NotificationCenter.default.rx.notification(NSNotification.Name.AVPlayerItemDidPlayToEndTime).subscribe(onNext: { [weak self] _ in
             guard let sself = self else { return }
             if let currentItem = sself.currentPlayingMessage {
@@ -144,82 +143,81 @@ class MessageListViewController: UIViewController {
             }
         }).disposed(by: _disposeBag)
     }
-    
+
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         _viewModel.markAllMessageReaded()
     }
-    
+
     private var didSetupViewConstraints: Bool = false
-    
+
     override func updateViewConstraints() {
         super.updateViewConstraints()
-        guard !self.didSetupViewConstraints else { return }
-        self.didSetupViewConstraints = true
+        guard !didSetupViewConstraints else { return }
+        didSetupViewConstraints = true
     }
-    
+
     deinit {
         #if DEBUG
-        print("dealloc \(type(of: self))")
+            print("dealloc \(type(of: self))")
         #endif
     }
 
     private func initView() {
         let titleView: UIStackView = {
-            let v = UIStackView.init(arrangedSubviews: [titleLabel, subtitleLabel])
+            let v = UIStackView(arrangedSubviews: [titleLabel, subtitleLabel])
             v.axis = .vertical
             v.alignment = .center
             v.spacing = 5
             return v
         }()
-        self.navigationItem.titleView = titleView
-        
+        navigationItem.titleView = titleView
+
         view.addSubview(_tableView)
         _tableView.snp.makeConstraints { make in
             make.left.right.equalToSuperview()
             make.top.equalTo(self.view.safeAreaLayoutGuide.snp.top)
             _bottomConstraint = make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom).offset(-ChatToolBar.defaultHeight).constraint
         }
-        //ChatBar在初始化时已经添加到父视图，注意CharBar的视图层级
+        // ChatBar在初始化时已经添加到父视图，注意CharBar的视图层级
         defer {
             chatBar.backgroundColor = StandardUI.color_E8F2FF
         }
     }
-    
+
     private func bindData() {
         titleLabel.text = _viewModel.conversation.showName
-        
-        _viewModel.messagesRelay.asDriver(onErrorJustReturn: []).drive(_tableView.rx.items) { [weak self] (tableView, row, item: MessageInfo) in
+
+        _viewModel.messagesRelay.asDriver(onErrorJustReturn: []).drive(_tableView.rx.items) { [weak self] (tableView, _, item: MessageInfo) in
             guard let sself = self else { return UITableViewCell() }
             let messageType = item.contentType
             let isRight = item.isSelf
             let cellType = MessageCell.getCellType(by: messageType, isRight: isRight)
             let cell = tableView.dequeueReusableCell(withIdentifier: cellType.className) as! MessageCellAble
-            cell.setMessage(model: item, extraInfo: ExtraInfo.init(isC2C: sself._viewModel.conversation.conversationType == .c2c))
+            cell.setMessage(model: item, extraInfo: ExtraInfo(isC2C: sself._viewModel.conversation.conversationType == .c2c))
             cell.delegate = self
             return cell
         }.disposed(by: _disposeBag)
-        
-        let tapToResignFirstResponder = UITapGestureRecognizer.init()
+
+        let tapToResignFirstResponder = UITapGestureRecognizer()
         tapToResignFirstResponder.rx.event.subscribe(onNext: { [weak self] _ in
             self?.chatBar.textInputView.resignFirstResponder()
         }).disposed(by: _disposeBag)
         view.addGestureRecognizer(tapToResignFirstResponder)
-        
+
         _tableView.rx.willBeginDragging.subscribe(onNext: { [weak self] in
             self?.chatBar.textInputView.resignFirstResponder()
         }).disposed(by: _disposeBag)
-        
+
         RxKeyboard.instance.visibleHeight
-          .drive(onNext: { [weak self] keyboardVisibleHeight in
-            guard let sself = self, sself.didSetupViewConstraints else { return }
-              if keyboardVisibleHeight <= sself.view.safeAreaInsets.bottom {
-                  sself.chatBar.bottomConstraint?.update(offset: -keyboardVisibleHeight)
-              } else {
-                  sself.chatBar.bottomConstraint?.update(offset: -keyboardVisibleHeight + sself.view.safeAreaInsets.bottom)
-              }
-              if sself._tableView.bounds.size.height - sself._tableView.contentSize.height >= keyboardVisibleHeight { return }
-              sself.view.setNeedsLayout()
+            .drive(onNext: { [weak self] keyboardVisibleHeight in
+                guard let sself = self, sself.didSetupViewConstraints else { return }
+                if keyboardVisibleHeight <= sself.view.safeAreaInsets.bottom {
+                    sself.chatBar.bottomConstraint?.update(offset: -keyboardVisibleHeight)
+                } else {
+                    sself.chatBar.bottomConstraint?.update(offset: -keyboardVisibleHeight + sself.view.safeAreaInsets.bottom)
+                }
+                sself.view.setNeedsLayout()
                 UIView.animate(withDuration: 0) {
                     if keyboardVisibleHeight <= sself.view.safeAreaInsets.bottom {
                         sself._tableView.contentInset.bottom = keyboardVisibleHeight
@@ -228,42 +226,34 @@ class MessageListViewController: UIViewController {
                     }
                     sself._tableView.scrollIndicatorInsets.bottom = sself._tableView.contentInset.bottom
                     sself.view.layoutIfNeeded()
+                    sself.scrollsToBottom(animated: false)
                 }
-          }).disposed(by: _disposeBag)
+            }).disposed(by: _disposeBag)
 
-        RxKeyboard.instance.willShowVisibleHeight
-          .drive(onNext: { [weak self] keyboardVisibleHeight in
-              guard let sself = self else { return }
-              if sself._tableView.bounds.size.height - sself._tableView.contentSize.height >= keyboardVisibleHeight { return }
-              if keyboardVisibleHeight <= sself.view.safeAreaInsets.bottom {
-                  sself._tableView.contentOffset.y += keyboardVisibleHeight
-              } else {
-                  sself._tableView.contentOffset.y += keyboardVisibleHeight - sself.view.safeAreaInsets.bottom
-              }
-          }).disposed(by: _disposeBag)
-        
         _viewModel.scrollsToBottom.subscribe(onNext: { [weak self] in
             self?.scrollsToBottom()
         }).disposed(by: _disposeBag)
-        
+
         _viewModel.shouldHideSettingBtnSubject.subscribe(onNext: { [weak self] (shouldHide: Bool) in
             if shouldHide {
                 self?.navigationItem.rightBarButtonItem = nil
             }
         }).disposed(by: _disposeBag)
-        
-        _viewModel.typingRelay.distinctUntilChanged().map({!$0}).bind(to: self.subtitleLabel.rx.isHidden).disposed(by: _disposeBag)
+
+        _viewModel.typingRelay.distinctUntilChanged().map { !$0 }.bind(to: subtitleLabel.rx.isHidden).disposed(by: _disposeBag)
     }
-    
+
     private func scrollsToBottom(animated: Bool = true) {
         let messageCount = _viewModel.messagesRelay.value.count
         if messageCount > 0 {
-            let indexPath = IndexPath.init(row: messageCount - 1, section: 0)
+            let indexPath = IndexPath(row: messageCount - 1, section: 0)
             _tableView.scrollToRow(at: indexPath, at: .bottom, animated: animated)
         }
     }
 }
-//MARK: - ChatPluginPadDelegate
+
+// MARK: - ChatPluginPadDelegate
+
 extension MessageListViewController: ChatPluginPadDelegate {
     func didSelect(plugin: PluginType) {
         switch plugin {
@@ -278,58 +268,58 @@ extension MessageListViewController: ChatPluginPadDelegate {
                 vc?.navigationController?.popViewController(animated: true)
             }
             vc.hidesBottomBarWhenPushed = true
-            self.navigationController?.pushViewController(vc, animated: true)
+            navigationController?.pushViewController(vc, animated: true)
         }
     }
 }
-//MARK: - ChatToolBarDelegate
+
+// MARK: - ChatToolBarDelegate
+
 extension MessageListViewController: ChatToolBarDelegate {
     func tb_didTouchSend(text: String) {
         _viewModel.sendText(text: text, quoteMessage: chatBar.quoteMessage)
         chatBar.quoteMessage = nil
     }
-    
+
     func tb_didAudioRecordEnd(url: String, duration: Int) {
         _viewModel.sendAudio(path: url, duration: duration)
     }
 }
 
 extension MessageListViewController: MessageDelegate {
-    func didDoubleTapMessageCell(cell: UITableViewCell, with message: MessageInfo) {
-        
-    }
-    
+    func didDoubleTapMessageCell(cell _: UITableViewCell, with _: MessageInfo) {}
+
     func didTapAvatar(with message: MessageInfo) {
         print("点击了\(message.senderNickname)的头像")
     }
-    
+
     func didTapResendBtn(with message: MessageInfo) {
         _viewModel.resend(message: message)
     }
-    
-    func didTapQuoteView(cell: UITableViewCell, with message: MessageInfo) {
+
+    func didTapQuoteView(cell _: UITableViewCell, with _: MessageInfo) {
         print("点击了引用消息")
     }
-    
-    func didTapMessageCell(cell: UITableViewCell, with message: MessageInfo) {
+
+    func didTapMessageCell(cell _: UITableViewCell, with message: MessageInfo) {
         switch message.contentType {
         case .audio:
-            //如果当前音频消息正在播放，停止
+            // 如果当前音频消息正在播放，停止
             if message.isPlaying {
                 _audioPlayer.pause()
                 _viewModel.markAudio(messageId: message.clientMsgID ?? "", isPlaying: false)
                 return
             }
             var playItem: AVPlayerItem?
-            if let audioUrl = message.soundElem?.sourceUrl, let url = URL.init(string: audioUrl) {
-                playItem = AVPlayerItem.init(url: url)
+            if let audioUrl = message.soundElem?.sourceUrl, let url = URL(string: audioUrl) {
+                playItem = AVPlayerItem(url: url)
             } else if let audioUrl = message.soundElem?.soundPath {
-                let url = URL.init(fileURLWithPath: audioUrl)
+                let url = URL(fileURLWithPath: audioUrl)
                 if FileManager.default.fileExists(atPath: url.path) {
-                    playItem = AVPlayerItem.init(url: url)
+                    playItem = AVPlayerItem(url: url)
                 }
             }
-            
+
             if let playItem = playItem {
                 currentPlayingMessage = message
                 try? AVAudioSession.sharedInstance().setCategory(.playback)
@@ -345,13 +335,13 @@ extension MessageListViewController: MessageDelegate {
                 SVProgressHUD.showError(withStatus: "数据格式不正确:\(content)")
                 return
             }
-            let vc = UserDetailTableViewController.init(userId: cardModel.userID, groupId: self._viewModel.conversation.groupID)
-            self.navigationController?.pushViewController(vc, animated: true)
+            let vc = UserDetailTableViewController(userId: cardModel.userID, groupId: _viewModel.conversation.groupID)
+            navigationController?.pushViewController(vc, animated: true)
         default:
             break
         }
     }
-    
+
     func didLongPressBubbleView(bubbleView: UIView, with message: MessageInfo) {
         print("长按气泡")
         var toolItems: [ChatToolController.ToolItem] = []
@@ -370,8 +360,8 @@ extension MessageListViewController: MessageDelegate {
             toolItems.append(.revoke)
         }
         if toolItems.isEmpty { return }
-        let menu = ChatToolController.init(sourceView: bubbleView, items: toolItems)
-        
+        let menu = ChatToolController(sourceView: bubbleView, items: toolItems)
+
         menu.collectionView.rx.itemSelected.subscribe(onNext: { [weak self, weak menu] (indexPath: IndexPath) in
             let menuItem = toolItems[indexPath.item]
             switch menuItem {
@@ -399,7 +389,7 @@ extension MessageListViewController: MessageDelegate {
             }
             menu?.dismiss(animated: true)
         }).disposed(by: menu.disposeBag)
-        
-        self.present(menu, animated: true, completion: nil)
+
+        present(menu, animated: true, completion: nil)
     }
 }
