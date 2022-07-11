@@ -3,6 +3,7 @@ import Foundation
 import Photos
 import UIKit
 import ZLPhotoBrowser
+import SVProgressHUD
 
 class PhotoHelper {
     var didPhotoSelected: ((_ images: [UIImage], _ assets: [PHAsset], _ isOriginPhoto: Bool) -> Void)?
@@ -136,7 +137,7 @@ class PhotoHelper {
                 } urlImageLoader: { url, imageView, progress, loadFinish in
                     imageView.kf.setImage(with: url) { receivedSize, totalSize in
                         let percentage = (CGFloat(receivedSize) / CGFloat(totalSize))
-                        debugPrint("\(percentage)")
+                        debugPrint("progress: \(percentage)")
                         progress(percentage)
                     } completionHandler: { _ in
                         loadFinish()

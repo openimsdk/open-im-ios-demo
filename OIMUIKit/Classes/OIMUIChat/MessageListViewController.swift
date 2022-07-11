@@ -150,6 +150,8 @@ class MessageListViewController: UIViewController {
     }
 
     private var didSetupViewConstraints: Bool = false
+    
+    private var isAtBottom: Bool = false
 
     override func updateViewConstraints() {
         super.updateViewConstraints()
@@ -208,6 +210,14 @@ class MessageListViewController: UIViewController {
         _tableView.rx.willBeginDragging.subscribe(onNext: { [weak self] in
             self?.chatBar.textInputView.resignFirstResponder()
         }).disposed(by: _disposeBag)
+        
+        _tableView.rx.didScroll.subscribe(onNext: { [weak self] in
+            guard let sself = self else { return }
+            let height = sself._tableView.bounds.height
+            let contentOffsetY = sself._tableView.contentOffset.y
+            let bottomOffset = sself._tableView.contentSize.height - contentOffsetY
+            self?.isAtBottom = bottomOffset <= height
+        }).disposed(by: _disposeBag)
 
         RxKeyboard.instance.visibleHeight
             .drive(onNext: { [weak self] keyboardVisibleHeight in
@@ -231,7 +241,10 @@ class MessageListViewController: UIViewController {
             }).disposed(by: _disposeBag)
 
         _viewModel.scrollsToBottom.subscribe(onNext: { [weak self] in
-            self?.scrollsToBottom()
+            guard let sself = self else { return }
+            if sself.isAtBottom {
+                self?.scrollsToBottom()
+            }
         }).disposed(by: _disposeBag)
 
         _viewModel.shouldHideSettingBtnSubject.subscribe(onNext: { [weak self] (shouldHide: Bool) in
