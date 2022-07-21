@@ -11,9 +11,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     private let _disposeBag = DisposeBag();
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         
+        let ud = UserDefaults.standard
+        
         // 初始化SDK
-        IMController.shared.setup(apiAdrr: "http://121.37.25.71:10002",
-                                  wsAddr: "ws://121.37.25.71:10001")
+        IMController.shared.setup(apiAdrr:ud.string(forKey: sdkAPIAddrKey) ??
+                                  "http://121.37.25.71:10002",
+                                  wsAddr:ud.string(forKey: sdkWSAddrKey) ??
+                                  "ws://121.37.25.71:10001",
+                                  os: ud.string(forKey: sdkObjectStorageKey) ??
+                                  "minio")
         
         let pushConfig: JPUSHRegisterEntity = {
             let v = JPUSHRegisterEntity.init()
@@ -72,7 +78,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
         print("did Fail To Register For Remote Notifications With Error: %@", error)
     }
-
 }
 
 extension AppDelegate: JPUSHRegisterDelegate {

@@ -126,7 +126,7 @@ class SingleChatSettingTableViewController: UITableViewController {
                         allUsers.append(contentsOf: users)
                         IMController.shared.createGroupConversation(users: allUsers) { (groupInfo: GroupInfo?) in
                             guard let groupInfo = groupInfo else { return }
-                            IMController.shared.getConversation(sessionType: groupInfo.groupType, sourceId: groupInfo.groupID) { (conversation: ConversationInfo?) in
+                            IMController.shared.getConversation(sessionType: .group, sourceId: groupInfo.groupID) { (conversation: ConversationInfo?) in
                                 guard let conversation = conversation else { return }
 
                                 let viewModel = MessageListViewModel(groupId: groupInfo.groupID, conversation: conversation)
@@ -141,6 +141,9 @@ class SingleChatSettingTableViewController: UITableViewController {
                             }
                         }
                     }
+                    self?.navigationController?.pushViewController(vc, animated: true)
+                } else {
+                    let vc = UserDetailTableViewController(userId: userInfo.userID, groupId: sself._viewModel.conversation.groupID)
                     self?.navigationController?.pushViewController(vc, animated: true)
                 }
             }).disposed(by: cell.disposeBag)

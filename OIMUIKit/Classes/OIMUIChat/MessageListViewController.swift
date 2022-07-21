@@ -304,6 +304,11 @@ extension MessageListViewController: MessageDelegate {
 
     func didTapAvatar(with message: MessageInfo) {
         print("点击了\(message.senderNickname)的头像")
+        if let uid = message.sendID, uid != IMController.shared.uid {
+            //点击自己的头像不做跳转
+            let vc = UserDetailTableViewController(userId: uid, groupId: message.groupID)
+            navigationController?.pushViewController(vc, animated: true)
+        }
     }
 
     func didTapResendBtn(with message: MessageInfo) {

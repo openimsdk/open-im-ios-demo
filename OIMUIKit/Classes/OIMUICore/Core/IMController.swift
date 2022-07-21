@@ -33,10 +33,10 @@ public class IMController: NSObject {
 
     private(set) var uid: String = ""
 
-    public func setup(apiAdrr: String, wsAddr: String) {
+    public func setup(apiAdrr: String, wsAddr: String, os: String) {
         let manager = OpenIMSDK.OIMManager()
 
-        manager.initSDK(withApiAdrr: apiAdrr, wsAddr: wsAddr, dataDir: nil, logLevel: 6, objectStorage: "minio", onConnecting: {
+        manager.initSDK(withApiAdrr: apiAdrr, wsAddr: wsAddr, dataDir: nil, logLevel: 6, objectStorage: os, onConnecting: {
             print("onConnecting")
         }, onConnectFailure: { (errCode: Int, errMsg: String?) in
             print("onConnectFailed code:\(errCode), msg:\(String(describing: errMsg))")
@@ -467,7 +467,7 @@ extension IMController {
         let createInfo = OIMGroupCreateInfo()
         createInfo.groupName = me.nickname?.append(string: "创建的群聊".innerLocalized())
         // 1是单聊，2是群聊，等待SDK更新为枚举类型
-        createInfo.groupType = 2
+        createInfo.groupType = .working
         Self.shared.imManager.createGroup(createInfo, memberList: members) { (groupInfo: OIMGroupInfo?) in
             print("创建群聊成功")
             onSuccess(groupInfo?.toGroupInfo())
@@ -765,7 +765,7 @@ public class GroupMemberInfo: GroupMemberBaseInfo {
     var nickname: String?
     var faceURL: String?
     var joinTime: Int = 0
-    var joinSource: Int = 0
+    var joinSource: JoinSource = .search
     var operatorUserID: String?
     var ex: String?
 
@@ -883,6 +883,18 @@ public enum ConversationType: Int, Codable {
     case group
 }
 
+public enum GroupType: Int, Codable {
+    case normal = 0
+    case `super` = 1
+    case working = 2
+}
+
+public enum JoinSource: Int, Codable {
+    case invited = 2 /// 通过邀请
+    case search = 3 /// 通过搜索
+    case QRCode = 4 /// 通过二维码
+}
+
 public class GroupBaseInfo: Encodable {
     var groupName: String?
     var introduction: String?
@@ -896,7 +908,7 @@ public class GroupInfo: GroupBaseInfo {
     var createTime: Int = 0
     var memberCount: Int = 0
     var creatorUserID: String?
-    var groupType: ConversationType = .undefine
+    var groupType: GroupType = .working
 
     var isSelf: Bool {
         return creatorUserID == IMController.shared.uid
@@ -1181,7 +1193,7 @@ extension OIMGroupInfo {
         item.introduction = introduction
         item.notification = notification
         item.groupName = groupName
-        item.groupType = ConversationType(rawValue: groupType) ?? .undefine
+        item.groupType = GroupType(rawValue: groupType.rawValue) ?? .working
         return item
     }
 }
@@ -1573,7 +1585,7 @@ extension OIMGroupMemberInfo {
         item.nickname = nickname
         item.faceURL = faceURL
         item.joinTime = joinTime
-        item.joinSource = joinSource
+        item.joinSource = JoinSource(rawValue: Int(joinSource.rawValue)) ?? .search
         item.operatorUserID = operatorUserID
         item.ex = ex
         return item

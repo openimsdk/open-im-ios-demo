@@ -22,7 +22,7 @@ class GroupListViewController: UIViewController {
             vc.selectedContactsBlock = { [weak vc, weak self] (users: [UserInfo]) in
                 IMController.shared.createGroupConversation(users: users) { (groupInfo: GroupInfo?) in
                     guard let groupInfo = groupInfo else { return }
-                    IMController.shared.getConversation(sessionType: groupInfo.groupType, sourceId: groupInfo.groupID) { (conversation: ConversationInfo?) in
+                    IMController.shared.getConversation(sessionType: .group, sourceId: groupInfo.groupID) { (conversation: ConversationInfo?) in
                         guard let conversation = conversation else { return }
 
                         let viewModel = MessageListViewModel(groupId: groupInfo.groupID, conversation: conversation)

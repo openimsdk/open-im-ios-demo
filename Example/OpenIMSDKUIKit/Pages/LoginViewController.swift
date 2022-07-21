@@ -1,13 +1,18 @@
 
 import UIKit
 import RxSwift
+import RxCocoa
+import RxGesture
 
 class LoginViewController: UIViewController {
+    
+    private let _disposeBag = DisposeBag()
     
     private let titleLabel: UILabel = {
         let v = UILabel()
         v.text = "欢迎使用OpenIM"
         v.font = UIFont.systemFont(ofSize: 32, weight: .semibold)
+        v.isUserInteractionEnabled = true
         return v
     }()
     
@@ -18,6 +23,13 @@ class LoginViewController: UIViewController {
         v.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .medium)
         v.underline.backgroundColor = DemoUI.color_1D6BED
         return v
+    }()
+    
+    lazy var registerButton: UIButton = {
+        let t = UIButton(type: .system)
+        t.setTitle("注册账号", for: .normal)
+
+        return t
     }()
     
     var phone: String? {
@@ -66,6 +78,16 @@ class LoginViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
+        
+        titleLabel.rx
+            .tapGesture()
+            .when(.recognized)
+            .subscribe(onNext: { [weak self] _ in
+                let vc = ConfigViewController()
+                self?.navigationController?.pushViewController(vc, animated: true)
+            }).disposed(by: _disposeBag)
+
+        
         let container: UIView = {
             let v = UIView()
             return v
@@ -104,6 +126,16 @@ class LoginViewController: UIViewController {
             make.centerY.equalToSuperview()
         }
         
+        registerButton.addTarget(self, action: #selector(toRegister), for: .touchUpInside)
+        
+        view.addSubview(registerButton)
+        registerButton.snp.makeConstraints { make in
+            make.top.equalTo(container.snp_bottom).offset(24)
+            make.trailing.equalTo(container)
+            make.height.equalTo(30)
+            make.width.equalTo(100)
+        }
+        
         view.addSubview(titleLabel)
         titleLabel.snp.makeConstraints { make in
             make.bottom.equalTo(container.snp.top).offset(-50)
@@ -122,5 +154,10 @@ class LoginViewController: UIViewController {
         #if DEBUG
         print("dealloc \(type(of: self))")
         #endif
+    }
+    
+    @objc func toRegister() {
+        let storyboard = UIStoryboard(name: "Register", bundle: nil)
+        self.navigationController?.pushViewController(storyboard.instantiateViewController(withIdentifier: "RegisterViewController"), animated: true)
     }
 }

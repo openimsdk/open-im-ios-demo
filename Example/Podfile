@@ -5,9 +5,11 @@ inhibit_all_warnings!
 target 'OpenIMSDKUIKit_Example' do
   pod 'OIMUIKit', :path => '../'
   pod 'Alamofire', '4.9.1'
+  pod 'AlamofireImage'
   pod 'JCore', '3.2.3-noidfa'
   pod 'JPush', '4.6.6'
   pod 'Localize-Swift', '~> 3.2'
+  pod 'RxGesture', '~> 4.0.4'
   
   post_install do |installer|
      installer.pods_project.targets.each do |target|

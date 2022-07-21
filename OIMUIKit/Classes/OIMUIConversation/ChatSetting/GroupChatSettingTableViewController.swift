@@ -117,6 +117,9 @@ class GroupChatSettingTableViewController: UITableViewController {
                         }
                     }
                     self?.navigationController?.pushViewController(vc, animated: true)
+                } else {
+                    let vc = UserDetailTableViewController(userId: userInfo.userID, groupId: sself._viewModel.conversation.groupID)
+                    self?.navigationController?.pushViewController(vc, animated: true)
                 }
             }).disposed(by: cell.disposeBag)
             return cell
