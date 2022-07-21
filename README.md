@@ -54,46 +54,57 @@ Demo 是基于 Open-IM SDK 实现的一套 UI 组件，其包含会话、聊天�
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // IM服务器的地址，OpenIM SDK使用
         IMController.shared.setup(apiAdrr: "http://xxxx:10002",
-                                  wsAddr: "ws://xxxx:10001")
+                                  wsAddr: "ws://xxxx:10001",
+                                  os: "xxx")
     }
     ```
 
 步骤二：登录
 1. 登录自己的业务服务器，获取userID 和 token；
-2. 使用1.获取userID 和 token 登录OpenIM服务器；
+2. 使用1.获取userID 和 token 登录IM服务器；
 3. 举例：
     ```ruby
     // 1: 登录自己的业务服务器，获取userID 和 token；
     
     // 业务服务器地址 Pages/LoginViewModel.swift
-    let API_BASE_URL = "http://121.37.25.71:10004/";
+    let API_BASE_URL = "http://xxx:10004/";
 
-    func loginDemo(phone: String, pwd: String) {
+    static func loginDemo(phone: String, pwd: String, completionHandler: @escaping ((_ errMsg: String?) -> Void)) {
         let body = JsonTool.toJson(fromObject: Request.init(phoneNumber: phone, pwd: pwd)).data(using: .utf8)
         
-        var req = try! URLRequest.init(url: API_BASE_URL + getUrl(), method: .post)
+        var req = try! URLRequest.init(url: API_BASE_URL + LoginAPI, method: .post)
         req.httpBody = body
         
-        let dataRequest = Alamofire.request(req).responseString { (response: DataResponse<String>) in
+        Alamofire.request(req).responseString { (response: DataResponse<String>) in
             switch response.result {
-            case .success(let result): {
-            // 2: 登录OpenIM服务器；
-            self?.loginIM(uid: resp.data.userID, token: resp.data.token, completion: { [weak controller] in
-                controller?.dismiss(animated: true)
-            })
+            case .success(let result):
+                if let res = JsonTool.fromJson(result, toClass: Response.self) {
+                    if res.errCode == 0 {
+                        completionHandler(nil)
+                        // 登录IM服务器
+                        loginIM(uid: res.data.userID, token: res.data.token, completionHandler: completionHandler)
+                    } else {
+                        completionHandler(res.errMsg)
+                    }
+                } else {
+                    let err = JsonTool.fromJson(result, toClass: DemoError.self)
+                    completionHandler(err?.errMsg)
+                }
+            case .failure(let err):
+                completionHandler(err.localizedDescription)
             }
         }
     }
     ```
         
     ```ruby
-    func loginIM(uid: String, token: String, completion: (() -> Void)?) {
-        IMController.shared.login(uid: uid, token: token) { [weak self] (resp: String?) in
-
+    static func loginIM(uid: String, token: String, completionHandler: @escaping ((_ errMsg: String?) -> Void)) {
+        IMController.shared.login(uid: uid, token: token) { resp in
             print("login onSuccess \(String(describing: resp))")
-            completion?()
+            completionHandler(nil)
         } onFail: { (code: Int, msg: String?) in
-            print("login onFail: code \(code), reason \(String(describing: msg))")
+            let reason = "login onFail: code \(code), reason \(String(describing: msg))"
+            completionHandler(reason)
         }
     }
     ```
