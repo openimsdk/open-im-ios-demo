@@ -1,14 +1,6 @@
-//
-//  CompleteUserInfoViewController.swift
-//  OpenIMSDKUIKit_Example
-//
-//  Created by x on 2022/7/20.
-//  Copyright © 2022 rentsoft. All rights reserved.
-//
 
 import Foundation
 import UIKit
-import AlamofireImage
 import RxSwift
 import SVProgressHUD
 
@@ -16,24 +8,23 @@ class CompleteUserInfoViewController: UIViewController {
     
     var basicInfo: Dictionary<String, String>?
     
-    @IBOutlet var avatarButton: UIButton!
+    @IBOutlet var avatarImageView: UIImageView!
     @IBOutlet var nickNameTextField: UITextField!
     @IBOutlet var compeleteButton: UIButton!
-    
+
     private var avatarURL: String = ""
     
     private let _disposeBag: DisposeBag = DisposeBag()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        avatarButton.layer.cornerRadius = 50
-        avatarButton.af_setBackgroundImage(for: .normal,
-                                           url: randAvatarURL(),
-                                           placeholderImage: UIImage.init(named: "ic_camera"),
-                                           filter: nil,
-                                           progress: nil,
-                                           progressQueue: DispatchQueue.main,
-                                           completion: nil)
+        avatarImageView.layer.cornerRadius = 50
+        avatarImageView.layer.borderColor = UIColor.systemBlue.cgColor
+        avatarImageView.layer.borderWidth = 2
+        let tap = UITapGestureRecognizer.init(target: self, action: #selector(didTapAvatar))
+        avatarImageView.addGestureRecognizer(tap)
+        
+        didTapAvatar()
     }
     
     func randAvatarURL() -> URL {
@@ -47,8 +38,9 @@ class CompleteUserInfoViewController: UIViewController {
         
         guard let info = basicInfo,
               let nickName = nickNameTextField.text,
-              !nickName.isEmpty,
-              !avatarURL.isEmpty else {
+              !nickName.isEmpty else {
+                
+            SVProgressHUD.showError(withStatus: "填入昵称...")
             return
         }
         SVProgressHUD.show(withStatus: "注册中...")
@@ -68,13 +60,26 @@ class CompleteUserInfoViewController: UIViewController {
         }
     }
     
-    @IBAction func didTapAvatar() {
-        avatarButton.af_setBackgroundImage(for: .normal,
-                                           url: randAvatarURL(),
-                                           placeholderImage: UIImage.init(named: "ic_camera"),
-                                           filter: nil,
-                                           progress: nil,
-                                           progressQueue: DispatchQueue.main,
-                                           completion: nil)
+    @objc func didTapAvatar() {
+        avatarImageView.isUserInteractionEnabled = false
+        
+        DispatchQueue.global().async {
+
+            do {
+                let data = try Data(contentsOf: self.randAvatarURL())
+                let image = UIImage(data: data)
+                
+                DispatchQueue.main.async {
+                    
+                    if image != nil {
+                        self.avatarImageView.image = image
+                    }
+                    self.avatarImageView.isUserInteractionEnabled = true
+                }
+                
+            } catch let error {
+                print(error)
+            }
+        }
     }
 }

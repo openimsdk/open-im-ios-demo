@@ -1,10 +1,3 @@
-//
-//  RegisterViewController.swift
-//  OpenIMSDKUIKit_Example
-//
-//  Created by x on 2022/7/20.
-//  Copyright © 2022 rentsoft. All rights reserved.
-//
 
 import Foundation
 import UIKit

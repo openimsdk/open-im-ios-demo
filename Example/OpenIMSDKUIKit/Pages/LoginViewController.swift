@@ -123,7 +123,7 @@ class LoginViewController: UIViewController {
         view.addSubview(container)
         container.snp.makeConstraints { make in
             make.left.right.equalToSuperview().inset(40)
-            make.centerY.equalToSuperview()
+            make.centerY.equalToSuperview().offset(-40)
         }
         
         registerButton.addTarget(self, action: #selector(toRegister), for: .touchUpInside)

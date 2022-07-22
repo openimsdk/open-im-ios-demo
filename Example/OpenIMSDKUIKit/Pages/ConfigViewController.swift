@@ -1,10 +1,3 @@
-//
-//  ConfigViewController.swift
-//  OpenIMSDKUIKit_Example
-//
-//  Created by x on 2022/7/13.
-//  Copyright © 2022 rentsoft. All rights reserved.
-//
 
 import Foundation
 import UIKit
@@ -130,6 +123,12 @@ class ConfigViewController: UIViewController {
         ud.set(sdkAPIAddr, forKey: sdkAPIAddrKey)
         ud.set(sdkWSAddr, forKey: sdkWSAddrKey)
         ud.set(sdkObjectStorage, forKey: sdkObjectStorageKey)
+        ud.synchronize()
+        
+        let alert = UIAlertController.init(title: nil, message: "保存成功，重启app后设置生效", preferredStyle: .alert)
+        alert.addAction(.init(title: "确定", style: .cancel))
+        
+        self.present(alert, animated: true)
     }
 }
 

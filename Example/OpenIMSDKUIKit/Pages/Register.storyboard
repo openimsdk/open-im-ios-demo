@@ -20,20 +20,20 @@
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" translatesAutoresizingMaskIntoConstraints="NO" id="Zwf-gk-VE9">
-                                <rect key="frame" x="10" y="88" width="394" height="200"/>
+                            <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="Zwf-gk-VE9">
+                                <rect key="frame" x="10" y="136" width="394" height="200"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="24" translatesAutoresizingMaskIntoConstraints="NO" id="A7w-xx-y4m">
-                                        <rect key="frame" x="0.0" y="0.0" width="394" height="50"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="394" height="44"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="手机号" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="8ZI-o3-ikb">
-                                                <rect key="frame" x="0.0" y="0.0" width="52" height="50"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="52" height="44"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="请输入手机号码" textAlignment="natural" minimumFontSize="17" id="WjB-LT-loo">
-                                                <rect key="frame" x="76" y="0.0" width="318" height="50"/>
+                                                <rect key="frame" x="76" y="0.0" width="318" height="44"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                 <textInputTraits key="textInputTraits" keyboardType="phonePad"/>
@@ -41,16 +41,16 @@
                                         </subviews>
                                     </stackView>
                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="24" translatesAutoresizingMaskIntoConstraints="NO" id="Hus-ti-yyC">
-                                        <rect key="frame" x="0.0" y="50" width="394" height="50"/>
+                                        <rect key="frame" x="0.0" y="52" width="394" height="44"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="验证码" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kI9-Fp-Y6p">
-                                                <rect key="frame" x="0.0" y="0.0" width="52" height="50"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="52" height="44"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="666666" borderStyle="roundedRect" placeholder="请输入验证码" textAlignment="natural" minimumFontSize="17" id="AZH-0x-yre">
-                                                <rect key="frame" x="76" y="0.0" width="318" height="50"/>
+                                                <rect key="frame" x="76" y="0.0" width="318" height="44"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                 <textInputTraits key="textInputTraits"/>
@@ -58,16 +58,16 @@
                                         </subviews>
                                     </stackView>
                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="24" translatesAutoresizingMaskIntoConstraints="NO" id="cT7-IM-0hK">
-                                        <rect key="frame" x="0.0" y="100" width="394" height="50"/>
+                                        <rect key="frame" x="0.0" y="104" width="394" height="44"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="密    码" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5Ak-nX-4bO">
-                                                <rect key="frame" x="0.0" y="0.0" width="52.5" height="50"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="52.5" height="44"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="123456" borderStyle="roundedRect" placeholder="请输入密码" textAlignment="natural" clearsOnBeginEditing="YES" minimumFontSize="17" id="mfK-3c-Rmh">
-                                                <rect key="frame" x="76.5" y="0.0" width="317.5" height="50"/>
+                                                <rect key="frame" x="76.5" y="0.0" width="317.5" height="44"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                 <textInputTraits key="textInputTraits"/>
@@ -75,16 +75,16 @@
                                         </subviews>
                                     </stackView>
                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="KOD-Hl-xiv">
-                                        <rect key="frame" x="0.0" y="150" width="394" height="50"/>
+                                        <rect key="frame" x="0.0" y="156" width="394" height="44"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="确认密码" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hje-pV-V9G">
-                                                <rect key="frame" x="0.0" y="0.0" width="69.5" height="50"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="69.5" height="44"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" text="123456" borderStyle="roundedRect" placeholder="请再次输入密码" textAlignment="natural" clearsOnBeginEditing="YES" minimumFontSize="17" id="oWL-vv-Gyk">
-                                                <rect key="frame" x="77.5" y="0.0" width="316.5" height="50"/>
+                                                <rect key="frame" x="77.5" y="0.0" width="316.5" height="44"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                 <textInputTraits key="textInputTraits"/>
@@ -94,11 +94,10 @@
                                 </subviews>
                             </stackView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mUU-0N-paP">
-                                <rect key="frame" x="82" y="426" width="250" height="44"/>
+                                <rect key="frame" x="44" y="426" width="326" height="44"/>
                                 <color key="backgroundColor" systemColor="tintColor"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="44" id="hO8-7r-9wz"/>
-                                    <constraint firstAttribute="width" constant="250" id="vyF-6A-OgZ"/>
                                 </constraints>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="filled" title="下一步">
@@ -112,9 +111,11 @@
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
                             <constraint firstAttribute="trailing" secondItem="Zwf-gk-VE9" secondAttribute="trailing" constant="10" id="BGQ-fi-uBK"/>
-                            <constraint firstItem="Zwf-gk-VE9" firstAttribute="top" secondItem="iiW-DV-0we" secondAttribute="bottom" id="Ey8-6d-utH"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="mUU-0N-paP" secondAttribute="trailing" constant="24" id="DEM-Pm-vQL"/>
+                            <constraint firstItem="Zwf-gk-VE9" firstAttribute="top" secondItem="iiW-DV-0we" secondAttribute="bottom" constant="48" id="Ey8-6d-utH"/>
                             <constraint firstItem="mUU-0N-paP" firstAttribute="centerX" secondItem="5EZ-qb-Rvc" secondAttribute="centerX" id="nZL-yE-EnP"/>
                             <constraint firstItem="mUU-0N-paP" firstAttribute="centerY" secondItem="5EZ-qb-Rvc" secondAttribute="centerY" id="pZt-6A-lEY"/>
+                            <constraint firstItem="mUU-0N-paP" firstAttribute="leading" secondItem="5EZ-qb-Rvc" secondAttribute="leadingMargin" constant="24" id="rVE-SW-UQZ"/>
                             <constraint firstItem="Zwf-gk-VE9" firstAttribute="leading" secondItem="5EZ-qb-Rvc" secondAttribute="leading" constant="10" id="ysw-6a-GpA"/>
                         </constraints>
                     </view>
@@ -146,34 +147,19 @@
                         <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <button opaque="NO" clipsSubviews="YES" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="qJN-a7-d92">
-                                <rect key="frame" x="157" y="88" width="100" height="100"/>
-                                <constraints>
-                                    <constraint firstAttribute="height" constant="100" id="diB-zy-Rae"/>
-                                    <constraint firstAttribute="width" constant="100" id="gMa-6W-Xie"/>
-                                </constraints>
-                                <state key="normal" title="Button"/>
-                                <buttonConfiguration key="configuration" style="plain" title="点击换头像">
-                                    <backgroundConfiguration key="background" cornerRadius="50" image="ic_camera"/>
-                                </buttonConfiguration>
-                                <connections>
-                                    <action selector="didTapAvatar" destination="bcD-YT-WFE" eventType="touchUpInside" id="b5T-Ld-uRV"/>
-                                </connections>
-                            </button>
                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="请输入昵称" textAlignment="natural" minimumFontSize="17" translatesAutoresizingMaskIntoConstraints="NO" id="2dL-1S-9Gp">
-                                <rect key="frame" x="107" y="236" width="200" height="34"/>
+                                <rect key="frame" x="82" y="308" width="250" height="34"/>
                                 <constraints>
-                                    <constraint firstAttribute="width" constant="200" id="mYd-6O-5k3"/>
+                                    <constraint firstAttribute="width" constant="250" id="mYd-6O-5k3"/>
                                 </constraints>
                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                 <textInputTraits key="textInputTraits"/>
                             </textField>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="u44-YU-KOV">
-                                <rect key="frame" x="82" y="294" width="250" height="44"/>
+                                <rect key="frame" x="44" y="426" width="326" height="44"/>
                                 <color key="backgroundColor" systemColor="systemBlueColor"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="44" id="fSz-OC-d7R"/>
-                                    <constraint firstAttribute="width" constant="250" id="kPx-MN-rde"/>
                                 </constraints>
                                 <state key="normal" title="Button"/>
                                 <buttonConfiguration key="configuration" style="filled" title="完成注册">
@@ -183,20 +169,37 @@
                                     <action selector="didTapCompelete" destination="bcD-YT-WFE" eventType="touchUpInside" id="Dqt-h1-dur"/>
                                 </connections>
                             </button>
+                            <imageView clipsSubviews="YES" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ic_camera" translatesAutoresizingMaskIntoConstraints="NO" id="y0Z-XD-gtc">
+                                <rect key="frame" x="157" y="148" width="100" height="100"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="100" id="08c-SB-xFJ"/>
+                                    <constraint firstAttribute="height" constant="100" id="Sc1-P4-APu"/>
+                                </constraints>
+                            </imageView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="点击头像换图" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="8ga-iK-wYo">
+                                <rect key="frame" x="155" y="96" width="104" height="21"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                <nil key="textColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
                         <constraints>
+                            <constraint firstItem="u44-YU-KOV" firstAttribute="centerY" secondItem="HeX-t1-pCR" secondAttribute="centerY" id="2Q1-C5-9J7"/>
                             <constraint firstItem="2dL-1S-9Gp" firstAttribute="centerX" secondItem="HeX-t1-pCR" secondAttribute="centerX" id="5KH-eS-WY7"/>
-                            <constraint firstItem="u44-YU-KOV" firstAttribute="top" secondItem="2dL-1S-9Gp" secondAttribute="bottom" constant="24" id="C1o-oy-7iD"/>
-                            <constraint firstItem="2dL-1S-9Gp" firstAttribute="top" secondItem="qJN-a7-d92" secondAttribute="bottom" constant="48" id="JCc-pA-G5U"/>
+                            <constraint firstItem="8ga-iK-wYo" firstAttribute="top" secondItem="ThX-yY-TcX" secondAttribute="bottom" constant="8" symbolic="YES" id="9Pz-ce-AcE"/>
+                            <constraint firstItem="y0Z-XD-gtc" firstAttribute="centerX" secondItem="HeX-t1-pCR" secondAttribute="centerX" id="Fj4-V1-d5t"/>
                             <constraint firstItem="u44-YU-KOV" firstAttribute="centerX" secondItem="HeX-t1-pCR" secondAttribute="centerX" id="Q9V-F4-jsG"/>
-                            <constraint firstItem="qJN-a7-d92" firstAttribute="top" secondItem="ThX-yY-TcX" secondAttribute="bottom" id="Xen-Jg-Ezy"/>
-                            <constraint firstItem="qJN-a7-d92" firstAttribute="centerX" secondItem="HeX-t1-pCR" secondAttribute="centerX" id="uuo-nz-V8M"/>
+                            <constraint firstItem="y0Z-XD-gtc" firstAttribute="top" secondItem="ThX-yY-TcX" secondAttribute="bottom" constant="60" id="ZCd-Ud-TTY"/>
+                            <constraint firstItem="u44-YU-KOV" firstAttribute="leading" secondItem="HeX-t1-pCR" secondAttribute="leadingMargin" constant="24" id="shl-9V-WXR"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="u44-YU-KOV" secondAttribute="trailing" constant="24" id="vDv-Dx-52V"/>
+                            <constraint firstItem="8ga-iK-wYo" firstAttribute="centerX" secondItem="HeX-t1-pCR" secondAttribute="centerX" id="wwU-nU-coB"/>
+                            <constraint firstItem="2dL-1S-9Gp" firstAttribute="top" secondItem="y0Z-XD-gtc" secondAttribute="bottom" constant="60" id="xmc-vl-yBL"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="dWF-np-Aac"/>
                     <connections>
-                        <outlet property="avatarButton" destination="qJN-a7-d92" id="tqa-uh-92q"/>
+                        <outlet property="avatarImageView" destination="y0Z-XD-gtc" id="2hh-8n-Aog"/>
                         <outlet property="compeleteButton" destination="u44-YU-KOV" id="uUY-zj-Qev"/>
                         <outlet property="nickNameTextField" destination="2dL-1S-9Gp" id="C7N-gX-E9F"/>
                     </connections>

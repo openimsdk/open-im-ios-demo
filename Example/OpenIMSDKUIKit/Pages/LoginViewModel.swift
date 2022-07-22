@@ -21,6 +21,7 @@ class LoginViewModel {
         
         var req = try! URLRequest.init(url: API_BASE_URL + LoginAPI, method: .post)
         req.httpBody = body
+        req.timeoutInterval = 30
         
         Alamofire.request(req).responseString { (response: DataResponse<String>) in
             switch response.result {
@@ -54,6 +55,7 @@ class LoginViewModel {
         
         var req = try! URLRequest.init(url: API_BASE_URL + RegisterAPI, method: .post)
         req.httpBody = body
+        req.timeoutInterval = 30
         
         Alamofire.request(req).responseString { (response: DataResponse<String>) in
             switch response.result {
