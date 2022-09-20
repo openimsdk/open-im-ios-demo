@@ -1,3 +1,4 @@
+![avatar](https://github.com/OpenIMSDK/OpenIM-Docs/blob/main/docs/images/WechatIMG20.jpeg)
 # Open-IM-iOS-Demo: OpenIM Messaging Client for iOS
 
 iOS client for [OpenIM](https://github.com/OpenIMSDK/Open-IM-Server) in Swift.
@@ -41,7 +42,9 @@ Demo 是基于 Open-IM SDK 实现的一套 UI 组件，其包含会话、聊天�
     
 6. 体验自己的服务器
  
-    如果自己搭建了OpenIM Server，可修改 [AppDelegate.swift](https://github.com/OpenIMSDK/Open-IM-iOS-Demo/blob/main/Example/OpenIMSDKUIKit/AppDelegate.swift)文件里的服务器地址为自己搭建的服务器地址
+     6.1 如果自己搭建了OpenIM Server，可修改 [AppDelegate.swift](https://github.com/OpenIMSDK/Open-IM-iOS-Demo/blob/main/Example/OpenIMSDKUIKit/AppDelegate.swift)文件里的服务器地址为自己搭建的服务器地址；
+
+    6.2 从testflight下载app以后，点击【登录】页的“欢迎使用OpenIM”进入设置页，进行相关设置，保存成功重启后即可使用。
     
 ### Demo主要实现步骤介绍
 
