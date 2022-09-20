@@ -104,7 +104,7 @@ class MessageListViewController: UIViewController {
                 guard let sself = self else { return }
                 let conversationType = sself._viewModel.conversation.conversationType
                 switch conversationType {
-                case .undefine:
+                case .undefine, .notification, .superGroup:
                     break
                 case .c2c:
                     let viewModel = SingleChatSettingViewModel(conversation: sself._viewModel.conversation)

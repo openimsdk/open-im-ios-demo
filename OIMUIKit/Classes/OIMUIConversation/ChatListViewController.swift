@@ -171,7 +171,10 @@ open class ChatListViewController: UIViewController, UITableViewDelegate {
                 viewModel = MessageListViewModel(groupId: conversation.groupID ?? "", conversation: conversation)
             case .c2c:
                 viewModel = MessageListViewModel(userId: conversation.userID ?? "", conversation: conversation)
-            case .undefine:
+            case .undefine, .notification:
+                viewModel = nil
+            case .superGroup:
+                SVProgressHUD.showInfo(withStatus: "大群参考商业版本".innerLocalized())
                 viewModel = nil
             }
             if let viewModel = viewModel {

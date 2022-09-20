@@ -881,6 +881,10 @@ public enum ConversationType: Int, Codable {
     case c2c
     /// 群聊
     case group
+    /// 大群
+    case superGroup
+    /// 通知
+    case notification
 }
 
 public enum GroupType: Int, Codable {
@@ -1348,6 +1352,10 @@ extension OIMConversationType {
             return .c2c
         case .group:
             return .group
+        case .superGroup:
+            return .superGroup
+        case .notification:
+            return .notification
         default:
             return .undefine
         }
