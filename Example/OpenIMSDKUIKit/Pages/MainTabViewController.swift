@@ -6,6 +6,7 @@ import RxCocoa
 import SVProgressHUD
 import Localize_Swift
 import OpenIMSDK
+import MJExtension
 
 class MainTabViewController: UITabBarController {
     private let _disposeBag = DisposeBag()
@@ -117,10 +118,58 @@ class MainTabViewController: UITabBarController {
 
 extension MainTabViewController: ContactsDataSource {
     func getFrequentUsers() -> [OIMUserInfo] {
-        return []
+        guard let uid = LoginViewModel.userID else { return [] }
+        guard let usersJson = UserDefaults.standard.object(forKey: uid) as? String else { return [] }
+        
+        guard let users = JsonTool.fromJson(usersJson, toClass: [UserEntity].self) else {
+            return []
+        }
+        let current = Int(Date().timeIntervalSince1970)
+        let oUsers: [OIMUserInfo] = users.compactMap { (user: UserEntity) in
+            if current - user.savedTime <= 7 * 24 * 3600 {
+                return user.toOIMUserInfo()
+            }
+            return nil
+        }
+        return oUsers
     }
     
     func setFrequentUsers(_ users: [OIMUserInfo]) {
+        guard let uid = LoginViewModel.userID else { return }
+        let saveTime = Int(Date().timeIntervalSince1970)
+        let before = getFrequentUsers()
+        var mUsers: [OIMUserInfo] = before
+        mUsers.append(contentsOf: users)
+        let ret = mUsers.deduplicate(filter: {$0.userID})
         
+        let uEntities: [UserEntity] = ret.compactMap { (user: OIMUserInfo) in
+            var uEntity = UserEntity.init(user: user)
+            uEntity.savedTime = saveTime
+            return uEntity
+        }
+        let json = JsonTool.toJson(fromObject: uEntities)
+        UserDefaults.standard.setValue(json, forKey: uid)
+        UserDefaults.standard.synchronize()
+    }
+    
+    struct UserEntity: Codable {
+        var userID: String?
+        var nickname: String?
+        var faceURL: String?
+        var savedTime: Int = 0
+        
+        init(user: OIMUserInfo) {
+            self.userID = user.userID
+            nickname = user.nickname
+            faceURL = user.faceURL
+        }
+        
+        func toOIMUserInfo() -> OIMUserInfo {
+            let item = OIMUserInfo.init()
+            item.userID = userID
+            item.nickname = nickname
+            item.faceURL = faceURL
+            return item
+        }
     }
 }

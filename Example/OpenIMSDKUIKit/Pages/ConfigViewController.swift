@@ -41,13 +41,13 @@ class ConfigViewController: UIViewController {
     let disposeBag = DisposeBag()
     
     var severAddress = UserDefaults.standard.string(forKey: severAddressKey) ??
-    "http://121.37.25.71"
+    "https://open-im-online.rentsoft.cn"
     var bussinessSeverAddr = UserDefaults.standard.string(forKey: bussinessSeverAddrKey) ??
-    "http://121.37.25.71:10004"
+    "https://open-im-online.rentsoft.cn:50004"
     var sdkAPIAddr = UserDefaults.standard.string(forKey: sdkAPIAddrKey) ??
-    "http://121.37.25.71:10002"
+    "https://open-im-online.rentsoft.cn:50002"
     var sdkWSAddr = UserDefaults.standard.string(forKey: sdkWSAddrKey) ??
-    "http://121.37.25.71:10001"
+    "https://open-im-online.rentsoft.cn:50001"
     var sdkObjectStorage = UserDefaults.standard.string(forKey: sdkObjectStorageKey) ??
     "minio"
     

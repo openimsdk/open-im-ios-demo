@@ -5,7 +5,7 @@ import RxSwift
 import OIMUIKit
 
 // 业务服务器地址
-let API_BASE_URL = UserDefaults.standard.string(forKey: bussinessSeverAddrKey) ?? "http://121.37.25.71:10004";
+let API_BASE_URL = UserDefaults.standard.string(forKey: bussinessSeverAddrKey) ?? "https://open-im-online.rentsoft.cn:50004";
 
 class LoginViewModel {
     static let IMUidKey = "DemoIMUidKey"
@@ -21,7 +21,6 @@ class LoginViewModel {
         
         var req = try! URLRequest.init(url: API_BASE_URL + LoginAPI, method: .post)
         req.httpBody = body
-        req.timeoutInterval = 30
         
         Alamofire.request(req).responseString { (response: DataResponse<String>) in
             switch response.result {
@@ -30,7 +29,7 @@ class LoginViewModel {
                     if res.errCode == 0 {
                         completionHandler(nil)
                         // 登录IM
-                        loginIM(uid: res.data.userID, token: res.data.token, completionHandler: completionHandler)
+                        loginIM(uid: res.data!.userID, token: res.data!.token, completionHandler: completionHandler)
                     } else {
                         completionHandler(res.errMsg)
                     }
@@ -55,7 +54,6 @@ class LoginViewModel {
         
         var req = try! URLRequest.init(url: API_BASE_URL + RegisterAPI, method: .post)
         req.httpBody = body
-        req.timeoutInterval = 30
         
         Alamofire.request(req).responseString { (response: DataResponse<String>) in
             switch response.result {
@@ -64,11 +62,12 @@ class LoginViewModel {
                     if res.errCode == 0 {
                         completionHandler(nil)
                         // 登录IM
-                        loginIM(uid: res.data.userID, token: res.data.token, completionHandler: completionHandler)
+                        loginIM(uid: res.data!.userID, token: res.data!.token, completionHandler: completionHandler)
                     } else {
                         completionHandler(res.errMsg)
                     }
                 } else {
+                    completionHandler("err")
                 }
             case .failure(let err):
                 completionHandler(err.localizedDescription)
@@ -80,9 +79,6 @@ class LoginViewModel {
     static func loginIM(uid: String, token: String, completionHandler: @escaping ((_ errMsg: String?) -> Void)) {
         IMController.shared.login(uid: uid, token: token) { resp in
             print("login onSuccess \(String(describing: resp))")
-            JPUSHService.setAlias(uid, completion: { code, msg, code2 in
-                print("别名设置成功：", code, msg ?? "no message", code2)
-            }, seq: 0)
             saveUser(uid: uid, token: token)
             completionHandler(nil)
         } onFail: { (code: Int, msg: String?) in
@@ -96,6 +92,10 @@ class LoginViewModel {
         UserDefaults.standard.set(uid, forKey: IMUidKey)
         UserDefaults.standard.set(token, forKey: IMTokenKey)
         UserDefaults.standard.synchronize()
+    }
+    
+    static var userID: String? {
+        return UserDefaults.standard.string(forKey: IMUidKey)
     }
 }
 
@@ -114,9 +114,9 @@ extension LoginViewModel {
     }
     
     class Response: Decodable {
-        let data: UserEntity
+        let data: UserEntity?
         let errCode: Int
-        let errMsg: String
+        let errMsg: String?
     }
     
     struct UserEntity: Decodable {

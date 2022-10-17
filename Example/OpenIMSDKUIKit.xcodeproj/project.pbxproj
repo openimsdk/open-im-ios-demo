@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		1726CF9F287E69990052A53E /* ConfigViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1726CF9E287E69990052A53E /* ConfigViewController.swift */; };
+		1760443B28FCF13F003CEB90 /* Array+deduplicate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1760443A28FCF13F003CEB90 /* Array+deduplicate.swift */; };
 		178BBD4B2887ABFD003E8F9B /* Register.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 178BBD4A2887ABFD003E8F9B /* Register.storyboard */; };
 		178BBD4D2887AF65003E8F9B /* RegisterViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 178BBD4C2887AF65003E8F9B /* RegisterViewController.swift */; };
 		178BBD4F2887B889003E8F9B /* CompleteUserInfoViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 178BBD4E2887B889003E8F9B /* CompleteUserInfoViewController.swift */; };
@@ -28,6 +29,7 @@
 
 /* Begin PBXFileReference section */
 		1726CF9E287E69990052A53E /* ConfigViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigViewController.swift; sourceTree = "<group>"; };
+		1760443A28FCF13F003CEB90 /* Array+deduplicate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "Array+deduplicate.swift"; sourceTree = "<group>"; };
 		178BBD4A2887ABFD003E8F9B /* Register.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = Register.storyboard; sourceTree = "<group>"; };
 		178BBD4C2887AF65003E8F9B /* RegisterViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegisterViewController.swift; sourceTree = "<group>"; };
 		178BBD4E2887B889003E8F9B /* CompleteUserInfoViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompleteUserInfoViewController.swift; sourceTree = "<group>"; };
@@ -159,6 +161,7 @@
 		DC1FAF0A27FE8E6B00B529B9 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				1760443A28FCF13F003CEB90 /* Array+deduplicate.swift */,
 				DC0FD9CA286F436F00977945 /* JsonTool.swift */,
 				DC1FAF0B27FE8E7600B529B9 /* StringExtension.swift */,
 			);
@@ -282,6 +285,7 @@
 				DC0B7DF4282DFA23003896C1 /* UnderlineTextField.swift in Sources */,
 				178BBD4D2887AF65003E8F9B /* RegisterViewController.swift in Sources */,
 				DC0B7DF6282DFA85003896C1 /* DemoUI.swift in Sources */,
+				1760443B28FCF13F003CEB90 /* Array+deduplicate.swift in Sources */,
 				607FACD61AFB9204008FA782 /* AppDelegate.swift in Sources */,
 				DC0FD9C9286F3C4E00977945 /* LoginViewModel.swift in Sources */,
 				DC28F0EC27EE1C9D0068B545 /* MainTabViewController.swift in Sources */,
