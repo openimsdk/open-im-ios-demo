@@ -8,7 +8,7 @@
 import Foundation
 
 extension String {
-    func append(string: String?) -> String {
+    public func append(string: String?) -> String {
         if let string = string {
             var mutString: String = self
             mutString.append(string)

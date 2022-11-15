@@ -1,8 +1,8 @@
 
 import Foundation
 
-class FileHelper {
-    static let shared: FileHelper = .init()
+public class FileHelper {
+    public static let shared: FileHelper = .init()
 
     let documents: String = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first! + "/"
     let imageDirectory: String = "OpenIM/image/"
@@ -62,7 +62,7 @@ class FileHelper {
         return true
     }
 
-    func saveImage(image: UIImage) -> FileWriteResult {
+    public func saveImage(image: UIImage) -> FileWriteResult {
         var imageData: Data?
         var fileType = ""
         if let pngData = image.pngData() {
@@ -149,9 +149,9 @@ class FileHelper {
         return fileName
     }
 
-    struct FileWriteResult {
-        let relativeFilePath: String
-        let fullPath: String
-        let isSuccess: Bool
+    public struct FileWriteResult {
+        public let relativeFilePath: String
+        public let fullPath: String
+        public let isSuccess: Bool
     }
 }

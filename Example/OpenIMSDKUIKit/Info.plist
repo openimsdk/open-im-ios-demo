@@ -2,13 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsArbitraryLoads</key>
-		<true/>
-	</dict>
-	<key>ITSAppUsesNonExemptEncryption</key>
-	<false/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>zh_CN</string>
 	<key>CFBundleDisplayName</key>
@@ -29,16 +22,25 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>需要相机权限</string>
+	<string>需要相机，用于扫描二维码、加好友等，是否同意？</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>需要访问你的当前位置，是否同意？</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>需要麦克风权限</string>
+	<string>需要访问麦克风，用于音视频聊天、录音等，是否同意？</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>需要写入相册权限</string>
+	<string>需要访问相册，用于发送图片、更换头像等，是否同意？</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>需要访问相册权限</string>
+	<string>需要访问相册，用于发送图片、更换头像等，是否同意？</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

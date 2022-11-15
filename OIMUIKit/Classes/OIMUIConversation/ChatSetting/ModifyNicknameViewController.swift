@@ -2,9 +2,9 @@
 import RxSwift
 import UIKit
 
-class ModifyNicknameViewController: UIViewController {
-    let disposeBag = DisposeBag()
-    let titleLabel: UILabel = {
+public class ModifyNicknameViewController: UIViewController {
+    public let disposeBag = DisposeBag()
+    public let titleLabel: UILabel = {
         let v = UILabel()
         v.font = UIFont.systemFont(ofSize: 20, weight: .medium)
         v.textColor = StandardUI.color_333333
@@ -12,7 +12,7 @@ class ModifyNicknameViewController: UIViewController {
         return v
     }()
 
-    let subtitleLabel: UILabel = {
+    public let subtitleLabel: UILabel = {
         let v = UILabel()
         v.font = UIFont.systemFont(ofSize: 15)
         v.textColor = StandardUI.color_333333
@@ -22,14 +22,14 @@ class ModifyNicknameViewController: UIViewController {
         return v
     }()
 
-    let avatarImageView: UIImageView = {
+    public let avatarImageView: UIImageView = {
         let v = UIImageView()
         v.layer.cornerRadius = 4
         v.clipsToBounds = true
         return v
     }()
 
-    lazy var nameTextField: UITextField = {
+    public lazy var nameTextField: UITextField = {
         let v = UITextField()
         v.clearButtonMode = .always
         v.textColor = StandardUI.color_333333
@@ -38,7 +38,7 @@ class ModifyNicknameViewController: UIViewController {
         return v
     }()
 
-    lazy var completeBtn: UIButton = {
+    public lazy var completeBtn: UIButton = {
         let v = UIButton()
         v.backgroundColor = StandardUI.color_1B72EC
         v.layer.cornerRadius = 4
@@ -47,7 +47,7 @@ class ModifyNicknameViewController: UIViewController {
         return v
     }()
 
-    override func viewDidLoad() {
+    public override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
 

@@ -8,8 +8,8 @@ import SVProgressHUD
 import UIKit
 
 public class IMController: NSObject {
-    static let addFriendPrefix = "io.openim.app/addFriend/"
-    static let joinGroupPrefix = "io.openim.app/joinGroup/"
+    public static let addFriendPrefix = "io.openim.app/addFriend/"
+    public static let joinGroupPrefix = "io.openim.app/joinGroup/"
     public static let shared: IMController = .init()
     private(set) var imManager: OpenIMSDK.OIMManager!
     /// 好友申请列表新增
@@ -29,7 +29,7 @@ public class IMController: NSObject {
     let c2cReadReceiptReceived: BehaviorSubject<[ReceiptInfo]> = .init(value: [])
     let groupReadReceiptReceived: BehaviorSubject<[ReceiptInfo]> = .init(value: [])
     let msgRevokeReceived: PublishSubject<String> = .init()
-    let currentUserRelay: BehaviorRelay<UserInfo?> = .init(value: nil)
+    public let currentUserRelay: BehaviorRelay<UserInfo?> = .init(value: nil)
 
     private(set) var uid: String = ""
 
@@ -486,7 +486,7 @@ extension IMController {
         }
     }
 
-    func uploadFile(fullPath: String, onProgress: @escaping CallBack.ProgressReturnVoid, onSuccess: @escaping CallBack.StringOptionalReturnVoid) {
+    public func uploadFile(fullPath: String, onProgress: @escaping CallBack.ProgressReturnVoid, onSuccess: @escaping CallBack.StringOptionalReturnVoid) {
         Self.shared.imManager.uploadFile(withFullPath: fullPath, onProgress: onProgress, onSuccess: onSuccess) { code, msg in
             print("上传文件失败:\(code), \(msg)")
         }
@@ -516,7 +516,7 @@ extension IMController {
 
 extension IMController {
     /// 获取当前登录用户信息
-    func getSelfInfo(onSuccess: @escaping CallBack.UserInfoOptionalReturnVoid) {
+    public func getSelfInfo(onSuccess: @escaping CallBack.UserInfoOptionalReturnVoid) {
         Self.shared.imManager.getSelfInfoWith { [weak self] (userInfo: OIMUserInfo?) in
             let user = userInfo?.toUserInfo()
             self?.currentUserRelay.accept(user)
@@ -539,7 +539,7 @@ extension IMController {
         }
     }
 
-    func logout(onSuccess: @escaping CallBack.StringOptionalReturnVoid) {
+    public func logout(onSuccess: @escaping CallBack.StringOptionalReturnVoid) {
         Self.shared.imManager.logoutWith(onSuccess: onSuccess) { code, msg in
             print("退出登录失败:\(code), \(msg)")
         }
@@ -615,12 +615,12 @@ extension IMController: OIMAdvancedMsgListener {
 // MARK: 主要模型
 
 public class UserInfo: Encodable {
-    var userID: String = ""
-    var nickname: String?
-    var faceURL: String?
-    var gender: Gender?
-    var phoneNumber: String?
-    var birth: Int?
+    public var userID: String = ""
+    public var nickname: String?
+    public var faceURL: String?
+    public var gender: Gender?
+    public var phoneNumber: String?
+    public var birth: Int?
     var email: String?
     var createTime: Int = 0
     var ex: String?
@@ -1101,7 +1101,7 @@ public enum Gender: Int, Encodable {
     case male = 0
     case female = 1
 
-    var description: String {
+    public var description: String {
         switch self {
         case .male:
             return "男".innerLocalized()
@@ -1113,7 +1113,7 @@ public enum Gender: Int, Encodable {
     }
 }
 
-class PublicUserInfo {
+public class PublicUserInfo {
     var userID: String?
     var nickname: String?
     var faceURL: String?
@@ -1133,7 +1133,7 @@ class FriendInfo: PublicUserInfo {
     var ex: String?
 }
 
-class BlackInfo: PublicUserInfo {
+public class BlackInfo: PublicUserInfo {
     var operatorUserID: String?
     var createTime: Int = 0
     var addSource: Int = 0

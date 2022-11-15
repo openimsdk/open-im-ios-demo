@@ -1,7 +1,7 @@
 
 import Foundation
 
-struct FormatUtil {
+public struct FormatUtil {
     static func getMediaFormat(of seconds: Int) -> String {
         if seconds / 3600 > 24 {
             return "时长超过了24小时，请检查输入值"
@@ -18,7 +18,7 @@ struct FormatUtil {
         }
     }
 
-    static func getFormatDate(formatString: String = "yyyy/MM/dd", of seconds: Int) -> String {
+    public static func getFormatDate(formatString: String = "yyyy/MM/dd", of seconds: Int) -> String {
         let format = DateFormatter()
         format.dateFormat = formatString
         let date = Date(timeIntervalSince1970: TimeInterval(seconds))

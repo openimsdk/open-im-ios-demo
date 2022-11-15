@@ -3,7 +3,7 @@ import RxSwift
 import SnapKit
 import UIKit
 
-class JNDatePickerView: UIView {
+public class JNDatePickerView: UIView {
     lazy var cancelButton: UIButton = {
         let v = UIButton()
         v.setTitle("取消".innerLocalized(), for: .normal)
@@ -24,7 +24,7 @@ class JNDatePickerView: UIView {
         return v
     }()
 
-    lazy var datePicker: UIDatePicker = {
+    public lazy var datePicker: UIDatePicker = {
         let v = UIDatePicker()
         v.datePickerMode = .date
         if #available(iOS 13.4, *) {
@@ -79,7 +79,7 @@ class JNDatePickerView: UIView {
             }.disposed(by: disposeBag)
     }
 
-    static func show(onWindowOfView: UIView, currentDate: Date = Date(), configure: ((JNDatePickerView) -> Void)?, confirmAction: @escaping ((Date) -> Void)) {
+    public static func show(onWindowOfView: UIView, currentDate: Date = Date(), configure: ((JNDatePickerView) -> Void)?, confirmAction: @escaping ((Date) -> Void)) {
         let pickerView: JNDatePickerView = {
             let v = JNDatePickerView()
             v.backgroundColor = UIColor(white: 0, alpha: 0.6)
@@ -116,7 +116,7 @@ class JNDatePickerView: UIView {
         }
     }
 
-    func show(onWindowOfView: UIView) {
+    public func show(onWindowOfView: UIView) {
         onWindowOfView.window?.addSubview(self)
         snp.makeConstraints { make in
             make.edges.equalToSuperview()

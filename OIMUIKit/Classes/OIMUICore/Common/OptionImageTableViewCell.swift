@@ -1,15 +1,15 @@
 
 import UIKit
 
-class OptionImageTableViewCell: UITableViewCell {
-    let titleLabel: UILabel = {
+public class OptionImageTableViewCell: UITableViewCell {
+    public let titleLabel: UILabel = {
         let v = UILabel()
         v.font = UIFont.systemFont(ofSize: 18)
         v.textColor = StandardUI.color_333333
         return v
     }()
 
-    let iconImageView: UIImageView = {
+    public let iconImageView: UIImageView = {
         let v = UIImageView()
         v.clipsToBounds = true
         v.contentMode = .scaleAspectFill
@@ -39,7 +39,7 @@ class OptionImageTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
 
-    override func prepareForReuse() {
+    override public func prepareForReuse() {
         super.prepareForReuse()
         iconImageView.layer.cornerRadius = 0
     }

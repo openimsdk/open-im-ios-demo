@@ -1,7 +1,7 @@
 
 import UIKit
 
-class QRCodeViewController: UIViewController {
+public class QRCodeViewController: UIViewController {
     private lazy var shadowView: UIView = {
         let v = UIView()
         v.layer.shadowColor = UIColor(red: 0, green: 0, blue: 0, alpha: 0.08).cgColor
@@ -18,14 +18,14 @@ class QRCodeViewController: UIViewController {
         return v
     }()
 
-    let avatarImageView: UIImageView = {
+    public let avatarImageView: UIImageView = {
         let v = UIImageView()
         v.layer.cornerRadius = 6
         v.contentMode = .scaleAspectFill
         return v
     }()
 
-    let nameLabel: UILabel = {
+    public let nameLabel: UILabel = {
         let v = UILabel()
         v.font = UIFont.systemFont(ofSize: 20)
         v.textColor = .black
@@ -33,7 +33,7 @@ class QRCodeViewController: UIViewController {
         return v
     }()
 
-    let tipLabel: UILabel = {
+    public let tipLabel: UILabel = {
         let v = UILabel()
         v.font = UIFont.systemFont(ofSize: 14)
         v.textColor = StandardUI.color_999999
@@ -48,7 +48,7 @@ class QRCodeViewController: UIViewController {
 
     private let codeContentImageView: UIImageView = .init()
 
-    init(idString: String) {
+    public init(idString: String) {
         super.init(nibName: nil, bundle: nil)
         DispatchQueue.global().async {
             let image = CodeImageGenerator().createQRCodeImage(content: idString, size: CGSize(width: 140, height: 140), foregroundColor: UIColor.black, backgroundColor: UIColor.clear)
@@ -63,7 +63,7 @@ class QRCodeViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
 
-    override func viewDidLoad() {
+    public override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
         navigationItem.title = "群二维码".innerLocalized()

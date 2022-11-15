@@ -67,9 +67,11 @@ class MainTabViewController: UITabBarController {
         self.tabBar.backgroundImage = UIImage.init()
         self.tabBar.shadowImage = UIImage.init()
         
-        if let uid = UserDefaults.standard.object(forKey: LoginViewModel.IMUidKey) as? String, let token = UserDefaults.standard.object(forKey: LoginViewModel.IMTokenKey) as? String {
+        if let uid = UserDefaults.standard.object(forKey: AccountViewModel.IMUidKey) as? String,
+            let token = UserDefaults.standard.object(forKey: AccountViewModel.IMTokenKey) as? String,
+           let chatToken = UserDefaults.standard.object(forKey: AccountViewModel.bussinessTokenKey) as? String {
             SVProgressHUD.show()
-            LoginViewModel.loginIM(uid: uid, token: token) {[weak self] errMsg in
+            AccountViewModel.loginIM(uid: uid, imToken: token, chatToken: chatToken) {[weak self] (errCode, errMsg) in
                 if errMsg != nil {
                     SVProgressHUD.showError(withStatus: errMsg)
                     self?.presentLoginController()
@@ -84,20 +86,17 @@ class MainTabViewController: UITabBarController {
             }
         }
         
-        JNNotificationCenter.shared.observeEvent { [weak self] (event: OIMUIKit.EventLogout) in
-            LoginViewModel.saveUser(uid: nil, token: nil)
-            self?.presentLoginController()
-        }.disposed(by: _disposeBag)
+        NotificationCenter.default.addObserver(self, selector: #selector(presentLoginController), name: .init("logout"), object: nil)
     }
     
-    private func presentLoginController() {
+    @objc private func presentLoginController() {
         let vc = LoginViewController()
         vc.loginBtn.rx.tap.subscribe(onNext: { [weak vc, weak self] in
             guard let controller = vc else { return }
             guard let phone = controller.phone, let pwd = controller.password else { return }
             
             SVProgressHUD.show()
-            LoginViewModel.loginDemo(phone: phone, pwd: pwd) {[weak self] errMsg in
+            AccountViewModel.loginDemo(phone: phone, pwd: pwd) {[weak self] (errCode, errMsg) in
                 if errMsg != nil {
                     SVProgressHUD.showError(withStatus: errMsg)
                     self?.presentLoginController()
@@ -118,7 +117,7 @@ class MainTabViewController: UITabBarController {
 
 extension MainTabViewController: ContactsDataSource {
     func getFrequentUsers() -> [OIMUserInfo] {
-        guard let uid = LoginViewModel.userID else { return [] }
+        guard let uid = AccountViewModel.userID else { return [] }
         guard let usersJson = UserDefaults.standard.object(forKey: uid) as? String else { return [] }
         
         guard let users = JsonTool.fromJson(usersJson, toClass: [UserEntity].self) else {
@@ -135,7 +134,7 @@ extension MainTabViewController: ContactsDataSource {
     }
     
     func setFrequentUsers(_ users: [OIMUserInfo]) {
-        guard let uid = LoginViewModel.userID else { return }
+        guard let uid = AccountViewModel.userID else { return }
         let saveTime = Int(Date().timeIntervalSince1970)
         let before = getFrequentUsers()
         var mUsers: [OIMUserInfo] = before

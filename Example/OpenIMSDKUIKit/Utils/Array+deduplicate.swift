@@ -1,5 +1,6 @@
 
 import Foundation
+import UIKit
 
 extension Array {
     func deduplicate<E: Equatable>(filter: (Element) -> E) -> [Element] {

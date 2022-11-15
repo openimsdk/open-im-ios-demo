@@ -5,14 +5,14 @@ import UIKit
 import ZLPhotoBrowser
 import SVProgressHUD
 
-class PhotoHelper {
-    var didPhotoSelected: ((_ images: [UIImage], _ assets: [PHAsset], _ isOriginPhoto: Bool) -> Void)?
+public class PhotoHelper {
+    public var didPhotoSelected: ((_ images: [UIImage], _ assets: [PHAsset], _ isOriginPhoto: Bool) -> Void)?
 
-    var didPhotoSelectedCancel: (() -> Void)?
+    public var didPhotoSelectedCancel: (() -> Void)?
 
-    var didCameraFinished: ((UIImage?, URL?) -> Void)?
+    public var didCameraFinished: ((UIImage?, URL?) -> Void)?
 
-    init() {
+    public init() {
         resetConfigToSendMedia()
     }
 
@@ -35,7 +35,7 @@ class PhotoHelper {
         ZLPhotoConfiguration.default().cameraConfiguration.videoExportType = .mp4
     }
 
-    func setConfigToPickAvatar() {
+    public func setConfigToPickAvatar() {
         let editConfig = ZLPhotoConfiguration.default().editImageConfiguration
         editConfig.tools([.clip])
             .clipRatios([ZLImageClipRatio.wh1x1])
@@ -70,14 +70,14 @@ class PhotoHelper {
         sheet.showPhotoLibrary(sender: byController)
     }
 
-    func presentPhotoLibrary(byController: UIViewController) {
+    public func presentPhotoLibrary(byController: UIViewController) {
         let sheet = ZLPhotoPreviewSheet(selectedAssets: nil)
         sheet.selectImageBlock = didPhotoSelected
         sheet.cancelBlock = didPhotoSelectedCancel
         sheet.showPhotoLibrary(sender: byController)
     }
 
-    func presentCamera(byController: UIViewController) {
+    public func presentCamera(byController: UIViewController) {
         let camera = ZLCustomCamera()
         camera.takeDoneBlock = didCameraFinished
         byController.showDetailViewController(camera, sender: nil)

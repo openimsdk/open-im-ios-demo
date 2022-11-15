@@ -1,0 +1,148 @@
+PODS:
+  - Alamofire (4.9.1)
+  - AlamofireImage (3.6.0):
+    - Alamofire (~> 4.9)
+  - Differentiator (5.0.0)
+  - IQKeyboardManagerSwift (6.5.10)
+  - JCore (3.2.3-noidfa)
+  - JPush (4.6.6):
+    - JCore (>= 2.0.0)
+  - Kingfisher (6.3.1)
+  - Localize-Swift (3.2.0):
+    - Localize-Swift/LocalizeSwiftCore (= 3.2.0)
+    - Localize-Swift/UIKit (= 3.2.0)
+  - Localize-Swift/LocalizeSwiftCore (3.2.0)
+  - Localize-Swift/UIKit (3.2.0):
+    - Localize-Swift/LocalizeSwiftCore
+  - lottie-ios (3.5.0)
+  - MJExtension (3.4.1)
+  - OIMUIKit (0.0.1):
+    - IQKeyboardManagerSwift
+    - Kingfisher
+    - Localize-Swift (~> 3.2)
+    - lottie-ios (~> 3.0)
+    - OpenIMSDK (= 2.3.3)
+    - RxCocoa (~> 6.0)
+    - RxDataSources
+    - RxKeyboard (~> 2.0)
+    - RxSwift (~> 6.0)
+    - SnapKit (~> 4.0)
+    - SVProgressHUD (~> 2.2.5)
+    - ZLPhotoBrowser (= 4.3.0)
+  - OpenIMSDK (2.3.3):
+    - MJExtension
+    - OpenIMSDK/Callback (= 2.3.3)
+    - OpenIMSDK/Callbacker (= 2.3.3)
+    - OpenIMSDK/Interface (= 2.3.3)
+    - OpenIMSDK/Model (= 2.3.3)
+    - OpenIMSDK/Utils (= 2.3.3)
+    - OpenIMSDKCore (= 2.3.3)
+  - OpenIMSDK/Callback (2.3.3):
+    - MJExtension
+    - OpenIMSDK/Utils
+    - OpenIMSDKCore (= 2.3.3)
+  - OpenIMSDK/Callbacker (2.3.3):
+    - MJExtension
+    - OpenIMSDK/Model
+    - OpenIMSDK/Utils
+    - OpenIMSDKCore (= 2.3.3)
+  - OpenIMSDK/Interface (2.3.3):
+    - MJExtension
+    - OpenIMSDK/Callback
+    - OpenIMSDK/Callbacker
+    - OpenIMSDK/Model
+    - OpenIMSDKCore (= 2.3.3)
+  - OpenIMSDK/Model (2.3.3):
+    - MJExtension
+    - OpenIMSDK/Utils
+    - OpenIMSDKCore (= 2.3.3)
+  - OpenIMSDK/Utils (2.3.3):
+    - MJExtension
+    - OpenIMSDKCore (= 2.3.3)
+  - "OpenIMSDKCore (2.3.3+2)"
+  - RxCocoa (6.5.0):
+    - RxRelay (= 6.5.0)
+    - RxSwift (= 6.5.0)
+  - RxDataSources (5.0.0):
+    - Differentiator (~> 5.0)
+    - RxCocoa (~> 6.0)
+    - RxSwift (~> 6.0)
+  - RxGesture (4.0.4):
+    - RxCocoa (~> 6.0)
+    - RxSwift (~> 6.0)
+  - RxKeyboard (2.0.0):
+    - RxCocoa (~> 6.0)
+    - RxSwift (~> 6.0)
+  - RxRelay (6.5.0):
+    - RxSwift (= 6.5.0)
+  - RxSwift (6.5.0)
+  - SnapKit (4.2.0)
+  - SVProgressHUD (2.2.5)
+  - ZLPhotoBrowser (4.3.0):
+    - ZLPhotoBrowser/Core (= 4.3.0)
+  - ZLPhotoBrowser/Core (4.3.0)
+
+DEPENDENCIES:
+  - Alamofire (= 4.9.1)
+  - AlamofireImage
+  - JCore (= 3.2.3-noidfa)
+  - JPush (= 4.6.6)
+  - Localize-Swift (~> 3.2)
+  - OIMUIKit (from `../`)
+  - RxGesture (~> 4.0.4)
+
+SPEC REPOS:
+  trunk:
+    - Alamofire
+    - AlamofireImage
+    - Differentiator
+    - IQKeyboardManagerSwift
+    - JCore
+    - JPush
+    - Kingfisher
+    - Localize-Swift
+    - lottie-ios
+    - MJExtension
+    - OpenIMSDK
+    - OpenIMSDKCore
+    - RxCocoa
+    - RxDataSources
+    - RxGesture
+    - RxKeyboard
+    - RxRelay
+    - RxSwift
+    - SnapKit
+    - SVProgressHUD
+    - ZLPhotoBrowser
+
+EXTERNAL SOURCES:
+  OIMUIKit:
+    :path: "../"
+
+SPEC CHECKSUMS:
+  Alamofire: 85e8a02c69d6020a0d734f6054870d7ecb75cf18
+  AlamofireImage: be9963c6582d68b39e89191f64c82a7d7bf40fdd
+  Differentiator: e8497ceab83c1b10ca233716d547b9af21b9344d
+  IQKeyboardManagerSwift: 52962c76ab33532f15ad9f3ff4e5715eda5335bb
+  JCore: cec6c836350ac9e30f7241e6cd0d5fdcfb927da6
+  JPush: 95c8f0b93ee40b76ea97b6c9eaaa0247947185ba
+  Kingfisher: 016c8b653a35add51dd34a3aba36b580041acc74
+  Localize-Swift: 6f4475136bdb0d7b2882ea3d4ea919d70142b232
+  lottie-ios: c55158d67d0629a260625cc2ded2052b829e3c3e
+  MJExtension: 21c5f6f8c4d5d8844b7ae8fbae08fed0b501f961
+  OIMUIKit: 310f09bb6b4639b1d6ce3206db49ce276ad5ae04
+  OpenIMSDK: b7e1360b6156effa8f9cd86e7f167ba75be2fc9e
+  OpenIMSDKCore: 84596a6c535bf230ea4a9678544abc28e6d8dba1
+  RxCocoa: 94f817b71c07517321eb4f9ad299112ca8af743b
+  RxDataSources: aa47cc1ed6c500fa0dfecac5c979b723542d79cf
+  RxGesture: f3efb47ed2d26a8082f7b660d4a59970e275a7f8
+  RxKeyboard: 4f5863f43b4ff0cbb2a20b94688d6b80c8a43c14
+  RxRelay: 1de1523e604c72b6c68feadedd1af3b1b4d0ecbd
+  RxSwift: 5710a9e6b17f3c3d6e40d6e559b9fa1e813b2ef8
+  SnapKit: fe8a619752f3f27075cc9a90244d75c6c3f27e2a
+  SVProgressHUD: 1428aafac632c1f86f62aa4243ec12008d7a51d6
+  ZLPhotoBrowser: 7c5c3ea5e42428d26dc74a52fe821aa2a9274fa3
+
+PODFILE CHECKSUM: f9865940bac79efd026a77817d1df248aa4dbbf4
+
+COCOAPODS: 1.11.3

@@ -3,10 +3,10 @@ import RxSwift
 import SnapKit
 import UIKit
 
-class OptionTableViewCell: UITableViewCell {
+open class OptionTableViewCell: UITableViewCell {
     var disposeBag = DisposeBag()
 
-    let titleLabel: UILabel = {
+    public let titleLabel: UILabel = {
         let v = UILabel()
         v.font = UIFont.systemFont(ofSize: 18)
         v.textColor = StandardUI.color_333333
@@ -15,10 +15,17 @@ class OptionTableViewCell: UITableViewCell {
         return v
     }()
 
-    let subtitleLabel: UILabel = {
+    public let subtitleLabel: UILabel = {
         let v = UILabel()
         v.font = UIFont.systemFont(ofSize: 16)
         v.textColor = StandardUI.color_999999
+        return v
+    }()
+    
+    public let switcher: UISwitch = {
+        let v = UISwitch()
+        v.isOn = false
+        v.isHidden = true
         return v
     }()
 
@@ -38,14 +45,20 @@ class OptionTableViewCell: UITableViewCell {
             make.centerY.equalToSuperview()
             make.left.greaterThanOrEqualTo(titleLabel.snp.right).offset(10)
         }
+        
+        contentView.addSubview(switcher)
+        switcher.snp.makeConstraints { make in
+            make.right.equalToSuperview().offset(-12)
+            make.centerY.equalToSuperview()
+        }
     }
 
     @available(*, unavailable)
-    required init?(coder _: NSCoder) {
+    required public init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
-    override func prepareForReuse() {
+    open override func prepareForReuse() {
         super.prepareForReuse()
         accessoryType = .disclosureIndicator
         subtitleLabel.text = nil

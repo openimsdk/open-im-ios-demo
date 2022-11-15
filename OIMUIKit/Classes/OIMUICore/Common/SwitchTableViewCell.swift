@@ -2,16 +2,16 @@
 import RxSwift
 import UIKit
 
-class SwitchTableViewCell: UITableViewCell {
-    var disposeBag = DisposeBag()
-    let titleLabel: UILabel = {
+open class SwitchTableViewCell: UITableViewCell {
+    public var disposeBag = DisposeBag()
+    public let titleLabel: UILabel = {
         let v = UILabel()
         v.font = UIFont.systemFont(ofSize: 18)
         v.textColor = StandardUI.color_333333
         return v
     }()
 
-    let switcher: UISwitch = .init()
+    public let switcher: UISwitch = .init()
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -30,11 +30,11 @@ class SwitchTableViewCell: UITableViewCell {
     }
 
     @available(*, unavailable)
-    required init?(coder _: NSCoder) {
+    required public  init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
-    override func prepareForReuse() {
+    override public func prepareForReuse() {
         super.prepareForReuse()
         disposeBag = DisposeBag()
     }

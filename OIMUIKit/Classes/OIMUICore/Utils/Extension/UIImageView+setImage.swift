@@ -3,7 +3,7 @@ import Kingfisher
 import UIKit
 
 extension UIImageView {
-    func setImage(with string: String?, placeHolder: String?) {
+    public func setImage(with string: String?, placeHolder: String?) {
         guard let string = string, !string.isEmpty, let url = URL(string: string) else {
             if let placeHolder = placeHolder {
                 image = UIImage(named: placeHolder, in: ViewControllerFactory.getBundle(), compatibleWith: nil)
@@ -31,7 +31,7 @@ extension UIImageView {
 }
 
 extension UIImage {
-    convenience init?(nameInBundle: String) {
+    public convenience init?(nameInBundle: String) {
         self.init(named: nameInBundle, in: ViewControllerFactory.getBundle(), compatibleWith: nil)
     }
 

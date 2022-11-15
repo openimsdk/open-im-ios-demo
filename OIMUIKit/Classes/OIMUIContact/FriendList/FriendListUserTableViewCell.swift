@@ -1,22 +1,22 @@
 
 import UIKit
 
-class FriendListUserTableViewCell: UITableViewCell {
-    let avatarImageView: UIImageView = {
+public class FriendListUserTableViewCell: UITableViewCell {
+    public let avatarImageView: UIImageView = {
         let v = UIImageView()
         v.layer.cornerRadius = 4
         v.clipsToBounds = true
         return v
     }()
 
-    let titleLabel: UILabel = {
+    public let titleLabel: UILabel = {
         let v = UILabel()
         v.font = .systemFont(ofSize: 16)
         v.textColor = StandardUI.color_333333
         return v
     }()
 
-    let subtitleLabel: UILabel = {
+    public let subtitleLabel: UILabel = {
         let v = UILabel()
         v.font = .systemFont(ofSize: 12)
         v.textColor = StandardUI.color_666666
