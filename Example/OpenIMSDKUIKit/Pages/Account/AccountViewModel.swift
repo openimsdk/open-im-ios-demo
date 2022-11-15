@@ -93,7 +93,7 @@ class AccountViewModel {
     }
     
     // [usedFor] 1：注册，2：重置密码
-    static func requestCode(phone: String, areaCode: String, useFor: Int, completionHandler: @escaping ((_ errCode: Int?, _ errMsg: String?) -> Void)) {
+    static func requestCode(phone: String, areaCode: String, useFor: Int, completionHandler: @escaping ((_ errCode: Int, _ errMsg: String?) -> Void)) {
         let body = JsonTool.toJson(fromObject:
             CodeRequest(
                 phone: phone,
@@ -120,7 +120,7 @@ class AccountViewModel {
     }
     
     // [usedFor] 1：注册，2：重置密码
-    static func verifyCode(phone: String, areaCode: String, useFor: Int, verificationCode: String, completionHandler: @escaping ((_ errCode: Int?, _ errMsg: String?) -> Void)) {
+    static func verifyCode(phone: String, areaCode: String, useFor: Int, verificationCode: String, completionHandler: @escaping ((_ errCode: Int, _ errMsg: String?) -> Void)) {
         let body = JsonTool.toJson(fromObject:
             CodeRequest(
                 phone: phone,

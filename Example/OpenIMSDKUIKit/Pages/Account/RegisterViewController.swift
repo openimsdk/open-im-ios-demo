@@ -21,7 +21,7 @@ class RegisterViewController: UIViewController {
             
             AccountViewModel.requestCode(phone: phone, areaCode: "+86", useFor: 1) { (errCode, errMsg) in
                 if errMsg != nil {
-                    SVProgressHUD.showError(withStatus: String(errCode!).localized())
+                    SVProgressHUD.showError(withStatus: String(errCode).localized())
                 } else {
                     SVProgressHUD.showSuccess(withStatus: "验证码发送成功")
                 }
@@ -52,7 +52,7 @@ class RegisterViewController: UIViewController {
                                 "verCode": code]
                 self?.navigationController?.pushViewController(vc, animated: true)
             } else {
-                SVProgressHUD.showError(withStatus: String(errCode!).localized())
+                SVProgressHUD.showError(withStatus: String(errCode).localized())
             }
         }
     }
@@ -135,7 +135,7 @@ class CountDownTimerButton: UIButton {
         // 开启计时器
         self.isCounting = true
         // 设置重新获取秒数
-        self.remainingSeconds = 10
+        self.remainingSeconds = 300
         
         // 调用闭包
         if clickedBlock != nil {

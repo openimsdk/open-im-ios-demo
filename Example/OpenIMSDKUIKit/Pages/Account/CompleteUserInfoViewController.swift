@@ -86,9 +86,9 @@ class CompleteUserInfoViewController: UITableViewController {
                                              faceURL: "",
                                              nickName: sself.rowItems[.nickname] as! String,
                                              birth: sself.rowItems[.birthday] as! Int,
-                                             gender: sself.rowItems[.gender] as! Gender == Gender.male ? 1 : 2) { (code, errMsg) in
+                                             gender: sself.rowItems[.gender] as! Gender == Gender.male ? 1 : 2) { (errCode, errMsg) in
                 if errMsg != nil {
-                    SVProgressHUD.showError(withStatus: errMsg)
+                    SVProgressHUD.showError(withStatus: String(errCode).localized())
                 } else {
                     
                     AccountViewModel.loginIM(uid: AccountViewModel.baseUser.userID,

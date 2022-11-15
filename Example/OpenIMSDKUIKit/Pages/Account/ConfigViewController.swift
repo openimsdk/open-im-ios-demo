@@ -45,7 +45,7 @@ class ConfigViewController: UIViewController {
 
     let disposeBag = DisposeBag()
 
-    let ports = [bussinessSeverAddrKey: ":10008", sdkAPIAddrKey: ":10002", sdkWSAddrKey: ":10004"]
+    let ports = [bussinessSeverAddrKey: ":10008", sdkAPIAddrKey: ":10002", sdkWSAddrKey: ":10001"]
     let routes = [bussinessSeverAddrKey: "/chat", sdkAPIAddrKey: "/api", sdkWSAddrKey: "/msg_gateway"]
     let scheme = [bussinessSeverAddrKey: "http", sdkAPIAddrKey: "http", sdkWSAddrKey: "ws"]
 
@@ -55,7 +55,7 @@ class ConfigViewController: UIViewController {
     private var sdkAPIAddr = UserDefaults.standard.string(forKey: sdkAPIAddrKey) ??
     "http://\(defaultIP):10002"
     private var sdkWSAddr = UserDefaults.standard.string(forKey: sdkWSAddrKey) ??
-    "ws://\(defaultIP):10004"
+    "ws://\(defaultIP):10001"
     private var sdkObjectStorage = UserDefaults.standard.string(forKey: sdkObjectStorageKey) ??
     "minio"
     
@@ -72,7 +72,7 @@ class ConfigViewController: UIViewController {
 
     lazy var tlsSwitcher: UISwitch = {
         let t = UISwitch()
-        t.isOn = UserDefaults.standard.bool(forKey: useTLSKey)
+        t.isOn = UserDefaults.standard.value(forKey: useTLSKey) != nil ? UserDefaults.standard.bool(forKey: useTLSKey) : true
         t.rx.controlEvent(.valueChanged).subscribe(onNext: { [weak self] in
 
             guard let sself = self else { return }
@@ -86,7 +86,7 @@ class ConfigViewController: UIViewController {
 
     lazy var domainSwitcher: UISwitch = {
         let t = UISwitch()
-        t.isOn = UserDefaults.standard.bool(forKey: useDomainKey)
+        t.isOn = UserDefaults.standard.value(forKey: useDomainKey) != nil ? UserDefaults.standard.bool(forKey: useDomainKey) : true
         t.rx.controlEvent(.valueChanged).subscribe(onNext: { [weak self] in
             guard let sself = self else { return }
             sself.view.endEditing(false)
