@@ -35,6 +35,8 @@ let bussinessSeverAddrKey = "com.oimuikit.bussiness.api.adr"
 let sdkAPIAddrKey = "com.oimuikit.sdk.api.adr"
 let sdkWSAddrKey = "com.oimuikit.sdk.ws.adr"
 let sdkObjectStorageKey = "com.oimuikit.sdk.os"
+let useDomainKey = "com.oimuikit.use.domain"
+let useTLSKey = "com.oimuikit.use.TLS"
 
 let defaultIP = "198.18.3.106"
 let defaultDomain = "web.rentsoft.cn"
@@ -70,7 +72,7 @@ class ConfigViewController: UIViewController {
 
     lazy var tlsSwitcher: UISwitch = {
         let t = UISwitch()
-        t.isOn = true
+        t.isOn = UserDefaults.standard.bool(forKey: useTLSKey)
         t.rx.controlEvent(.valueChanged).subscribe(onNext: { [weak self] in
 
             guard let sself = self else { return }
@@ -84,11 +86,11 @@ class ConfigViewController: UIViewController {
 
     lazy var domainSwitcher: UISwitch = {
         let t = UISwitch()
-        t.isOn = true
+        t.isOn = UserDefaults.standard.bool(forKey: useDomainKey)
         t.rx.controlEvent(.valueChanged).subscribe(onNext: { [weak self] in
             guard let sself = self else { return }
-            
             sself.view.endEditing(false)
+            
             if t.isOn {
                 sself.updateIP(newValue: sself.modifyDomain.isEmpty ? defaultDomain : sself.modifyDomain)
             } else {
@@ -208,6 +210,8 @@ class ConfigViewController: UIViewController {
         ud.set(sdkAPIAddr, forKey: sdkAPIAddrKey)
         ud.set(sdkWSAddr, forKey: sdkWSAddrKey)
         ud.set(sdkObjectStorage, forKey: sdkObjectStorageKey)
+        ud.set(tlsSwitcher.isOn, forKey: useTLSKey)
+        ud.set(domainSwitcher.isOn, forKey: useDomainKey)
         ud.synchronize()
 
         let alert = UIAlertController.init(title: nil, message: "保存成功，重启app后设置生效", preferredStyle: .alert)
