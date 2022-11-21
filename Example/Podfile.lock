@@ -21,7 +21,7 @@ PODS:
     - Kingfisher
     - Localize-Swift (~> 3.2)
     - lottie-ios (~> 3.0)
-    - OpenIMSDK (= 2.3.3)
+    - OpenIMSDK (~> 2.3.4.2)
     - RxCocoa (~> 6.0)
     - RxDataSources
     - RxKeyboard (~> 2.0)
@@ -29,37 +29,37 @@ PODS:
     - SnapKit (~> 4.0)
     - SVProgressHUD (~> 2.2.5)
     - ZLPhotoBrowser (= 4.3.0)
-  - OpenIMSDK (2.3.3):
+  - OpenIMSDK (2.3.4.2):
     - MJExtension
-    - OpenIMSDK/Callback (= 2.3.3)
-    - OpenIMSDK/Callbacker (= 2.3.3)
-    - OpenIMSDK/Interface (= 2.3.3)
-    - OpenIMSDK/Model (= 2.3.3)
-    - OpenIMSDK/Utils (= 2.3.3)
-    - OpenIMSDKCore (= 2.3.3)
-  - OpenIMSDK/Callback (2.3.3):
+    - OpenIMSDK/Callback (= 2.3.4.2)
+    - OpenIMSDK/Callbacker (= 2.3.4.2)
+    - OpenIMSDK/Interface (= 2.3.4.2)
+    - OpenIMSDK/Model (= 2.3.4.2)
+    - OpenIMSDK/Utils (= 2.3.4.2)
+    - OpenIMSDKCore (= 2.3.4)
+  - OpenIMSDK/Callback (2.3.4.2):
     - MJExtension
     - OpenIMSDK/Utils
-    - OpenIMSDKCore (= 2.3.3)
-  - OpenIMSDK/Callbacker (2.3.3):
+    - OpenIMSDKCore (= 2.3.4)
+  - OpenIMSDK/Callbacker (2.3.4.2):
     - MJExtension
     - OpenIMSDK/Model
     - OpenIMSDK/Utils
-    - OpenIMSDKCore (= 2.3.3)
-  - OpenIMSDK/Interface (2.3.3):
+    - OpenIMSDKCore (= 2.3.4)
+  - OpenIMSDK/Interface (2.3.4.2):
     - MJExtension
     - OpenIMSDK/Callback
     - OpenIMSDK/Callbacker
     - OpenIMSDK/Model
-    - OpenIMSDKCore (= 2.3.3)
-  - OpenIMSDK/Model (2.3.3):
+    - OpenIMSDKCore (= 2.3.4)
+  - OpenIMSDK/Model (2.3.4.2):
     - MJExtension
     - OpenIMSDK/Utils
-    - OpenIMSDKCore (= 2.3.3)
-  - OpenIMSDK/Utils (2.3.3):
+    - OpenIMSDKCore (= 2.3.4)
+  - OpenIMSDK/Utils (2.3.4.2):
     - MJExtension
-    - OpenIMSDKCore (= 2.3.3)
-  - "OpenIMSDKCore (2.3.3+2)"
+    - OpenIMSDKCore (= 2.3.4)
+  - "OpenIMSDKCore (2.3.4+2)"
   - RxCocoa (6.5.0):
     - RxRelay (= 6.5.0)
     - RxSwift (= 6.5.0)
@@ -130,9 +130,9 @@ SPEC CHECKSUMS:
   Localize-Swift: 6f4475136bdb0d7b2882ea3d4ea919d70142b232
   lottie-ios: c55158d67d0629a260625cc2ded2052b829e3c3e
   MJExtension: 21c5f6f8c4d5d8844b7ae8fbae08fed0b501f961
-  OIMUIKit: 310f09bb6b4639b1d6ce3206db49ce276ad5ae04
-  OpenIMSDK: b7e1360b6156effa8f9cd86e7f167ba75be2fc9e
-  OpenIMSDKCore: 84596a6c535bf230ea4a9678544abc28e6d8dba1
+  OIMUIKit: a0181d244f515542b955f01d95eceb5a5098a11a
+  OpenIMSDK: eba4ab2e517560f46f65adcc0abeb7147fbc0e10
+  OpenIMSDKCore: 0df676003368a149a36338c795cc2efde6c46eba
   RxCocoa: 94f817b71c07517321eb4f9ad299112ca8af743b
   RxDataSources: aa47cc1ed6c500fa0dfecac5c979b723542d79cf
   RxGesture: f3efb47ed2d26a8082f7b660d4a59970e275a7f8

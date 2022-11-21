@@ -6,7 +6,7 @@ import UIKit
 import OIMUIKit
 
 class CompleteUserInfoViewController: UITableViewController {
-    private var rowItems: [RowType: Any] = [.avatar : "", .nickname : "", .gender : Gender.female, .birthday : Int(NSDate().timeIntervalSince1970), .invitationCode : ""]
+    private var rowItems: [RowType: Any] = [.avatar : "", .nickname : "", .gender : Gender.female, .birthday : Int(NSDate().timeIntervalSince1970)]
     
     private let _disposeBag = DisposeBag()
     public var basicInfo: [String: Any] = [:]
@@ -97,7 +97,7 @@ class CompleteUserInfoViewController: UITableViewController {
                         IMController.shared.uploadFile(fullPath: (sself.rowItems[.avatar] as! String)) { progress in
                             SVProgressHUD.showProgress(Float(progress))
                         } onSuccess: { res in
-                            AccountViewModel.updateUserInfo(userID: AccountViewModel.userID!, faceURL: res) { errMsg in
+                            AccountViewModel.updateUserInfo(userID: AccountViewModel.userID!, faceURL: res) { (errCode, errMsg) in
                                 SVProgressHUD.dismiss()
                                 sself.dismiss(animated: true)
                             }
@@ -161,15 +161,6 @@ class CompleteUserInfoViewController: UITableViewController {
             let cell = tableView.dequeueReusableCell(withIdentifier: OptionTableViewCell.className, for: indexPath) as! OptionTableViewCell
             cell.titleLabel.text = rowType.title
             cell.subtitleLabel.text = FormatUtil.getFormatDate(of: (value as? Int) ?? 0)
-            return cell
-            
-        case  RowType.invitationCode.rawValue:
-            let rowType = RowType.invitationCode
-            let value = rowItems[rowType]
-            
-            let cell = tableView.dequeueReusableCell(withIdentifier: OptionTableViewCell.className, for: indexPath) as! OptionTableViewCell
-            cell.titleLabel.text = rowType.title
-            cell.subtitleLabel.text = value as? String
             return cell
         default:
             return UITableViewCell()
@@ -262,30 +253,6 @@ class CompleteUserInfoViewController: UITableViewController {
                 
                 self?.tableView.reloadData()
             }
-        case RowType.invitationCode.rawValue:
-            
-            let rowType = RowType.invitationCode
-            let value = rowItems[rowType]
-            
-            let invitationCode = value as? String ?? "请填写邀请码"
-            let alertController = UIAlertController(title: nil, message: "请填写邀请码", preferredStyle: .alert)
-            
-            alertController.addTextField { (textField : UITextField!) -> Void in
-                textField.placeholder = invitationCode
-            }
-            
-            let saveAction = UIAlertAction(title: "保存", style: .default, handler: { [weak self] (alert) -> Void in
-                let firstTextField = alertController.textFields![0] as UITextField
-                self?.rowItems[rowType] = firstTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines)
-                self?.tableView.reloadData()
-            })
-            
-            let cancelAction = UIAlertAction(title: "取消", style: .default, handler: nil )
-            
-            alertController.addAction(cancelAction)
-            alertController.addAction(saveAction)
-            
-            self.present(alertController, animated: true, completion: nil)
         default:
             break
         }
@@ -302,7 +269,6 @@ class CompleteUserInfoViewController: UITableViewController {
         case nickname = 1
         case gender = 2
         case birthday = 3
-        case invitationCode = 4
         
         var title: String {
             switch self {
@@ -312,8 +278,6 @@ class CompleteUserInfoViewController: UITableViewController {
                 return "昵称"
             case .gender:
                 return "性别"
-            case .invitationCode:
-                return "邀请码"
             case .birthday:
                 return "生日"
             }

@@ -201,7 +201,7 @@ extension IMController {
     }
 
     func getGroupMemberList(groupId: String, filter: GroupMemberRole = .undefine, offset: Int, count: Int, onSuccess: @escaping CallBack.GroupMembersReturnVoid) {
-        Self.shared.imManager.getGroupMemberList(groupId, filter: filter.rawValue, offset: offset, count: count) { (memberInfos: [OIMGroupMemberInfo]?) in
+        Self.shared.imManager.getGroupMemberList(groupId, filter: OIMGroupMemberRole(rawValue: filter.rawValue) ?? OIMGroupMemberRole.member, offset: offset, count: count) { (memberInfos: [OIMGroupMemberInfo]?) in
             let members: [GroupMemberInfo] = memberInfos?.compactMap { $0.toGroupMemberInfo() } ?? []
             onSuccess(members)
         }
@@ -1313,7 +1313,7 @@ extension OIMMessageInfo {
         item.status = status.toMessageStatus()
         item.attachedInfo = attachedInfo
         item.ex = ex
-        item.offlinePushInfo = offlinePushInfo.toOfflinePushInfo()
+        item.offlinePushInfo = offlinePush.toOfflinePushInfo()
         item.pictureElem = pictureElem?.toPictureElem()
         item.soundElem = soundElem?.toSoundElem()
         item.videoElem = videoElem?.toVideoElem()

@@ -4,11 +4,21 @@ import Foundation
 import OIMUIKit
 import RxSwift
 
+// 注册/忘记密码
+public enum UsedFor: Int {
+    case register = 1
+    case forgotPassword = 2
+    case login = 3
+}
+
+typealias CompletionHandler = (_ errCode: Int, _ errMsg: String?) -> Void
+
 class AccountViewModel {
     // 业务服务器地址
     static let API_BASE_URL = UserDefaults.standard.string(forKey: bussinessSeverAddrKey) ?? "https://web.rentsoft.cn/chat"
     
     // 实际开发，抽离网络部分
+    static let IMPreLoginAccountKey = "IMPreLoginAccountKey"
     static let IMUidKey = "DemoIMUidKey"
     static let IMTokenKey = "DemoIMTokenKey"
     static let bussinessTokenKey = "bussinessTokenKey"
@@ -17,12 +27,16 @@ class AccountViewModel {
     private static let RegisterAPI = "/account/password"
     private static let CodeAPI = "/account/code"
     private static let VerifyCodeAPI = "/account/verify"
+    private static let ResetPasswordAPI = "/account/reset_password"
     private static let UpdateUserInfoAPI = "/user/update_user_info"
     
     private let _disposeBag = DisposeBag()
     
-    static func loginDemo(phone: String, pwd: String, completionHandler: @escaping (_ errCode: Int, _ errMsg: String?) -> Void) {
-        let body = JsonTool.toJson(fromObject: Request(phoneNumber: phone, pwd: pwd)).data(using: .utf8)
+    static func loginDemo(phone: String, psw: String? = nil, verificationCode: String? = nil, areaCode: String, completionHandler: @escaping CompletionHandler) {
+        let body = JsonTool.toJson(fromObject: Request(phoneNumber: phone,
+                                                       psw: psw,
+                                                       verificationCode: verificationCode,
+                                                       areaCode: areaCode)).data(using: .utf8)
         
         var req = try! URLRequest(url: API_BASE_URL + LoginAPI, method: .post)
         req.httpBody = body
@@ -32,8 +46,8 @@ class AccountViewModel {
             case .success(let result):
                 if let res = JsonTool.fromJson(result, toClass: Response<UserEntity>.self) {
                     if res.errCode == 0 {
-                        completionHandler(res.errCode, nil)
                         // 登录IM
+                        savePreLoginAccount(phone)
                         loginIM(uid: res.data!.userID, imToken: res.data!.imToken, chatToken: res.data!.chatToken, completionHandler: completionHandler)
                     } else {
                         completionHandler(res.errCode, res.errMsg)
@@ -57,20 +71,20 @@ class AccountViewModel {
                                 birth: Int = Int(NSDate().timeIntervalSince1970),
                                 gender: Int = 1,
                                 email: String = "",
-                                invitationCode: String = "",
-                                completionHandler: @escaping (_ errCode: Int, _ errMsg: String?) -> Void)
+                                invitationCode: String? = nil,
+                                completionHandler: @escaping CompletionHandler)
     {
         let body = JsonTool.toJson(fromObject:
-            RegisterRequest(
-                phone: phone,
-                areaCode: areaCode,
-                verificationCode: verificationCode,
-                password: password,
-                faceURL: faceURL,
-                nickName: nickName,
-                birth: birth,
-                gender: gender,
-                invitationCode: invitationCode)).data(using: .utf8)
+                                    RegisterRequest(
+                                        phone: phone,
+                                        areaCode: areaCode,
+                                        verificationCode: verificationCode,
+                                        password: password,
+                                        faceURL: faceURL,
+                                        nickName: nickName,
+                                        birth: birth,
+                                        gender: gender,
+                                        invitationCode: invitationCode)).data(using: .utf8)
         
         var req = try! URLRequest(url: API_BASE_URL + RegisterAPI, method: .post)
         req.httpBody = body
@@ -92,15 +106,46 @@ class AccountViewModel {
         }
     }
     
-    // [usedFor] 1：注册，2：重置密码
-    static func requestCode(phone: String, areaCode: String, useFor: Int, completionHandler: @escaping ((_ errCode: Int, _ errMsg: String?) -> Void)) {
+    // [usedFor] 1：注册，2：重置密码， 3: 登录
+    static func requestCode(phone: String, areaCode: String, invaitationCode: String? = nil, useFor: UsedFor, completionHandler: @escaping CompletionHandler) {
         let body = JsonTool.toJson(fromObject:
-            CodeRequest(
-                phone: phone,
-                areaCode: areaCode,
-                usedFor: useFor)).data(using: .utf8)
+                                    CodeRequest(
+                                        phone: phone,
+                                        areaCode: areaCode,
+                                        usedFor: useFor.rawValue,
+                                        invaitationCode: invaitationCode)).data(using: .utf8)
         
         var req = try! URLRequest(url: API_BASE_URL + CodeAPI, method: .post)
+        req.httpBody = body
+        
+        print("输入地址：\(req)")
+        Alamofire.request(req).responseString { (response: DataResponse<String>) in
+            switch response.result {
+            case .success(let result):
+                if let res = JsonTool.fromJson(result, toClass: Response<UserEntity>.self) {
+                    if res.errCode == 0 {
+                        completionHandler(res.errCode, nil)
+                    } else {
+                        completionHandler(res.errCode, res.errMsg)
+                    }
+                } else {
+                }
+            case .failure(let err):
+                completionHandler(-1, err.localizedDescription)
+            }
+        }
+    }
+    
+    // [usedFor] 1：注册，2：重置密码
+    static func verifyCode(phone: String, areaCode: String, useFor: UsedFor, verificationCode: String, completionHandler: @escaping CompletionHandler) {
+        let body = JsonTool.toJson(fromObject:
+                                    CodeRequest(
+                                        phone: phone,
+                                        areaCode: areaCode,
+                                        usedFor: useFor.rawValue,
+                                        verificationCode: verificationCode)).data(using: .utf8)
+        
+        var req = try! URLRequest(url: API_BASE_URL + VerifyCodeAPI, method: .post)
         req.httpBody = body
         
         Alamofire.request(req).responseString { (response: DataResponse<String>) in
@@ -119,16 +164,20 @@ class AccountViewModel {
         }
     }
     
-    // [usedFor] 1：注册，2：重置密码
-    static func verifyCode(phone: String, areaCode: String, useFor: Int, verificationCode: String, completionHandler: @escaping ((_ errCode: Int, _ errMsg: String?) -> Void)) {
+    static func resetPassword(phone: String,
+                              areaCode: String,
+                              verificationCode: String,
+                              password: String,
+                              completionHandler: @escaping CompletionHandler)
+    {
         let body = JsonTool.toJson(fromObject:
-            CodeRequest(
-                phone: phone,
-                areaCode: areaCode,
-                usedFor: useFor,
-                verificationCode: verificationCode)).data(using: .utf8)
+                                    Request(
+                                        phoneNumber: phone,
+                                        psw: password,
+                                        verificationCode: verificationCode,
+                                        areaCode: areaCode)).data(using: .utf8)
         
-        var req = try! URLRequest(url: API_BASE_URL + VerifyCodeAPI, method: .post)
+        var req = try! URLRequest(url: API_BASE_URL + ResetPasswordAPI, method: .post)
         req.httpBody = body
         
         Alamofire.request(req).responseString { (response: DataResponse<String>) in
@@ -161,21 +210,21 @@ class AccountViewModel {
                                allowAddFriend: Int? = nil,
                                allowBeep: Int? = nil,
                                allowVibration: Int? = nil,
-                               completionHandler: @escaping ((_ errMsg: String?) -> Void))
+                               completionHandler: @escaping CompletionHandler)
     {
         let body = JsonTool.toJson(fromObject:
-            UpdateUserInfoRequest(userID: userID,
-                                  phone: phone,
-                                  faceURL: faceURL,
-                                  nickName: nickname,
-                                  birth: birth,
-                                  gender: gender,
-                                  account: account,
-                                  level: level,
-                                  email: email,
-                                  allowAddFriend: allowAddFriend,
-                                  allowBeep: allowBeep,
-                                  allowVibration: allowVibration)).data(using: .utf8)
+                                    UpdateUserInfoRequest(userID: userID,
+                                                          phone: phone,
+                                                          faceURL: faceURL,
+                                                          nickName: nickname,
+                                                          birth: birth,
+                                                          gender: gender,
+                                                          account: account,
+                                                          level: level,
+                                                          email: email,
+                                                          allowAddFriend: allowAddFriend,
+                                                          allowBeep: allowBeep,
+                                                          allowVibration: allowVibration)).data(using: .utf8)
         
         var req = try! URLRequest(url: API_BASE_URL + UpdateUserInfoAPI, method: .post)
         req.httpBody = body
@@ -186,13 +235,13 @@ class AccountViewModel {
             case .success(let result):
                 if let res = JsonTool.fromJson(result, toClass: Response<UpdateUserInfoRequest>.self) {
                     if res.errCode == 0 {
-                        completionHandler(nil)
+                        completionHandler(res.errCode, nil)
                     } else {
-                        completionHandler(res.errMsg)
+                        completionHandler(res.errCode, res.errMsg)
                     }
                 } else {}
             case .failure(let err):
-                completionHandler(err.localizedDescription)
+                completionHandler(-1, err.localizedDescription)
             }
         }
     }
@@ -201,10 +250,10 @@ class AccountViewModel {
     static func updateUserInfo(pageNumber: Int = 1,
                                showNumber: Int = 10,
                                userIDList: [String],
-                               completionHandler: @escaping ((_ errMsg: String?) -> Void))
+                               completionHandler: @escaping CompletionHandler)
     {
         let body = JsonTool.toJson(fromObject:
-            QueryUserInfoRequest(userIDList: userIDList)).data(using: .utf8)
+                                    QueryUserInfoRequest(userIDList: userIDList)).data(using: .utf8)
         
         var req = try! URLRequest(url: API_BASE_URL + UpdateUserInfoAPI, method: .post)
         req.httpBody = body
@@ -215,18 +264,18 @@ class AccountViewModel {
             case .success(let result):
                 if let res = JsonTool.fromJson(result, toClass: Response<QueryUserInfoData>.self) {
                     if res.errCode == 0 {
-                        completionHandler(nil)
+                        completionHandler(res.errCode, nil)
                     } else {
-                        completionHandler(res.errMsg)
+                        completionHandler(res.errCode, res.errMsg)
                     }
                 } else {}
             case .failure(let err):
-                completionHandler(err.localizedDescription)
+                completionHandler(-1, err.localizedDescription)
             }
         }
     }
     
-    static func loginIM(uid: String, imToken: String, chatToken: String, completionHandler: @escaping (_ errCode: Int, _ errMsg: String?) -> Void) {
+    static func loginIM(uid: String, imToken: String, chatToken: String, completionHandler: @escaping CompletionHandler) {
         IMController.shared.login(uid: uid, token: imToken) { resp in
             print("login onSuccess \(String(describing: resp))")
             saveUser(uid: uid, imToken: imToken, chatToken: chatToken)
@@ -245,6 +294,15 @@ class AccountViewModel {
         UserDefaults.standard.synchronize()
     }
     
+    static func savePreLoginAccount(_ account: String?) {
+        UserDefaults.standard.set(account, forKey: IMPreLoginAccountKey)
+        UserDefaults.standard.synchronize()
+    }
+    
+    static var perLoginAccount: String? {
+        return UserDefaults.standard.string(forKey: IMPreLoginAccountKey)
+    }
+    
     static var userID: String? {
         return UserDefaults.standard.string(forKey: IMUidKey)
     }
@@ -259,14 +317,17 @@ class AccountViewModel {
 
 extension AccountViewModel {
     class Request: Encodable {
-        private let areaCode: String = "+86"
+        private let areaCode: String
         private let phoneNumber: String
         private let password: String
+        private let verificationCode: String
         private let platform: Int = 1
         private let operationID = UUID().uuidString
-        init(phoneNumber: String, pwd: String) {
+        init(phoneNumber: String, psw: String? = nil, verificationCode: String? = nil, areaCode: String) {
             self.phoneNumber = phoneNumber
-            self.password = pwd.md5()
+            self.password = psw?.md5() ?? ""
+            self.areaCode = areaCode
+            self.verificationCode = verificationCode ?? ""
         }
     }
     
@@ -316,15 +377,17 @@ extension AccountViewModel {
         private let areaCode: String
         private let phoneNumber: String
         private let usedFor: Int
-        private let verificationCode: String
+        private let verificationCode: String?
+        private let invaitationCode: String?
         private let platform: Int = 1
         private let operationID = UUID().uuidString
         
-        init(phone: String, areaCode: String, usedFor: Int, verificationCode: String = "") {
+        init(phone: String, areaCode: String, usedFor: Int, invaitationCode: String? = nil, verificationCode: String? = nil) {
             self.phoneNumber = phone
             self.areaCode = areaCode
             self.usedFor = usedFor
             self.verificationCode = verificationCode
+            self.invaitationCode = invaitationCode
         }
     }
     

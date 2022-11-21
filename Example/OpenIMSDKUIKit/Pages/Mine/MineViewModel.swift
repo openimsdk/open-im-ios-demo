@@ -26,7 +26,7 @@ class MineViewModel {
     func updateGender(_ gender: Gender) {
         guard let user: UserInfo = currentUserRelay.value else { return }
         user.gender = gender
-        AccountViewModel.updateUserInfo(userID: user.userID, gender: gender.rawValue) { errMsg in
+        AccountViewModel.updateUserInfo(userID: user.userID, gender: gender.rawValue) { (errCode, errMsg)  in
             IMController.shared.currentUserRelay.accept(user)
         }
     }
@@ -34,7 +34,7 @@ class MineViewModel {
     func updateNickname(_ name: String) {
         guard let user: UserInfo = currentUserRelay.value else { return }
         user.nickname = name
-        AccountViewModel.updateUserInfo(userID: user.userID, nickname: name) { errMsg in
+        AccountViewModel.updateUserInfo(userID: user.userID, nickname: name) { (errCode, errMsg) in
             IMController.shared.currentUserRelay.accept(user)
         }
     }
@@ -42,7 +42,7 @@ class MineViewModel {
     func updateBirthday(timeStampSeconds: Int) {
         guard let user: UserInfo = currentUserRelay.value else { return }
         user.birth = timeStampSeconds
-        AccountViewModel.updateUserInfo(userID: user.userID, birth: timeStampSeconds) { errMsg in
+        AccountViewModel.updateUserInfo(userID: user.userID, birth: timeStampSeconds) { (errCode, errMsg) in
             IMController.shared.currentUserRelay.accept(user)
         }
     }
@@ -50,7 +50,7 @@ class MineViewModel {
     func updateFaceURL(url: String, onComplete: @escaping () -> Void) {
         guard let user: UserInfo = currentUserRelay.value else { return }
         user.faceURL = url
-        AccountViewModel.updateUserInfo(userID: user.userID, faceURL: url) { errMsg in
+        AccountViewModel.updateUserInfo(userID: user.userID, faceURL: url) { (errCode, errMsg) in
             IMController.shared.currentUserRelay.accept(user)
             onComplete()
         }

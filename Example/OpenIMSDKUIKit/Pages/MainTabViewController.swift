@@ -63,17 +63,17 @@ class MainTabViewController: UITabBarController {
         self.tabBar.layer.shadowOpacity = 0.08;
         self.tabBar.layer.shadowOffset = CGSize.init(width: 0, height: 0);
         self.tabBar.layer.shadowRadius = 5;
-
+        
         self.tabBar.backgroundImage = UIImage.init()
         self.tabBar.shadowImage = UIImage.init()
         
         if let uid = UserDefaults.standard.object(forKey: AccountViewModel.IMUidKey) as? String,
-            let token = UserDefaults.standard.object(forKey: AccountViewModel.IMTokenKey) as? String,
+           let token = UserDefaults.standard.object(forKey: AccountViewModel.IMTokenKey) as? String,
            let chatToken = UserDefaults.standard.object(forKey: AccountViewModel.bussinessTokenKey) as? String {
             SVProgressHUD.show()
             AccountViewModel.loginIM(uid: uid, imToken: token, chatToken: chatToken) {[weak self] (errCode, errMsg) in
                 if errMsg != nil {
-                    SVProgressHUD.showError(withStatus: errMsg)
+                    SVProgressHUD.showError(withStatus: String(errCode).localized())
                     self?.presentLoginController()
                 } else {
                     SVProgressHUD.dismiss()
@@ -90,15 +90,24 @@ class MainTabViewController: UITabBarController {
     }
     
     @objc private func presentLoginController() {
+        
         let vc = LoginViewController()
         vc.loginBtn.rx.tap.subscribe(onNext: { [weak vc, weak self] in
-            guard let controller = vc else { return }
-            guard let phone = controller.phone, let pwd = controller.password else { return }
+            guard let controller = vc, let phone = controller.phone, !phone.isEmpty else { return }
+            
+            guard let phone = controller.phone, !phone.isEmpty else {
+                SVProgressHUD.showError(withStatus: "填写正确的手机号码")
+                return
+            }
+            
+            let psw = controller.password
             
             SVProgressHUD.show()
-            AccountViewModel.loginDemo(phone: phone, pwd: pwd) {[weak self] (errCode, errMsg) in
+            AccountViewModel.loginDemo(phone: phone,
+                                       psw: psw ?? "",
+                                       areaCode: "+86") {[weak self] (errCode, errMsg) in
                 if errMsg != nil {
-                    SVProgressHUD.showError(withStatus: errMsg)
+                    SVProgressHUD.showError(withStatus: String(errCode).localized())
                     self?.presentLoginController()
                 } else {
                     SVProgressHUD.dismiss()

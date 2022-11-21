@@ -9,6 +9,7 @@ class RegisterViewController: UIViewController {
     @IBOutlet var codeTextField: UITextField!
     @IBOutlet var pswTextField: UITextField!
     @IBOutlet var pswAgainTextField: UITextField!
+    @IBOutlet var invitationTextField: UITextField!
     @IBOutlet var nextButton: UIButton!
     
     override func viewDidLoad() {
@@ -19,7 +20,9 @@ class RegisterViewController: UIViewController {
             
             guard let sself = self, let phone = sself.phoneTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines) else { return }
             
-            AccountViewModel.requestCode(phone: phone, areaCode: "+86", useFor: 1) { (errCode, errMsg) in
+            let invitationCode = sself.invitationTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines)
+            
+            AccountViewModel.requestCode(phone: phone, areaCode: "+86", invaitationCode: invitationCode, useFor: .register) { (errCode, errMsg) in
                 if errMsg != nil {
                     SVProgressHUD.showError(withStatus: String(errCode).localized())
                 } else {
@@ -43,7 +46,7 @@ class RegisterViewController: UIViewController {
             return
         }
         
-        AccountViewModel.verifyCode(phone: phone, areaCode: "+86", useFor: 1, verificationCode: code) { [weak self] (errCode, errMsg) in
+        AccountViewModel.verifyCode(phone: phone, areaCode: "+86", useFor: .register, verificationCode: code) { [weak self] (errCode, errMsg) in
             if errMsg == nil {
                 let vc =  CompleteUserInfoViewController()
                 vc.basicInfo = ["phone": phone,

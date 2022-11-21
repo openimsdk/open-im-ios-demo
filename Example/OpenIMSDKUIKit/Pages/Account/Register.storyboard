@@ -21,19 +21,19 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="Zwf-gk-VE9">
-                                <rect key="frame" x="10" y="140" width="394" height="200"/>
+                                <rect key="frame" x="10" y="140" width="394" height="199.5"/>
                                 <subviews>
                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="24" translatesAutoresizingMaskIntoConstraints="NO" id="A7w-xx-y4m">
-                                        <rect key="frame" x="0.0" y="0.0" width="394" height="44"/>
+                                        <rect key="frame" x="0.0" y="0.0" width="394" height="33.5"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="手机号" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="8ZI-o3-ikb">
-                                                <rect key="frame" x="0.0" y="0.0" width="52" height="44"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="52" height="33.5"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="请输入手机号码" textAlignment="natural" minimumFontSize="17" id="WjB-LT-loo">
-                                                <rect key="frame" x="76" y="0.0" width="318" height="44"/>
+                                                <rect key="frame" x="76" y="0.0" width="318" height="33.5"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                 <textInputTraits key="textInputTraits" keyboardType="phonePad"/>
@@ -41,16 +41,16 @@
                                         </subviews>
                                     </stackView>
                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="24" translatesAutoresizingMaskIntoConstraints="NO" id="Hus-ti-yyC">
-                                        <rect key="frame" x="0.0" y="52" width="394" height="44"/>
+                                        <rect key="frame" x="0.0" y="41.5" width="394" height="33.5"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="验证码" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="kI9-Fp-Y6p">
-                                                <rect key="frame" x="0.0" y="0.0" width="52" height="44"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="52" height="33.5"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="请输入验证码" textAlignment="natural" minimumFontSize="17" id="AZH-0x-yre">
-                                                <rect key="frame" x="76" y="0.0" width="318" height="44"/>
+                                                <rect key="frame" x="76" y="0.0" width="318" height="33.5"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                 <textInputTraits key="textInputTraits"/>
@@ -58,16 +58,16 @@
                                         </subviews>
                                     </stackView>
                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="24" translatesAutoresizingMaskIntoConstraints="NO" id="cT7-IM-0hK">
-                                        <rect key="frame" x="0.0" y="104" width="394" height="44"/>
+                                        <rect key="frame" x="0.0" y="83" width="394" height="33.5"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="密    码" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="5Ak-nX-4bO">
-                                                <rect key="frame" x="0.0" y="0.0" width="52.5" height="44"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="52.5" height="33.5"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="请输入密码" textAlignment="natural" clearsOnBeginEditing="YES" minimumFontSize="17" id="mfK-3c-Rmh">
-                                                <rect key="frame" x="76.5" y="0.0" width="317.5" height="44"/>
+                                                <rect key="frame" x="76.5" y="0.0" width="317.5" height="33.5"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                 <textInputTraits key="textInputTraits"/>
@@ -75,16 +75,33 @@
                                         </subviews>
                                     </stackView>
                                     <stackView opaque="NO" contentMode="scaleToFill" spacing="8" translatesAutoresizingMaskIntoConstraints="NO" id="KOD-Hl-xiv">
-                                        <rect key="frame" x="0.0" y="156" width="394" height="44"/>
+                                        <rect key="frame" x="0.0" y="124.5" width="394" height="33.5"/>
                                         <subviews>
                                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="确认密码" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="hje-pV-V9G">
-                                                <rect key="frame" x="0.0" y="0.0" width="69.5" height="44"/>
+                                                <rect key="frame" x="0.0" y="0.0" width="69.5" height="33.5"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="17"/>
                                                 <nil key="textColor"/>
                                                 <nil key="highlightedColor"/>
                                             </label>
                                             <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="请再次输入密码" textAlignment="natural" clearsOnBeginEditing="YES" minimumFontSize="17" id="oWL-vv-Gyk">
-                                                <rect key="frame" x="77.5" y="0.0" width="316.5" height="44"/>
+                                                <rect key="frame" x="77.5" y="0.0" width="316.5" height="33.5"/>
+                                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="14"/>
+                                                <textInputTraits key="textInputTraits"/>
+                                            </textField>
+                                        </subviews>
+                                    </stackView>
+                                    <stackView opaque="NO" contentMode="scaleToFill" spacing="24" translatesAutoresizingMaskIntoConstraints="NO" id="Wds-fg-ECK">
+                                        <rect key="frame" x="0.0" y="166" width="394" height="33.5"/>
+                                        <subviews>
+                                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="邀请码" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="MAI-PW-6a8">
+                                                <rect key="frame" x="0.0" y="0.0" width="52" height="33.5"/>
+                                                <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                                                <nil key="textColor"/>
+                                                <nil key="highlightedColor"/>
+                                            </label>
+                                            <textField opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="center" borderStyle="roundedRect" placeholder="请再次输入邀请码（选填）" textAlignment="natural" clearsOnBeginEditing="YES" minimumFontSize="17" id="tZL-WY-jho">
+                                                <rect key="frame" x="76" y="0.0" width="318" height="33.5"/>
                                                 <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
                                                 <fontDescription key="fontDescription" type="system" pointSize="14"/>
                                                 <textInputTraits key="textInputTraits"/>
@@ -94,7 +111,7 @@
                                 </subviews>
                             </stackView>
                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mUU-0N-paP">
-                                <rect key="frame" x="44" y="426" width="326" height="44"/>
+                                <rect key="frame" x="44" y="466" width="326" height="44"/>
                                 <color key="backgroundColor" systemColor="tintColor"/>
                                 <constraints>
                                     <constraint firstAttribute="height" constant="44" id="hO8-7r-9wz"/>
@@ -114,7 +131,7 @@
                             <constraint firstAttribute="trailingMargin" secondItem="mUU-0N-paP" secondAttribute="trailing" constant="24" id="DEM-Pm-vQL"/>
                             <constraint firstItem="Zwf-gk-VE9" firstAttribute="top" secondItem="iiW-DV-0we" secondAttribute="bottom" constant="48" id="Ey8-6d-utH"/>
                             <constraint firstItem="mUU-0N-paP" firstAttribute="centerX" secondItem="5EZ-qb-Rvc" secondAttribute="centerX" id="nZL-yE-EnP"/>
-                            <constraint firstItem="mUU-0N-paP" firstAttribute="centerY" secondItem="5EZ-qb-Rvc" secondAttribute="centerY" id="pZt-6A-lEY"/>
+                            <constraint firstItem="mUU-0N-paP" firstAttribute="centerY" secondItem="5EZ-qb-Rvc" secondAttribute="centerY" constant="40" id="pZt-6A-lEY"/>
                             <constraint firstItem="mUU-0N-paP" firstAttribute="leading" secondItem="5EZ-qb-Rvc" secondAttribute="leadingMargin" constant="24" id="rVE-SW-UQZ"/>
                             <constraint firstItem="Zwf-gk-VE9" firstAttribute="leading" secondItem="5EZ-qb-Rvc" secondAttribute="leading" constant="10" id="ysw-6a-GpA"/>
                         </constraints>
@@ -124,6 +141,7 @@
                     </navigationItem>
                     <connections>
                         <outlet property="codeTextField" destination="AZH-0x-yre" id="u45-X6-cJ0"/>
+                        <outlet property="invitationTextField" destination="tZL-WY-jho" id="OQs-4l-gxg"/>
                         <outlet property="nextButton" destination="mUU-0N-paP" id="gf4-72-xuW"/>
                         <outlet property="phoneTextField" destination="WjB-LT-loo" id="8eQ-rw-vAk"/>
                         <outlet property="pswAgainTextField" destination="oWL-vv-Gyk" id="tmS-kS-0jJ"/>
