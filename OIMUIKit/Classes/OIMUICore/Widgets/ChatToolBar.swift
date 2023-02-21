@@ -27,6 +27,12 @@ class ChatToolBar: UIView {
             }
         }
     }
+    
+    public func onlyInputText(_ only: Bool = false) {
+        voiceSwitchBtn.isEnabled = !only
+        emojiBtn.isEnabled = !only
+        moreBtn.isEnabled = !only
+    }
 
     lazy var voiceSwitchBtn: UIButton = {
         let v = UIButton()

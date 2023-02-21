@@ -31,6 +31,7 @@ class ConfigCell: UITableViewCell {
 }
 
 let severAddressKey = "com.oimuikit.adr"
+let adminSeverAddrKey = "com.oiuikit.admin.adr"
 let bussinessSeverAddrKey = "com.oimuikit.bussiness.api.adr"
 let sdkAPIAddrKey = "com.oimuikit.sdk.api.adr"
 let sdkWSAddrKey = "com.oimuikit.sdk.ws.adr"

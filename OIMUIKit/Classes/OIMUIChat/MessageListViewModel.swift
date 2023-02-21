@@ -11,8 +11,18 @@ class MessageListViewModel {
     let scrollsToBottom: PublishSubject<Void> = .init()
 
     let shouldHideSettingBtnSubject: PublishSubject<Bool> = .init()
+    let onlyInputTextRelay: BehaviorRelay<Bool> = .init(value: false) // 仅仅支持文本
 
     let conversation: ConversationInfo
+    // 机器人ID
+    var robots: [String] = []
+
+    var isRobot: Bool {
+        if let userId = userId {
+            return self.robots.contains(userId)
+        }
+        return false
+    }
 
     private let _disposeBag = DisposeBag()
 
@@ -21,6 +31,15 @@ class MessageListViewModel {
         self.userId = userId
         self.conversation = conversation
         addObservers()
+        
+        if let configHandler = OIMApi.queryConfigHandler {
+            configHandler { [weak self] result in
+                if let `self` = self,  result != nil, let robots = result["robots"] as? [String] {
+                    self.robots = robots
+                    self.onlyInputTextRelay.accept(self.isRobot)
+                }
+            }
+        }
     }
 
     private var groupId: String?
@@ -133,6 +152,10 @@ class MessageListViewModel {
     }
 
     func sendText(text: String, quoteMessage: MessageInfo?) {
+        if !canContinueAskRobot() {
+            return
+        }
+
         IMController.shared.sendTextMessage(text: text, quoteMessage: quoteMessage, to: conversation, sending: { [weak self] (model: MessageInfo) in
             self?.addMessage(model)
         }) { [weak self] (model: MessageInfo) in
@@ -289,5 +312,19 @@ class MessageListViewModel {
             lh.sendTime > rh.sendTime
         }
         return ret
+    }
+    
+    func canContinueAskRobot() -> Bool {
+        if !isRobot {
+            return true
+        }
+        
+        let last = messagesRelay.value.last;
+        let enabled = last == nil ||
+        last!.contentType.rawValue > 1000 ||
+        robots.contains(last!.sendID!) ||
+        (Date().timeIntervalSince1970 * 1000 - last!.sendTime) > 1 * 60 * 1000
+        
+        return enabled;
     }
 }

@@ -32,4 +32,19 @@ import Foundation
             return ""
         }
     }
+     
+     static func toMap<T: Encodable>(fromObject: T) -> [String: Any] {
+         let encoder = JSONEncoder()
+         do {
+             let data = try encoder.encode(fromObject)
+             guard let map = try? JSONSerialization.jsonObject(with: data, options: .mutableContainers) as? [String: Any] else {
+                 fatalError("check your data is encodable from utf8!")
+             }
+             
+             print("输出参数：\(map)")
+             return map
+         } catch _ {
+             return [:]
+         }
+      }
 }

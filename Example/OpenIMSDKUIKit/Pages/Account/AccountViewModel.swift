@@ -16,6 +16,7 @@ typealias CompletionHandler = (_ errCode: Int, _ errMsg: String?) -> Void
 class AccountViewModel {
     // 业务服务器地址
     static let API_BASE_URL = UserDefaults.standard.string(forKey: bussinessSeverAddrKey) ?? "https://web.rentsoft.cn/chat"
+    static let ADMIN_BASE_URL = UserDefaults.standard.string(forKey: adminSeverAddrKey)!
     
     // 实际开发，抽离网络部分
     static let IMPreLoginAccountKey = "IMPreLoginAccountKey"
@@ -29,8 +30,16 @@ class AccountViewModel {
     private static let VerifyCodeAPI = "/account/verify"
     private static let ResetPasswordAPI = "/account/reset_password"
     private static let UpdateUserInfoAPI = "/user/update_user_info"
+    private static let GetClientConfigAPI = "/admin/init/get_client_config"
     
     private let _disposeBag = DisposeBag()
+    
+    // 全局配置信息
+    static func ifQeuryConfig() {
+        OIMApi.queryConfigHandler = { (completion: @escaping ([String: Any]) -> Void) in
+            completion(AccountViewModel.clientConfig?.toMap() ?? [:])
+        }
+    }
     
     static func loginDemo(phone: String, psw: String? = nil, verificationCode: String? = nil, areaCode: String, completionHandler: @escaping CompletionHandler) {
         let body = JsonTool.toJson(fromObject: Request(phoneNumber: phone,
@@ -279,6 +288,7 @@ class AccountViewModel {
         IMController.shared.login(uid: uid, token: imToken) { resp in
             print("login onSuccess \(String(describing: resp))")
             saveUser(uid: uid, imToken: imToken, chatToken: chatToken)
+            ifQeuryConfig()
             completionHandler(0, nil)
         } onFail: { (code: Int, msg: String?) in
             let reason = "login onFail: code \(code), reason \(String(describing: msg))"
@@ -313,6 +323,30 @@ class AccountViewModel {
                           chatToken: UserDefaults.standard.string(forKey: bussinessTokenKey) ?? "",
                           expiredTime: nil)
     }
+    
+    // 获取配置
+    static func getClientConfig() {
+        let body = try! JSONSerialization.data(withJSONObject: ["operationID": UUID().uuidString], options: .prettyPrinted)
+        
+        var req = try! URLRequest(url: ADMIN_BASE_URL + GetClientConfigAPI, method: .post)
+        req.httpBody = body
+        
+        Alamofire.request(req).responseString { (response: DataResponse<String>) in
+            switch response.result {
+            case .success(let result):
+                if let res = JsonTool.fromJson(result, toClass: Response<ClientConfigData>.self) {
+                    if res.errCode == 0 {
+                        clientConfig = res.data
+                    } else {
+                    }
+                } else {}
+            case .failure(_):
+                break
+            }
+        }
+    }
+    // 配置
+    static var clientConfig: ClientConfigData?
 }
 
 extension AccountViewModel {
@@ -464,5 +498,14 @@ struct DemoError: Error, Decodable {
     var localizedDescription: String {
         let msg: String = errMsg ?? "no message"
         return "code: \(errCode), msg: \(msg)"
+    }
+}
+
+
+class ClientConfigData: Codable {
+    var robots: [String]?
+    
+    func toMap() -> [String: Any] {
+        return JsonTool.toMap(fromObject: self)
     }
 }

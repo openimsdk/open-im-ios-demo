@@ -206,6 +206,12 @@ class MessageListViewController: UIViewController {
             self?.chatBar.textInputView.resignFirstResponder()
         }).disposed(by: _disposeBag)
         view.addGestureRecognizer(tapToResignFirstResponder)
+        
+        _viewModel.onlyInputTextRelay.subscribe(onNext: { [weak self] _ in
+            guard let sself = self else { return }
+            sself.chatBar.onlyInputText(true)
+            sself.navigationItem.rightBarButtonItems = nil
+        }).disposed(by: _disposeBag)
 
         _tableView.rx.willBeginDragging.subscribe(onNext: { [weak self] in
             self?.chatBar.textInputView.resignFirstResponder()
