@@ -93,30 +93,31 @@ class MessageListViewController: UIViewController {
         return v
     }()
 
+    lazy var rightBar: UIBarButtonItem = {
+        let v = UIBarButtonItem()
+        v.image = UIImage(nameInBundle: "common_more_btn_icon")
+        v.rx.tap.subscribe(onNext: { [weak self] in
+            guard let sself = self else { return }
+            let conversationType = sself._viewModel.conversation.conversationType
+            switch conversationType {
+            case .undefine, .notification, .superGroup:
+                break
+            case .c2c:
+                let viewModel = SingleChatSettingViewModel(conversation: sself._viewModel.conversation)
+                let vc = SingleChatSettingTableViewController(viewModel: viewModel, style: .grouped)
+                self?.navigationController?.pushViewController(vc, animated: true)
+            case .group:
+                let vc = GroupChatSettingTableViewController(conversation: sself._viewModel.conversation, style: .grouped)
+                self?.navigationController?.pushViewController(vc, animated: true)
+            }
+        }).disposed(by: self._disposeBag)
+        return v
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
 
-        lazy var rightBar: UIBarButtonItem = {
-            let v = UIBarButtonItem()
-            v.image = UIImage(nameInBundle: "common_more_btn_icon")
-            v.rx.tap.subscribe(onNext: { [weak self] in
-                guard let sself = self else { return }
-                let conversationType = sself._viewModel.conversation.conversationType
-                switch conversationType {
-                case .undefine, .notification, .superGroup:
-                    break
-                case .c2c:
-                    let viewModel = SingleChatSettingViewModel(conversation: sself._viewModel.conversation)
-                    let vc = SingleChatSettingTableViewController(viewModel: viewModel, style: .grouped)
-                    self?.navigationController?.pushViewController(vc, animated: true)
-                case .group:
-                    let vc = GroupChatSettingTableViewController(conversation: sself._viewModel.conversation, style: .grouped)
-                    self?.navigationController?.pushViewController(vc, animated: true)
-                }
-            }).disposed(by: self._disposeBag)
-            return v
-        }()
         if let last = _viewModel.conversation.latestMsg {
             if last.contentType == .memberQuit, last.sendID == IMController.shared.uid {
                 navigationItem.rightBarButtonItem = nil
@@ -207,10 +208,14 @@ class MessageListViewController: UIViewController {
         }).disposed(by: _disposeBag)
         view.addGestureRecognizer(tapToResignFirstResponder)
         
-        _viewModel.onlyInputTextRelay.subscribe(onNext: { [weak self] _ in
+        _viewModel.onlyInputTextRelay.subscribe(onNext: { [weak self] r in
             guard let sself = self else { return }
-            sself.chatBar.onlyInputText(true)
-            sself.navigationItem.rightBarButtonItems = nil
+            sself.chatBar.onlyInputText(r)
+            if r {
+                sself.navigationItem.rightBarButtonItem = nil
+            } else {
+                sself.navigationItem.rightBarButtonItem = sself.rightBar
+            }
         }).disposed(by: _disposeBag)
 
         _tableView.rx.willBeginDragging.subscribe(onNext: { [weak self] in
