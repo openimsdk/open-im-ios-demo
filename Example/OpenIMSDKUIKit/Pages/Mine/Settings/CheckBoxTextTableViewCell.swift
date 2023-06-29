@@ -4,12 +4,12 @@ import UIKit
 class CheckBoxTextTableViewCell: UITableViewCell {
     let titleLabel: UILabel = {
         let v = UILabel()
-        v.font = UIFont.systemFont(ofSize: 16)
-        v.textColor = DemoUI.color_333333
+        v.font = UIFont.systemFont(ofSize: 17)
+        v.textColor = DemoUI.color_0C1C33
         return v
     }()
 
-    private let stateImageView: UIImageView = .init(image: UIImage(nameInBundle: "common_checkbox_unselected"))
+    private let stateImageView: UIImageView = UIImageView()
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -34,6 +34,6 @@ class CheckBoxTextTableViewCell: UITableViewCell {
 
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
-        stateImageView.image = selected ? UIImage(nameInBundle: "common_checkbox_selected") : UIImage(nameInBundle: "common_checkbox_unselected")
+        stateImageView.image = selected ? UIImage(named: "mine_language_check") : nil
     }
 }

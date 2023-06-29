@@ -5,7 +5,7 @@ class UnderlineButton: UIButton {
     
     let underline: UIView = {
         let v = UIView()
-        v.backgroundColor = DemoUI.color_1B72EC
+        v.backgroundColor = DemoUI.color_0089FF
         return v
     }()
     

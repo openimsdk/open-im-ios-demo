@@ -5,9 +5,11 @@ import RxSwift
 import SnapKit
 
 class ConfigCell: UITableViewCell {
-    
+    let disposeBag = DisposeBag()
     var titleLabel: UILabel = UILabel()
     var inputTextFiled: UnderlineTextField = UnderlineTextField()
+    
+    var onTextChanged: ((String?) -> Void)?
     
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -23,6 +25,13 @@ class ConfigCell: UITableViewCell {
         st.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
+        
+        inputTextFiled.rx
+            .controlEvent([.editingChanged])
+            .asObservable().subscribe(onNext: {[weak self] t in
+                self?.onTextChanged?(self?.inputTextFiled.text?.trimmingCharacters(in: .whitespacesAndNewlines))
+            })
+            .disposed(by: disposeBag)
     }
     
     required init?(coder: NSCoder) {
@@ -39,24 +48,21 @@ let sdkObjectStorageKey = "com.oimuikit.sdk.os"
 let useDomainKey = "com.oimuikit.use.domain"
 let useTLSKey = "com.oimuikit.use.TLS"
 
-let defaultIP = "198.18.3.106"
-let defaultDomain = "web.rentsoft.cn"
-
 class ConfigViewController: UIViewController {
 
     let disposeBag = DisposeBag()
 
-    let ports = [bussinessSeverAddrKey: ":10008", sdkAPIAddrKey: ":10002", sdkWSAddrKey: ":10001"]
-    let routes = [bussinessSeverAddrKey: "/chat", sdkAPIAddrKey: "/api", sdkWSAddrKey: "/msg_gateway"]
+    let ports = [bussinessSeverAddrKey: bussinessPort, sdkAPIAddrKey: sdkAPIPort, sdkWSAddrKey: sdkWSPort]
+    let routes = [bussinessSeverAddrKey: bussinessRoute, sdkAPIAddrKey: sdkAPIRoute, sdkWSAddrKey: sdkWSRoute]
     let scheme = [bussinessSeverAddrKey: "http", sdkAPIAddrKey: "http", sdkWSAddrKey: "ws"]
 
     private var severAddress = UserDefaults.standard.string(forKey: severAddressKey) ?? defaultDomain
     private var bussinessSeverAddr = UserDefaults.standard.string(forKey: bussinessSeverAddrKey) ??
-    "http://\(defaultIP):10008"
+    "http://\(defaultIP)\(bussinessPort)"
     private var sdkAPIAddr = UserDefaults.standard.string(forKey: sdkAPIAddrKey) ??
-    "http://\(defaultIP):10002"
+    "http://\(defaultIP)\(sdkAPIPort)"
     private var sdkWSAddr = UserDefaults.standard.string(forKey: sdkWSAddrKey) ??
-    "ws://\(defaultIP):10001"
+    "ws://\(defaultIP)\(sdkWSPort)"
     private var sdkObjectStorage = UserDefaults.standard.string(forKey: sdkObjectStorageKey) ??
     "minio"
     
@@ -138,6 +144,12 @@ class ConfigViewController: UIViewController {
         super.viewWillAppear(animated)
         updateIP(newValue:severAddress , force: true)
         list.reloadData()
+        navigationController?.setNavigationBarHidden(false, animated: false)
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        navigationController?.setNavigationBarHidden(true, animated: false)
     }
     
     func updateIP(index: Int = 0, newValue: String = "", force: Bool = false) {
@@ -164,8 +176,8 @@ class ConfigViewController: UIViewController {
             sdkWSAddr = (tlsSwitcher.isOn ? scheme[sdkWSAddrKey]!  + "s" : scheme[sdkWSAddrKey]!) +
             "://" + newValue +
             (domainSwitcher.isOn ? routes[sdkWSAddrKey]! : ports[sdkWSAddrKey]!)
-        }
-        else if index == 1 {
+            
+        } else if index == 1 {
             bussinessSeverAddr = (tlsSwitcher.isOn ? scheme[bussinessSeverAddrKey]!  + "s" : scheme[bussinessSeverAddrKey]!) +
             "://" + newValue +
             (domainSwitcher.isOn ? routes[bussinessSeverAddrKey]! : ports[bussinessSeverAddrKey]!)
@@ -214,7 +226,7 @@ class ConfigViewController: UIViewController {
         ud.set(tlsSwitcher.isOn, forKey: useTLSKey)
         ud.set(domainSwitcher.isOn, forKey: useDomainKey)
         ud.synchronize()
-
+        AccountViewModel.saveUser(uid: AccountViewModel.userID , imToken: nil, chatToken: nil)
         let alert = UIAlertController.init(title: nil, message: "保存成功，重启app后设置生效", preferredStyle: .alert)
         alert.addAction(.init(title: "确定", style: .cancel))
 
@@ -234,15 +246,12 @@ extension ConfigViewController: UITableViewDelegate, UITableViewDataSource {
 
         cell.titleLabel.text = item.keys.first
         cell.inputTextFiled.text = item.values.first
-        cell.inputTextFiled.rx
-            .controlEvent([.editingChanged])
-            .asObservable().subscribe(onNext: {[weak self, weak cell] t in
-                self?.updateIP(index: indexPath.row, newValue: cell?.inputTextFiled.text?.trimmingCharacters(in: .whitespacesAndNewlines) ?? "")
+        cell.onTextChanged = { [weak self] text in
+                self?.updateIP(index: indexPath.row, newValue: text ?? "")
                 if indexPath.row == 0 {
                     self?.reloadRelatedRows()
                 }
-            })
-            .disposed(by: disposeBag)
+            }
 
         cell.selectionStyle = .none
 

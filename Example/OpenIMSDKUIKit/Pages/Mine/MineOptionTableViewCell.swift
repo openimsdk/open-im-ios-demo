@@ -10,7 +10,7 @@ class MineOptionTableViewCell: UITableViewCell {
     let titleLabel: UILabel = {
         let v = UILabel()
         v.font = UIFont.systemFont(ofSize: 16)
-        v.textColor = DemoUI.color_333333
+        v.textColor = DemoUI.color_0C1C33
         return v
     }()
 

@@ -5,7 +5,7 @@ class UnderlineTextField: UITextField {
     
     let underline: UIView = {
         let v = UIView()
-        v.backgroundColor = DemoUI.color_F0F0F0
+        v.backgroundColor = DemoUI.color_0089FF
         return v
     }()
 

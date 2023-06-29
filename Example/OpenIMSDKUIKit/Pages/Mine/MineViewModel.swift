@@ -2,56 +2,42 @@
 import Foundation
 import RxRelay
 import RxSwift
-import SVProgressHUD
-import OIMUIKit
+import OUICore
 
 class MineViewModel {
-    var currentUserRelay: BehaviorRelay<UserInfo?> = .init(value: nil)
+    var currentUserRelay: BehaviorRelay<QueryUserInfo?> = .init(value: nil)
 
     private let _disposeBag = DisposeBag()
     
-
-
-    init() {
-        IMController.shared.currentUserRelay.bind(to: currentUserRelay).disposed(by: _disposeBag)
-        addListener()
+    func queryUserInfo() {
+        AccountViewModel.queryUserInfo(userIDList: [AccountViewModel.userID!],
+                                       valueHandler: { [weak self] (users: [QueryUserInfo]) in
+            guard let user: QueryUserInfo = users.first else { return }
+            self?.currentUserRelay.accept(user)
+        }, completionHandler: {(errCode, errMsg) in
+        })
     }
 
-    func updateCurrentUserInfo() {
-     
-    }
-
-    private func addListener() {}
-
-    func updateGender(_ gender: Gender) {
-        guard let user: UserInfo = currentUserRelay.value else { return }
-        user.gender = gender
-        AccountViewModel.updateUserInfo(userID: user.userID, gender: gender.rawValue) { (errCode, errMsg)  in
-            IMController.shared.currentUserRelay.accept(user)
+    func updateGender(_ gender: Gender, completion: (() -> Void)?) {
+        AccountViewModel.updateUserInfo(userID: IMController.shared.uid, gender: gender) { (errCode, errMsg) in
+            completion?()
         }
     }
 
-    func updateNickname(_ name: String) {
-        guard let user: UserInfo = currentUserRelay.value else { return }
-        user.nickname = name
-        AccountViewModel.updateUserInfo(userID: user.userID, nickname: name) { (errCode, errMsg) in
-            IMController.shared.currentUserRelay.accept(user)
+    func updateNickname(_ name: String, completion: (() -> Void)?) {
+        AccountViewModel.updateUserInfo(userID: IMController.shared.uid, nickname: name) { (errCode, errMsg) in
+            completion?()
         }
     }
 
-    func updateBirthday(timeStampSeconds: Int) {
-        guard let user: UserInfo = currentUserRelay.value else { return }
-        user.birth = timeStampSeconds
-        AccountViewModel.updateUserInfo(userID: user.userID, birth: timeStampSeconds) { (errCode, errMsg) in
-            IMController.shared.currentUserRelay.accept(user)
+    func updateBirthday(timeStampSeconds: Int, completion: (() -> Void)?) {
+        AccountViewModel.updateUserInfo(userID: IMController.shared.uid, birth: timeStampSeconds * 1000) { (errCode, errMsg) in
+            completion?()
         }
     }
 
     func updateFaceURL(url: String, onComplete: @escaping () -> Void) {
-        guard let user: UserInfo = currentUserRelay.value else { return }
-        user.faceURL = url
-        AccountViewModel.updateUserInfo(userID: user.userID, faceURL: url) { (errCode, errMsg) in
-            IMController.shared.currentUserRelay.accept(user)
+        AccountViewModel.updateUserInfo(userID: IMController.shared.uid, faceURL: url) { (errCode, errMsg) in
             onComplete()
         }
     }
@@ -64,8 +50,8 @@ class MineViewModel {
         })
     }
 
-    func uploadFile(fullPath: String, onProgress: @escaping (Int) -> Void, onComplete: @escaping () -> Void) {
-        IMController.shared.uploadFile(fullPath: fullPath, onProgress: onProgress) { [weak self] (url: String?) in
+    func uploadFile(fullPath: String, onProgress: @escaping (CGFloat) -> Void, onComplete: @escaping () -> Void) {
+        IMController.shared.uploadFile(fullPath: fullPath, onProgress: onProgress) { [weak self] url in
             if let url = url {
                 self?.updateFaceURL(url: url, onComplete: onComplete)
             }

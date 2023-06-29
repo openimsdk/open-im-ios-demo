@@ -1,12 +1,13 @@
 
-import UIKit
-import OIMUIKit
+import OUIIM
+import OUICore
+import OpenIMSDK
 import RxSwift
 import RxCocoa
-import SVProgressHUD
+import ProgressHUD
 import Localize_Swift
-import OpenIMSDK
 import MJExtension
+//import GTSDK
 
 class MainTabViewController: UITabBarController {
     private let _disposeBag = DisposeBag()
@@ -25,7 +26,7 @@ class MainTabViewController: UITabBarController {
             if unread == 0 {
                 badge = nil
             } else if unread > 99 {
-                badge = "..."
+                badge = "99+"
             } else {
                 badge = String(unread)
             }
@@ -70,14 +71,14 @@ class MainTabViewController: UITabBarController {
         if let uid = UserDefaults.standard.object(forKey: AccountViewModel.IMUidKey) as? String,
            let token = UserDefaults.standard.object(forKey: AccountViewModel.IMTokenKey) as? String,
            let chatToken = UserDefaults.standard.object(forKey: AccountViewModel.bussinessTokenKey) as? String {
-            SVProgressHUD.show()
+            ProgressHUD.show()
             AccountViewModel.loginIM(uid: uid, imToken: token, chatToken: chatToken) {[weak self] (errCode, errMsg) in
                 if errMsg != nil {
-                    SVProgressHUD.showError(withStatus: String(errCode).localized())
+                    ProgressHUD.showError(errMsg)
                     self?.presentLoginController()
                 } else {
-                    SVProgressHUD.dismiss()
-                    self?.dismiss(animated: true)
+                    self?.pushBindAlias()
+                    ProgressHUD.dismiss()
                 }
             }
         } else {
@@ -90,27 +91,38 @@ class MainTabViewController: UITabBarController {
     }
     
     @objc private func presentLoginController() {
-        
+        self.selectedIndex = 0
+        pushBindAlias(false)
         let vc = LoginViewController()
         vc.loginBtn.rx.tap.subscribe(onNext: { [weak vc, weak self] in
             guard let controller = vc, let phone = controller.phone, !phone.isEmpty else { return }
             
             guard let phone = controller.phone, !phone.isEmpty else {
-                SVProgressHUD.showError(withStatus: "填写正确的手机号码")
+                ProgressHUD.showError("填写正确的手机号码")
                 return
             }
             
             let psw = controller.password
+            let code = controller.verificationCode
             
-            SVProgressHUD.show()
+            guard psw?.isEmpty == false || code?.isEmpty == false else {
+                ProgressHUD.showError("填写正确的密码/验证码")
+                return
+            }
+            var account: String?
+
+            ProgressHUD.show()
             AccountViewModel.loginDemo(phone: phone,
-                                       psw: psw ?? "",
-                                       areaCode: "+86") {[weak self] (errCode, errMsg) in
+                                       account: account,
+                                       psw: code != nil ? nil : psw,
+                                       verificationCode: code,
+                                       areaCode: controller.areaCode) {[weak self] (errCode, errMsg) in
                 if errMsg != nil {
-                    SVProgressHUD.showError(withStatus: String(errCode).localized())
+                    ProgressHUD.showError(errMsg)
                     self?.presentLoginController()
                 } else {
-                    SVProgressHUD.dismiss()
+                    self?.pushBindAlias()
+                    ProgressHUD.dismiss()
                     self?.dismiss(animated: true)
                 }
             }
@@ -121,6 +133,12 @@ class MainTabViewController: UITabBarController {
         nav.modalPresentationStyle = .fullScreen
         
         self.present(nav, animated: false)
+    }
+    
+    func pushBindAlias(_ bind: Bool = true) {
+        if let userID = AccountViewModel.userID {
+//            bind ? GeTuiSdk.bindAlias(userID, andSequenceNum: "im") : GeTuiSdk.unbindAlias(userID, andSequenceNum: "im", andIsSelf: true)
+        }
     }
 }
 
