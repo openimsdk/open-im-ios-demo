@@ -4,6 +4,7 @@ iOS client for [OpenIM](https://github.com/OpenIMSDK/Open-IM-Server) in Swift.
 
 ### Demo内容
 Demo 是基于 Open-IM SDK 实现的一套 UI 组件，其包含会话、聊天、关系链、群组等功能，基于 UI 组件您可以快速搭建起自己的业务逻辑。
+请使用最v3版本的服务端。
 
 ### 直接testflight下载app体验
 
