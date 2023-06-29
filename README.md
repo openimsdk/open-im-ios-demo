@@ -45,7 +45,6 @@ Demo 是基于 Open-IM SDK 实现的一套 UI 组件，其包含会话、聊天�
 ### Demo主要实现步骤介绍
 
 常用的聊天软件都是由会话列表、聊天窗口、好友列表、音视频通话等几个基本的界面组成，参考下面步骤，您仅需几行代码即可在项目中快速搭建这些 UI 界面。
-音视频通话，目前原生暂未支持，后续会增加。
     
 步骤一：初始化SDK，设置ip：
 1. 举例
@@ -54,7 +53,7 @@ Demo 是基于 Open-IM SDK 实现的一套 UI 组件，其包含会话、聊天�
         // IM服务器的地址，OpenIM SDK使用
         IMController.shared.setup(apiAdrr: "http://xxxx:10002",
                                   wsAddr: "ws://xxxx:10001",
-                                  os: "xxx")
+                                  os: "minio")
     }
     ```
 
@@ -66,7 +65,7 @@ Demo 是基于 Open-IM SDK 实现的一套 UI 组件，其包含会话、聊天�
     // 1: 登录自己的业务服务器，获取userID 和 token；
     
     // 业务服务器地址 Pages/LoginViewModel.swift
-    let API_BASE_URL = "http://xxx:10004/";
+    let API_BASE_URL = "http://xxx/";
 
     static func loginDemo(phone: String, pwd: String, completionHandler: @escaping ((_ errMsg: String?) -> Void)) {
         let body = JsonTool.toJson(fromObject: Request.init(phoneNumber: phone, pwd: pwd)).data(using: .utf8)
