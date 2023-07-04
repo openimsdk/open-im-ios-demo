@@ -52,8 +52,8 @@ Demo 是基于 Open-IM SDK 实现的一套 UI 组件，其包含会话、聊天�
     ```ruby
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // IM服务器的地址，OpenIM SDK使用
-        IMController.shared.setup(apiAdrr: "http://xxxx:10002",
-                                  wsAddr: "ws://xxxx:10001",
+        IMController.shared.setup(apiAdrr: "",
+                                  wsAddr: "",
                                   os: "minio")
     }
     ```
