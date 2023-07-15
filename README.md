@@ -1,4 +1,4 @@
-<img src="https://github.com/OpenIMSDK/OpenIM-Docs/blob/main/docs/images/WechatIMG20.jpeg" alt="image" style="width: 200px; " />
+<img src="https://openim-1253691595.cos.ap-nanjing.myqcloud.com/WechatIMG20.jpeg" alt="image" style="width: 200px; " />
 # Open-IM-iOS-Demo: OpenIM Messaging Client for iOS
 iOS client for [OpenIM](https://github.com/OpenIMSDK/Open-IM-Server) in Swift.
 
