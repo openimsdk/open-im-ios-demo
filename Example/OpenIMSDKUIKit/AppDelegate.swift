@@ -9,7 +9,7 @@ let kGtAppKey = ""
 let kGtAppSecret = ""
 
 // 默认使用的IP或者域名
-let defaultHost = "web.rentsoft.cn" // 填入host
+let defaultHost = "203.56.175.233" // 填入host
 
 // 设置页用到的默认IP或域名，在设置页保存以后，defaultHost将失效
 let defaultIP = "127.0.0.1"
@@ -37,7 +37,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         UINavigationBar.appearance().tintColor = .c0C1C33
         // 主要配置这里，注意http 与 https、 ws 与 wss之分，IP 用端口， 域名用路由
         let enableTLS = UserDefaults.standard.object(forKey: useTLSKey) == nil
-        ? true : UserDefaults.standard.bool(forKey: useTLSKey)
+        ? false : UserDefaults.standard.bool(forKey: useTLSKey)
         
         let httpScheme = enableTLS ? "https://" : "http://"
         let wsScheme = enableTLS  ? "wss://" : "ws://"
@@ -47,7 +47,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
 //        let isIP = predicate.evaluate(with: defaultHost)
         
         let enableDomain = UserDefaults.standard.object(forKey: useDomainKey) == nil
-        ? true : UserDefaults.standard.bool(forKey: useDomainKey)
+        ? false : UserDefaults.standard.bool(forKey: useDomainKey)
         
         // -------设置各种base url-------
         
