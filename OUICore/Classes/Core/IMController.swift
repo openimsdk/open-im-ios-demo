@@ -924,12 +924,12 @@ extension IMController {
     }
     
     public func uploadFile(fullPath: String, onProgress: @escaping CallBack.ProgressReturnVoid, onSuccess: @escaping CallBack.StringOptionalReturnVoid) {
-        Self.shared.imManager.putFile(fullPath, putID: nil, name: nil) { c, t in
-            
-        } onProgress: { save, current, total in
+        Self.shared.imManager.uploadFile(fullPath,
+                                         name: nil,
+                                         cause: nil) { save, current, total in
             let p = CGFloat(current) / CGFloat(total)
             onProgress(p)
-        } onCompletion: { c, t in
+        } onCompletion: { c, u, t  in
             
         } onSuccess: { r in
             let dic = try! JSONSerialization.jsonObject(with: r!.data(using: .utf8)!, options: .allowFragments) as! [String: Any]
@@ -1070,7 +1070,7 @@ extension IMController {
     }
     
     public func getLoginUserID() -> String {
-        return imManager.getLoginUid()
+        return imManager.getLoginUserID()
     }
 }
 
@@ -2958,25 +2958,6 @@ extension OIMInvitationResultInfo {
         item.roomID = roomID
         item.liveURL = liveURL
         item.token = token
-        
-        return item
-    }
-}
-
-extension OIMMomentsInfo {
-    func toMomentsNewMessageInfo() -> MomentsNewMessageInfo {
-        let item = MomentsNewMessageInfo()
-        item.replyUserID = replyUserID
-        item.replyUserName = replyUserName
-        item.content = content
-        item.contentID = contentID
-        item.createTime = createTime
-        item.faceURL = faceURL
-        item.notificationMsgType = notificationMsgType
-        item.userID = userID
-        item.userName = userName
-        item.workMomentContent = workMomentContent
-        item.workMomentID = workMomentID
         
         return item
     }

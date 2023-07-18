@@ -1,11 +1,11 @@
 PODS:
   - Alamofire (4.9.1)
-  - ChatLayout (1.3.0):
-    - ChatLayout/Ultimate (= 1.3.0)
-  - ChatLayout/Core (1.3.0)
-  - ChatLayout/Extras (1.3.0):
+  - ChatLayout (1.3.2):
+    - ChatLayout/Ultimate (= 1.3.2)
+  - ChatLayout/Core (1.3.2)
+  - ChatLayout/Extras (1.3.2):
     - ChatLayout/Core
-  - ChatLayout/Ultimate (1.3.0):
+  - ChatLayout/Ultimate (1.3.2):
     - ChatLayout/Core
     - ChatLayout/Extras
   - DifferenceKit (1.3.0):
@@ -32,44 +32,44 @@ PODS:
   - MJExtension (3.4.1)
   - MJRefresh (3.7.5)
   - MMBAlertsPickers (1.1.93)
-  - OpenIMSDK (3.0.0-beta):
+  - OpenIMSDK (3.0.0):
     - MJExtension
-    - OpenIMSDK/Callbacker (= 3.0.0-beta)
-    - OpenIMSDK/CallbackProxy (= 3.0.0-beta)
-    - OpenIMSDK/Interface (= 3.0.0-beta)
-    - OpenIMSDK/Model (= 3.0.0-beta)
-    - OpenIMSDK/Utils (= 3.0.0-beta)
-    - OpenIMSDKCore (= 3.0.0-beta)
-  - OpenIMSDK/Callbacker (3.0.0-beta):
+    - OpenIMSDK/Callbacker (= 3.0.0)
+    - OpenIMSDK/CallbackProxy (= 3.0.0)
+    - OpenIMSDK/Interface (= 3.0.0)
+    - OpenIMSDK/Model (= 3.0.0)
+    - OpenIMSDK/Utils (= 3.0.0)
+    - OpenIMSDKCore (= 3.0.0)
+  - OpenIMSDK/Callbacker (3.0.0):
     - MJExtension
     - OpenIMSDK/Model
     - OpenIMSDK/Utils
-    - OpenIMSDKCore (= 3.0.0-beta)
-  - OpenIMSDK/CallbackProxy (3.0.0-beta):
+    - OpenIMSDKCore (= 3.0.0)
+  - OpenIMSDK/CallbackProxy (3.0.0):
     - MJExtension
     - OpenIMSDK/Utils
-    - OpenIMSDKCore (= 3.0.0-beta)
-  - OpenIMSDK/Interface (3.0.0-beta):
+    - OpenIMSDKCore (= 3.0.0)
+  - OpenIMSDK/Interface (3.0.0):
     - MJExtension
     - OpenIMSDK/Callbacker
     - OpenIMSDK/CallbackProxy
     - OpenIMSDK/Model
-    - OpenIMSDKCore (= 3.0.0-beta)
-  - OpenIMSDK/Model (3.0.0-beta):
+    - OpenIMSDKCore (= 3.0.0)
+  - OpenIMSDK/Model (3.0.0):
     - MJExtension
     - OpenIMSDK/Utils
-    - OpenIMSDKCore (= 3.0.0-beta)
-  - OpenIMSDK/Utils (3.0.0-beta):
+    - OpenIMSDKCore (= 3.0.0)
+  - OpenIMSDK/Utils (3.0.0):
     - MJExtension
-    - OpenIMSDKCore (= 3.0.0-beta)
-  - OpenIMSDKCore (3.0.0-beta)
+    - OpenIMSDKCore (= 3.0.0)
+  - "OpenIMSDKCore (3.0.0+1)"
   - OUICore (0.0.1):
     - Alamofire (= 4.9.1)
     - IQKeyboardManagerSwift
     - Kingfisher (= 7.7.0)
     - Localize-Swift (~> 3.2)
     - lottie-ios (~> 3.0)
-    - OpenIMSDK (= 3.0.0-beta)
+    - OpenIMSDK (= 3.0.0)
     - ProgressHUD
     - RxCocoa (~> 6.0)
     - RxDataSources
@@ -91,7 +91,7 @@ PODS:
     - RxRelay
     - RxSwift
     - SnapKit
-  - ProgressHUD (13.6.2)
+  - ProgressHUD (13.7.2)
   - RxCocoa (6.5.0):
     - RxRelay (= 6.5.0)
     - RxSwift (= 6.5.0)
@@ -163,7 +163,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Alamofire: 85e8a02c69d6020a0d734f6054870d7ecb75cf18
-  ChatLayout: 620aaa4cf30ce188cef80eb1dad391c9c250c5e2
+  ChatLayout: 74d37708a68aa487b52fb4ef018b216df8cc28ae
   DifferenceKit: ab185c4d7f9cef8af3fcf593e5b387fb81e999ca
   Differentiator: e8497ceab83c1b10ca233716d547b9af21b9344d
   InputBarAccessoryView: 1d7b0a672b36e370f01f264b3907ef39d03328e3
@@ -176,12 +176,12 @@ SPEC CHECKSUMS:
   MJExtension: 21c5f6f8c4d5d8844b7ae8fbae08fed0b501f961
   MJRefresh: fdf5e979eb406a0341468932d1dfc8b7f9fce961
   MMBAlertsPickers: d52d288114c7dad4e4f1282fb2b1f1189ccc117a
-  OpenIMSDK: fa749ded7f8a5a5112158d7898b2cd98703827d8
-  OpenIMSDKCore: 4f3815fe8e0a6ef4130894afd2e8ad4d343df66e
-  OUICore: 81d319d0caec5bcc94377a826d85bf64c4930f16
+  OpenIMSDK: 6fe41871340af1360008c5710248818aba1861cc
+  OpenIMSDKCore: 2e38a5b9be23e588b5049ebd378161cf277e41a0
+  OUICore: bbf773201928292188ebf7dcc5b2bdc392f97a26
   OUICoreView: 005ec463b1f1b6346fdd85da447187a65395f337
   OUIIM: b52a5b47396a785f7f8aad511477d49ecc0b9b66
-  ProgressHUD: 355915c8f033e626788fa9b0d99d06e8691595ab
+  ProgressHUD: 093d24ca970f191744017bee2649e37d0cd1c5b9
   RxCocoa: 94f817b71c07517321eb4f9ad299112ca8af743b
   RxDataSources: aa47cc1ed6c500fa0dfecac5c979b723542d79cf
   RxGesture: f3efb47ed2d26a8082f7b660d4a59970e275a7f8
@@ -194,4 +194,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 976fcfbc9f09554bf6cc942541e87de8486d8399
 
-COCOAPODS: 1.11.3
+COCOAPODS: 1.12.1
