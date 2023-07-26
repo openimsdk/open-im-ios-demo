@@ -13,9 +13,9 @@ Demo 是基于 Open-IM SDK 实现的一套 UI 组件，其包含会话、聊天�
 ### 源代码体验
 
 1. 开发环境要求
-    Xcode 10 及以上
+    Xcode 14 及以上
     
-    iOS 11 及以上（后续提高iOS13及以上）
+    iOS 13 及以上
 
 2. git clone：
     ```ruby
