@@ -1,33 +1,43 @@
-<img src="https://openim-1253691595.cos.ap-nanjing.myqcloud.com/WechatIMG20.jpeg" alt="image" style="width: 200px; " />
+<p align="center">
+    <a href="https://www.openim.online">
+        <img src="https://github.com/openimsdk/openim-electron-demo/blob/main/docs/images/openim-logo.gif" width="60%" height="30%"/>
+    </a>
+</p>
 
-# Open-IM-iOS-Demo: 
+# OpenIM iOS Demo 💬💻
 
-OpenIM Messaging Client for [OpenIM](https://github.com/OpenIMSDK/Open-IM-Server) in Swift.
+<p>
+  <a href="https://doc.rentsoft.cn/">OpenIM Docs</a>
+  •
+  <a href="https://github.com/openimsdk/open-im-server">OpenIM Server</a>
+  •
+  <a href="https://github.com/openimsdk/open-im-sdk-ios">openim-sdk-ios</a>
+  •
+  <a href="https://github.com/openimsdk/openim-sdk-core">openim-sdk-core</a>
+</p>
 
-### Demo content
-Demo is a set of UI components implemented based on Open-IM SDK, which includes functions such as conversation, chat, relationship chain, group, etc. Based on UI components, you can quickly build your own business logic.
-Please use the latest v3 version of the server.
+<br>
 
-### Direct testflight download app experience
+OpenIM iOS Demo is a set of UI components implemented based on Open-IM SDK, which includes functions such as conversation, chat, relationship chain, group, etc. Based on UI components, you can quickly build your own business logic.
 
-<img src="https://github.com/OpenIMSDK/OpenIM-Docs/blob/main/docs/images/ios_native.png" alt="image" style="width: 200px; " />
+## Experience app 🌐
 
-### Source code experience
+<img src="https://www.openim.online/_next/image?url=/fonts/native_ios_qrcode_c_e.png&w=256&q=75" alt="image" style="width: 200px; " />.
+
+## Dev Setup 🛠️
 
 1. Development environment requirements
-     Xcode 14 and above
+     + Xcode 14 and above
     
-     iOS 13 and above
+     + The minimum deployment target is iOS 13.0.
 
-2. git clone:
+2. Git Clone:
      ```ruby
      https://github.com/OpenIMSDK/Open-IM-iOS-Demo.git
      ```
 
 3. Execute the following command on the terminal to install the dependent library.
-
      ```ruby
-     //iOS
      cd Open-IM-iOS-Demo/Example
      pod install
      ```
@@ -36,44 +46,36 @@ Please use the latest v3 version of the server.
      pod repo update
      ```
 5. Compile and run:
-
      Enter the Open-IM-iOS-Demo/Example folder, open OpenIMSDKUIKit.xcworkspace to compile and run.
     
 6. Experience your own server
- 
-      6.1 If you have built OpenIM Server yourself, you can modify the server in the file [AppDelegate.swift](https://github.com/OpenIMSDK/Open-IM-iOS-Demo/blob/main/Example/OpenIMSDKUIKit/AppDelegate.swift) The address is the server address built by yourself;
+      6.1 If you have [Deploy OpenIM Server](https://github.com/openimsdk/open-im-server#rocket-quick-start) yourself, you can modify the server in the file [AppDelegate.swift](https://github.com/OpenIMSDK/Open-IM-iOS-Demo/blob/main/Example/OpenIMSDKUIKit/AppDelegate.swift) The address is the server address built by yourself;
 
      6.2 After downloading the app from testflight, click "Welcome to OpenIM" on the [Login] page to enter the setting page, make relevant settings, save and restart to use.
-    
-### Demo main implementation steps introduction
+7. Start development! 🎉
 
-Commonly used chat software is composed of several basic interfaces such as session list, chat window, friend list, audio and video calls, etc. Refer to the following steps, you only need a few lines of code to quickly build these UI interfaces in the project.
+## Usage 🚀
+
+> Commonly used chat software is composed of several basic interfaces such as session list, chat window, friend list, audio and video calls, etc. Refer to the following steps, you only need a few lines of code to quickly build these UI interfaces in the project.
     
-Step 1: Initialize SDK, set ip:
-1. Example
-     ```ruby
-     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-         // The address of the IM server, used by the OpenIM SDK
-         IMController.shared.setup(apiAdrr: "",
-                                   wsAddr: "",
-                                   os: "minio")
-     }
-     ```
+Step 1: Change your own server IP address:
+> [AppDelegate.swift](https://github.com/OpenIMSDK/Open-IM-iOS-Demo/blob/main/Example/OpenIMSDKUIKit/AppDelegate.swift)
+   ```ruby
+   // Default IP address to be used
+   let defaultHost = ""; // Replace with the desired host
+   ```
 
 Step 2: Login
-1. Log in to your own business server to obtain userID and token;
-2. Use 1. to obtain userID and token to log in to the IM server;
-3. Example:
-     ```ruby
-     // 1: Log in to your own business server to obtain userID and token;
-    
-     // Business server address Pages/LoginViewModel.swift
-     let API_BASE_URL = "http://xxx/";
+> 1. Log in to your own business server to obtain userID and token;
+> 2. Use 1. to obtain userID and token to log in to the IM server;
+
+   ```ruby
+   // 1: Log in to your own business server to obtain userID and token;
 
      static func loginDemo(phone: String, pwd: String, completionHandler: @escaping ((_ errMsg: String?) -> Void)) {
          let body = JsonTool.toJson(fromObject: Request.init(phoneNumber: phone, pwd: pwd)).data(using: .utf8)
         
-         var req = try! URLRequest.init(url: API_BASE_URL + LoginAPI, method: .post)
+         var req = try! URLRequest.init(url: "your login api", method: .post)
          req.httpBody = body
         
          Alamofire.request(req).responseString { (response: DataResponse<String>) in
@@ -96,9 +98,9 @@ Step 2: Login
              }
          }
      }
-     ```
+   ```
         
-     ```ruby
+   ```ruby
      static func loginIM(uid: String, token: String, completionHandler: @escaping ((_ errMsg: String?) -> Void)) {
          IMController.shared.login(uid: uid, token: token) { resp in
              print("login onSuccess \(String(describing: resp))")
@@ -108,11 +110,11 @@ Step 2: Login
              completionHandler(reason)
          }
      }
-     ```
+   ```
     
 Step 3: Construct conversation list, chat window, address book interface, settings:
-1. Example
-     ```ruby
+
+   ```ruby
      // session list
      let chat = ChatListViewController()
      // chat window
@@ -121,26 +123,27 @@ Step 3: Construct conversation list, chat window, address book interface, settin
      let contactVC = ContactsViewController()
      // set up
      let mineNav = MineViewController()
-     ```
+   ```
 
+## Community :busts_in_silhouette:
 
-### common problem
+- 📚 [OpenIM Community](https://github.com/OpenIMSDK/community)
+- 💕 [OpenIM Interest Group](https://github.com/Openim-sigs)
+- 🚀 [Join our Slack community](https://join.slack.com/t/openimsdk/shared_invite/zt-22720d66b-o_FvKxMTGXtcnnnHiMqe9Q)
+- :eyes: [Join our wechat (微信群)](https://openim-1253691595.cos.ap-nanjing.myqcloud.com/WechatIMG20.jpeg)
 
-1. Reminder: "resource loading is not complete" is returned when calling sdk-related API
-     If this problem occurs, you need to call other APIs after the callback of login.
+## Community Meetings :calendar:
 
-2. Reminder: "target has transitive dependencies that include statically linked binaries"?
-     If this error occurs during the pod process, it is because UIKit uses a third-party static library, and you need to comment out use_frameworks! in the podfile.
-     If you need to use use_frameworks! under certain circumstances, please use cocoapods 1.9.0 and above to perform pod install and modify it to:
-     ```ruby
-         use_frameworks! :linkage => :static
-     ```
-     If you are using swift, please change the header file reference to @import module name form reference.
-3. Reminder: Some developers found that the current M1 chip build will report an error, but it will be normal after adding arm64, and the real machine will be normal after removing arm64.
-![WeChat53896c52f31d22703d323db7aacfeba7](https://user-images.githubusercontent.com/99468005/177078181-7c7614b6-4282-4f1f-bf4a-e7af105ec4b6.png)
-4. Reminder: Some developers have found that the error "Cannot find xxx module" can be solved by doing the following:
-     ```ruby
-     pod deintegrate;
-     Clean (Command + K);
-     pod install/update
-     ```
+We want anyone to get involved in our community and contributing code, we offer gifts and rewards, and we welcome you to join us every Thursday night.
+
+Our conference is in the [OpenIM Slack](https://join.slack.com/t/openimsdk/shared_invite/zt-22720d66b-o_FvKxMTGXtcnnnHiMqe9Q) 🎯, then you can search the Open-IM-Server pipeline to join
+
+We take notes of each [biweekly meeting](https://github.com/orgs/OpenIMSDK/discussions/categories/meeting) in [GitHub discussions](https://github.com/openimsdk/open-im-server/discussions/categories/meeting), Our historical meeting notes, as well as replays of the meetings are available at [Google Docs :bookmark_tabs:](https://docs.google.com/document/d/1nx8MDpuG74NASx081JcCpxPgDITNTpIIos0DS6Vr9GU/edit?usp=sharing).
+
+## Who are using OpenIM :eyes:
+
+Check out our [user case studies](https://github.com/OpenIMSDK/community/blob/main/ADOPTERS.md) page for a list of the project users. Don't hesitate to leave a [📝comment](https://github.com/openimsdk/open-im-server/issues/379) and share your use case.
+
+## License :page_facing_up:
+
+OpenIM is licensed under the Apache 2.0 license. See [LICENSE](https://github.com/openimsdk/open-im-server/tree/main/LICENSE) for the full license text.
