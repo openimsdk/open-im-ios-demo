@@ -57,7 +57,7 @@ class UserDetailViewModel {
         
         if let groupId = groupId, !groupId.isEmpty, userDetailFor == .groupMemberInfo {
             group.enter()
-            // 如果群聊点击的是自己
+                
             var isSelf = IMController.shared.uid == userId
             IMController.shared.getGroupMembersInfo(groupId: groupId,
                                                     uids: isSelf ? [userId] : [IMController.shared.uid, userId]) { [weak self] (members: [GroupMemberInfo]) in

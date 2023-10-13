@@ -87,7 +87,7 @@ class ApplicationViewController: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .viewBackgroundColor
         
-        // 名字区域
+            
         let bStack = UIStackView(arrangedSubviews: [nickNameLabel, companyLabel])
         bStack.axis = .vertical
         bStack.spacing = 4

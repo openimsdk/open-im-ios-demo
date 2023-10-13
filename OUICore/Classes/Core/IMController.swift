@@ -81,9 +81,6 @@ public class IMController: NSObject {
     public let joinedGroupDeleted: BehaviorSubject<GroupInfo?> = .init(value: nil)
     public let msgRevokeReceived: PublishSubject<MessageRevoked> = .init()
     public let currentUserRelay: BehaviorRelay<UserInfo?> = .init(value: nil)
-    public let momentsReceivedSubject: PublishSubject<String?> = .init()
-    public let meetingStreamChange: PublishSubject<MeetingStreamEvent> = .init()
-    public let organizationUpdated: PublishSubject<String?> = .init()
     // 连接状态
     public let connectionRelay: BehaviorRelay<ConnectionStatus> = .init(value: .connecting)
     
@@ -1071,65 +1068,6 @@ extension IMController {
     
     public func getLoginUserID() -> String {
         return imManager.getLoginUserID()
-    }
-}
-
-// MARK: - Signaling方法
-
-extension IMController {
-    public func getRoomSignalingInfoByGroupID(groupID: String, onSuccess: @escaping CallBack.GroupSignalingInfoReturnVoid) {
-
-    }
-    
-    public func signalingGetInvitation(by roomID : String, onSuccess: @escaping CallBack.SignalingInfoOptionalReturnVoid) {
-
-    }
-    
-    public func signalingCreateMeeting(name: String, startTime: Double, duration: Double, onSuccess: @escaping CallBack.SignalingInfoOptionalReturnVoid, onFailure: CallBack.ErrorOptionalReturnVoid?) {
-
-    }
-    
-    public func signalingJoinMeeting(meetingID: String, meetingName: String? = nil, participantNickname: String? = nil, onSuccess: @escaping CallBack.SignalingInfoOptionalReturnVoid, onFailure: @escaping CallBack.ErrorOptionalReturnVoid) {
-
-    }
-    
-    public func signalingCloseMeeting(meetingID: String, onSuccess: @escaping CallBack.StringOptionalReturnVoid, onFailure: @escaping CallBack.ErrorOptionalReturnVoid) {
-
-    }
-    
-    public func signalingUpdateMeetingInfo(meetingID: String, param: [String: Any], onSuccess: @escaping CallBack.StringOptionalReturnVoid) {
-
-    }
-    
-    /**
-     会议室 管理员对指定的某一个入会人员设置禁言
-     @param roomID 会议ID
-     @param userID 目标的用户ID
-     @param streamType video/audio
-     @param mute YES：禁言
-     @param muteAll video/audio 一起设置
-     */
-    public func signalingOperateStream(meetingID: String, userID: String, streamType: String? = nil, mute: Bool = true, muteAll: Bool = false, onSuccess: @escaping CallBack.StringOptionalReturnVoid) {
-
-    }
-    
-    public func signalingGetMeetings(onSuccess: @escaping CallBack.MeetingReturnVoid) {
-
-    }
-}
-
-// MARK: - Moments方法
-extension IMController {
-    public func getWorkMomentsNotification(offset: Int = 0, count: Int = 10000, onSuccess: @escaping CallBack.MomentsNewMessageReturnVoid) {
-
-    }
-    
-    public func getMomentsUnReadCountWith(onSuccess: @escaping CallBack.ProgressReturnVoid) {
-
-    }
-    
-    public func clearWorkMomentsNotificationWith(onSuccess: @escaping CallBack.StringOptionalReturnVoid) {
-
     }
 }
 
@@ -2140,181 +2078,6 @@ public class SearchUserInfo: FriendInfo {
     public var relationship: Relationship = .friends
 }
 
-public class InvitationResultInfo: Codable {
-    public var token: String?
-    public var liveURL: String?
-    public var roomID: String?
-}
-
-public class MomentsNewMessageInfo: Codable {
-    
-    // 新消息的
-    // 0为普通评论 1为被喜欢 2为AT提醒看的朋友圈
-    public var notificationMsgType: Int = 0
-    public var workMomentContent: String = ""
-    public var replyUserName: String?
-    public var replyUserID: String?
-    
-    public var workMomentID: String = ""
-    public var content: String?
-    public var contentID: String?
-    public var userName: String = ""
-    public var faceURL: String?
-    public var createTime: Double = 0
-    public var userID: String = ""
-}
-
-
-class MeetingInfoList: Codable {
-    public var meetingInfoList: [MeetingInfo] = []
-}
-
-open class MeetingInfo: Codable {
-    public var roomID: String?
-    public var meetingID: String = ""
-    public var meetingName: String = ""
-    public var hostUserID: String?
-    public var createTime: Double = 0
-    public var startTime: Double = 0
-    public var endTime: Double = 0
-    public var participantCanUnmuteSelf: Bool? // 成员是否能开启音频
-    public var participantCanEnableVideo: Bool? // 成员是否能开启视频
-    public var onlyHostInviteUser: Bool? //仅主持人可邀请用户
-    public var joinDisableVideo: Bool? //加入是否默认关视频
-    public var isMuteAllMicrophone: Bool? // 是否全员禁用麦克风
-    public var inviteeUserIDList: [String]? //邀请列表
-    public var onlyHostShareScreen: Bool?  //仅主持人可共享屏幕
-    public var joinDisableMicrophone: Bool?  //加入是否默认关麦克风
-    public var isMuteAllVideo: Bool? // 是否全员禁用视频
-    public var canScreenUserIDList: [String]? // 可共享屏幕的ID列表
-    public var disableMicrophoneUserIDList: [String]? // 当前被禁言麦克风的id列表
-    public var disableVideoUserIDList: [String]? // 当前禁用视频流的ID列表
-    public var pinedUserIDList: [String]? // 置顶ID列表
-    public var beWatchedUserIDList: [String]? // 正在被观看用户列表
-    
-    // 增加/删除相关ID
-    public var addCanScreenUserIDList: [String]?
-    public var reduceCanScreenUserIDList: [String]?
-    public var addDisableMicrophoneUserIDList: [String]?
-    public var reduceDisableMicrophoneUserIDList: [String]?
-    public var addDisableVideoUserIDList: [String]?
-    public var reduceDisableVideoUserIDList: [String]?
-    public var addPinedUserIDList: [String]?
-    public var reducePinedUserIDList: [String]?
-    public var addBeWatchedUserIDList: [String]?
-    public var reduceBeWatchedUserIDList: [String]?
-    
-    public var ex: String?
-    
-    public var hostUserName: String?
-    
-    public init() {
-        
-    }
-}
-
-public class MeetingStreamEvent: Codable {
-    public var meetingID: String = ""
-    public var streamType: String?
-    public var mute: Bool = false
-}
-
-
-/// 部门信息
-///
-open class DepartmentInfo : Decodable {
-    public var departmentID: String?
-    public var faceURL: String?
-    public var name: String?
-    public var relatedGroupID: String?
-    /// 上一级部门id
-    public var parentID: String?
-    public var order: Int?
-    /// 部门类型
-    public var departmentType: Int?
-    public var createTime: Double?
-    /// 子部门数量
-    public var subDepartmentNum: Int?
-    /// 成员数量
-    public var memberNum: Int?
-    public var ex: String?
-    /// 附加信息
-    public var attachedInfo: String?
-}
-
-/// 部门成员信息
-///
-public class DepartmentMemberInfo : Decodable {
-    public var userID: String?
-    public var nickname: String?
-    public var englishName: String?
-    public var faceURL: String?
-    public var gender: Int?
-    /// 手机号
-    public var mobile: String?
-    /// 座机
-    public var telephone: String?
-    public var birth: Int?
-    public var email: String?
-    /// 所在部门的id
-    public var departmentID: String?
-    /// 排序方式
-    public var order: Int?
-    /// 职位
-    public var position: String?
-    /// 是否是领导
-    public var leader: Int?
-    public var status: Int?
-    public var createTime: Double?
-    public var ex: String?
-    /// 附加信息
-    public var attachedInfo: String?
-    /// 搜索时使用
-    public var departmentName: String?
-    /// 所在部门的所有上级部门
-    public var parentDepartmentList: [DepartmentInfo]?
-}
-
-/// 用户所在的部门
-///
-public class UserInDepartmentInfo : Decodable {
-    public var member: DepartmentMemberInfo?
-    public var department: DepartmentInfo?
-    public var companyName: String?
-}
-
-/// 部门下的子部门跟员工
-///
-public class DepartmentMemberAndSubInfo : Decodable {
-    /// 一级子部门
-    public var departmentList: [DepartmentInfo] = []
-    /// 一级成员
-    public var departmentMemberList: [DepartmentMemberInfo] = []
-    /// 当前部门的所有上一级部门
-    public var parentDepartmentList: [DepartmentInfo]?
-}
-
-
-// 查询组织架构使用
-public class SearchOrganizationParam : Encodable {
-    // 搜索关键词，目前仅支持一个关键词搜索，不能为空
-    public var keyword: String = ""
-    // 是否以关键词搜索UserID
-    public var isSearchUserID: Bool = true
-    // 是否以关键词搜索昵称，默认false
-    public var isSearchUserName: Bool = false
-    // 是否以英文搜索备注，默认false
-    public var isSearchEnglishName: Bool = false
-    // 是否以职位搜索备注，默认false
-    public var isSearchPosition: Bool = false
-    // 是否以移动号码搜索备注，默认false
-    public var isSearchMobile: Bool = false
-    // 是否以邮箱搜索备注，默认false
-    public var isSearchEmail: Bool = false
-    // 是否以电话号码搜索备注，默认false
-    public var isSearchTelephone: Bool = false
-}
-
 // MARK: - 模型转换(From SDK)
 
 extension MessageInfo {
@@ -2470,7 +2233,7 @@ extension OIMMessageInfo {
         item.handleMsg = handleMsg
         item.msgFrom = msgFrom.toMessageLevel()
         item.contentType = contentType.toMessageContentType()
-        item.platformID = platformID
+        item.platformID = senderPlatformID.rawValue
         item.senderNickname = senderNickname
         item.senderFaceUrl = senderFaceUrl
         item.groupID = groupID
@@ -2952,88 +2715,6 @@ extension OIMMessageRevokedInfo {
     }
 }
 
-extension OIMInvitationResultInfo {
-    func toInvitationResultInfo() -> InvitationResultInfo {
-        let item = InvitationResultInfo()
-        item.roomID = roomID
-        item.liveURL = liveURL
-        item.token = token
-        
-        return item
-    }
-}
-
-extension OIMMeetingInfoList {
-    func toMeetingInfoList() -> MeetingInfoList {
-        let item = MeetingInfoList()
-        
-        
-        return item
-    }
-}
-
-extension OIMMeetingInfo {
-    func toMeetingInfo() -> MeetingInfo {
-        let item = MeetingInfo()
-        item.meetingID = meetingID
-        item.meetingName = meetingName
-        item.startTime = startTime
-        item.endTime = endTime
-        item.createTime = createTime
-        item.hostUserID = hostUserID
-        item.inviteeUserIDList = inviteeUserIDList
-        item.isMuteAllMicrophone = isMuteAllMicrophone
-        item.joinDisableVideo = joinDisableVideo
-        item.onlyHostInviteUser = onlyHostInviteUser
-        item.participantCanEnableVideo = participantCanEnableVideo
-        item.participantCanUnmuteSelf = participantCanUnmuteSelf
-        return item
-    }
-}
-
-extension OIMMeetingStreamEvent {
-    func toMeetingStreamEvent() -> MeetingStreamEvent {
-        let item = MeetingStreamEvent()
-        item.meetingID = meetingID
-        item.mute = mute
-        item.streamType = streamType
-        
-        return item
-    }
-}
-
-extension OIMDepartmentInfo {
-    func toDepartmentInfo() -> DepartmentInfo {
-        let json = self.mj_JSONString()
-        let item = JsonTool.fromJson(json!, toClass: DepartmentInfo.self)
-        return item ?? DepartmentInfo()
-    }
-}
-
-extension OIMDepartmentMemberInfo {
-    func toDepartmentMemberInfo() -> DepartmentMemberInfo {
-        let json = self.mj_JSONString()
-        let item = JsonTool.fromJson(json!, toClass: DepartmentMemberInfo.self)
-        return item ?? DepartmentMemberInfo()
-    }
-}
-
-extension OIMUserInDepartmentInfo {
-    func toUserInDepartmentInfo() -> UserInDepartmentInfo {
-        let json = self.mj_JSONString()
-        let item = JsonTool.fromJson(json!, toClass: UserInDepartmentInfo.self)
-        return item ?? UserInDepartmentInfo()
-    }
-}
-
-extension OIMDepartmentMemberAndSubInfo {
-    func toDepartmentMemberAndSubInfo() -> DepartmentMemberAndSubInfo {
-        let json = self.mj_JSONString()
-        let item = JsonTool.fromJson(json!, toClass: DepartmentMemberAndSubInfo.self)
-        return item ?? DepartmentMemberAndSubInfo()
-    }
-}
-
 // MARK: - 模型转换(From OIMUIKit)
 
 extension UserInfo {
@@ -3107,26 +2788,6 @@ extension MessageRevoked {
             return item
         }
         return OIMMessageRevokedInfo()
-    }
-}
-
-extension InvitationResultInfo {
-    public func toOIMInvitationResultInfo() -> OIMInvitationResultInfo {
-        let json: String = JsonTool.toJson(fromObject: self)
-        if let item = OIMInvitationResultInfo.mj_object(withKeyValues: json) {
-            return item
-        }
-        return OIMInvitationResultInfo()
-    }
-}
-
-extension SearchOrganizationParam {
-    func toOIMSearchOrganizationParam() -> OIMSearchOrganizationParam {
-        let json: String = JsonTool.toJson(fromObject: self)
-        if let item = OIMSearchOrganizationParam.mj_object(withKeyValues: json) {
-            return item
-        }
-        return OIMSearchOrganizationParam()
     }
 }
 

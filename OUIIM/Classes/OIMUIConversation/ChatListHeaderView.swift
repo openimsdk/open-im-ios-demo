@@ -61,7 +61,6 @@ class ChatListHeaderView: UIView {
         return t
     }()
     
-    // 链接状态view
     lazy var connectionView: UIView = {
         let t = UIView()
         t.layer.masksToBounds = true
@@ -152,12 +151,10 @@ class ChatListHeaderView: UIView {
     func updateConnectionStatus(status: ConnectionStatus) {
         
         if status != preConnectionStatus {
-            // 如果状态发生变更，展示出来
             showConnectionView(status != .syncComplete && status != .connected)
         }
         
         let now = Date().timeIntervalSince1970
-        // 间隔两秒刷新一次UI
         if now - statusChangeInterval > 2 {
             switch status {
             case .connectFailure, .syncFailure:

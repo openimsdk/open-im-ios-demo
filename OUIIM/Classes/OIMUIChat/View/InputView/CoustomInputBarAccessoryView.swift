@@ -123,7 +123,7 @@ class CoustomInputBarAccessoryView: InputBarAccessoryView {
         inputPlugins.append(attachmentManager)
     }
     
-    // 设置右边的键盘
+        
     private func configRightButton() {
         sendButton.configure {
             $0.title = nil
@@ -134,7 +134,7 @@ class CoustomInputBarAccessoryView: InputBarAccessoryView {
         setStackViewItems([moreButton, sendButton], forStack: .right, animated: false)
     }
     
-    // 设置底部的按钮
+        
     private func configBottomButtons(_ show: Bool) {
         if show {
             let pad = InputPadView()
@@ -144,7 +144,7 @@ class CoustomInputBarAccessoryView: InputBarAccessoryView {
             setStackViewItems([], forStack: .bottom, animated: false)
         }
     }
-    // 展示更多的pad
+        
     private func showPadView(_ show: Bool) {
         print("点击按钮：\(show)")
         
@@ -157,7 +157,7 @@ class CoustomInputBarAccessoryView: InputBarAccessoryView {
         configBottomButtons(show)
     }
     
-    // 发送
+        
     private func sendAttachments(attachments: [CustomAttachment]) {
         DispatchQueue.main.async { [self] in
             if attachments.count > 0 {
@@ -191,7 +191,7 @@ class CoustomInputBarAccessoryView: InputBarAccessoryView {
     }
     
     
-    // 重写父类函数
+        
     override func inputTextViewDidBeginEditing() {
         moreButton.isSelected = false
         configBottomButtons(false)

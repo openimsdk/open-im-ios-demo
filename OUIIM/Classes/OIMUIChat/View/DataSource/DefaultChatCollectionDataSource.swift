@@ -3,7 +3,7 @@
 import ChatLayout
 import Foundation
 import UIKit
-// 调整成右侧头像
+    
 //typealias TextMessageCollectionCell = ContainerCollectionViewCell<MessageContainerView<EditingAccessoryView, MainContainerView<ChatAvatarView, TextMessageView, StatusView>>>
 typealias TextMessageCollectionCell = ContainerCollectionViewCell<MessageContainerView<EditingAccessoryView, MainContainerView<ChatAvatarView, TextMessageView, ChatAvatarView>>>
 
@@ -198,7 +198,7 @@ final class DefaultChatCollectionDataSource: NSObject, ChatCollectionDataSource 
         
         return cell
     }
-    // 名字
+        
     private func createGroupTitle(collectionView: UICollectionView, indexPath: IndexPath, alignment: ChatItemAlignment, title: String) -> UserTitleCollectionCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: UserTitleCollectionCell.reuseIdentifier, for: indexPath) as! UserTitleCollectionCell
         cell.customView.spacing = 2
@@ -213,7 +213,6 @@ final class DefaultChatCollectionDataSource: NSObject, ChatCollectionDataSource 
         return cell
     }
     
-    // 设置时间组cell/系统提示cell
     private func createTipsTitle(collectionView: UICollectionView,
                                  indexPath: IndexPath,
                                  alignment: ChatItemAlignment,
@@ -233,7 +232,7 @@ final class DefaultChatCollectionDataSource: NSObject, ChatCollectionDataSource 
         cell.contentView.layoutMargins = UIEdgeInsets(top: 2, left: 0, bottom: 2, right: 0)
         return cell
     }
-    // 设置编辑状态
+        
     private func setupMessageContainerView(_ messageContainerView: MessageContainerView<EditingAccessoryView, some Any>, messageId: String, isSelected: Bool, alignment: ChatItemAlignment) {
         messageContainerView.alignment = alignment
         if let accessoryView = messageContainerView.accessoryView {
@@ -265,7 +264,7 @@ final class DefaultChatCollectionDataSource: NSObject, ChatCollectionDataSource 
      avatarViewController.view = avatarView
      }
      }*/
-    // 这里没有右边头像, 是个已读标记
+
     /*private func setupMainMessageView(_ cellView: MainContainerView<ChatAvatarView, some Any, StatusView>,
      user: User,
      alignment: ChatItemAlignment,
@@ -284,7 +283,7 @@ final class DefaultChatCollectionDataSource: NSObject, ChatCollectionDataSource 
      }
      }
      */
-    // 设置头像
+        
     private func setupMainMessageView(_ cellView: MainContainerView<ChatAvatarView, some Any, ChatAvatarView>,
                                       user: User,
                                       messageID: String,
@@ -323,7 +322,7 @@ final class DefaultChatCollectionDataSource: NSObject, ChatCollectionDataSource 
      swipeNotifier.add(delegate: cellView)
      }
      */
-    // 设置右滑显示时间
+        
     private func setupSwipeHandlingAccessory(_ cellView: MainContainerView<ChatAvatarView, some Any, ChatAvatarView>,
                                              date: Date,
                                              accessoryConnectingView: UIView) {

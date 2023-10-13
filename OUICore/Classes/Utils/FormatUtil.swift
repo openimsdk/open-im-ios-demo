@@ -70,21 +70,20 @@ extension Date {
     ///
     /// @param  timeInterval: 时间戳
     public static func timeString(timeInterval: TimeInterval) -> String {
-        //如果服务端返回的时间戳精确到毫秒，需要除以1000,否则不需要
         let date = getNowDateFromatAnDate(Date(timeIntervalSince1970: timeInterval / 1000))
         
         let formatter = DateFormatter()
         if date.isToday() {
-            //是今天
+                
             formatter.dateFormat = "今天HH:mm"
             return formatter.string(from: date)
             
         } else if date.isYesterday() {
-            //是昨天
+                
             formatter.dateFormat = "昨天HH:mm"
             return formatter.string(from: date)
         } else if date.isSameWeek() {
-            //是同一周
+                
             let week = date.weekdayStringFromDate()
             formatter.dateFormat = "\(week)HH:mm"
             return formatter.string(from: date)
@@ -96,7 +95,7 @@ extension Date {
     
     func isToday() -> Bool {
         let calendar = Calendar.current
-        //当前时间
+            
         let nowComponents = calendar.dateComponents([.day,.month,.year], from: Date() )
         //self
         let selfComponents = calendar.dateComponents([.day,.month,.year], from: self as Date)
@@ -106,7 +105,7 @@ extension Date {
     
     func isYesterday() -> Bool {
         let calendar = Calendar.current
-        //当前时间
+            
         let nowComponents = calendar.dateComponents([.day], from: Date() )
         //self
         let selfComponents = calendar.dateComponents([.day], from: self as Date)
@@ -117,7 +116,7 @@ extension Date {
     
     func isSameWeek() -> Bool {
         let calendar = Calendar.current
-        //当前时间
+            
         let nowComponents = calendar.dateComponents([.day, .month, .year], from: Date())
         //self
         let selfComponents = calendar.dateComponents([.day, .month, .year], from: self as Date)
@@ -137,24 +136,23 @@ extension Date {
     
     /// 根据本地时区转换
     static func getNowDateFromatAnDate(_ anyDate: Date?) -> Date {
-        //设置源日期时区
+            
         let sourceTimeZone = NSTimeZone.local as NSTimeZone
-        //或GMT
-        //设置转换后的目标日期时区
+            
         let destinationTimeZone = NSTimeZone.local as NSTimeZone
-        //得到源日期与世界标准时间的偏移量
+            
         var sourceGMTOffset: Int? = nil
         if let aDate = anyDate {
             sourceGMTOffset = sourceTimeZone.secondsFromGMT(for: aDate)
         }
-        //目标日期与本地时区的偏移量
+            
         var destinationGMTOffset: Int? = nil
         if let aDate = anyDate {
             destinationGMTOffset = destinationTimeZone.secondsFromGMT(for: aDate)
         }
-        //得到时间偏移量的差值
+            
         let interval = TimeInterval((destinationGMTOffset ?? 0) - (sourceGMTOffset ?? 0))
-        //转为现在时间
+            
         var destinationDateNow: Date? = nil
         if let aDate = anyDate {
             destinationDateNow = Date(timeInterval: interval, since: aDate)

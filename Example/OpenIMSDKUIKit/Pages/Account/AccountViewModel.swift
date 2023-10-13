@@ -4,7 +4,6 @@ import Foundation
 import OUICore
 import RxSwift
 
-// 注册/忘记密码
 public enum UsedFor: Int {
     case register = 1
     case forgotPassword = 2
@@ -15,10 +14,8 @@ typealias CompletionHandler = (_ errCode: Int, _ errMsg: String?) -> Void
 
 open class AccountViewModel {
     
-    // 业务服务器地址
-    static let API_BASE_URL = UserDefaults.standard.string(forKey: bussinessSeverAddrKey)!
-    static let ADMIN_BASE_URL = UserDefaults.standard.string(forKey: adminSeverAddrKey)!
-    // 实际开发，抽离网络部分
+    static let API_BASE_URL = UserDefaults.standard.string(forKey: bussinessServerAddrKey)!
+    static let ADMIN_BASE_URL = UserDefaults.standard.string(forKey: adminServerAddrKey)!
     static let IMPreLoginAccountKey = "IMPreLoginAccountKey"
     static let IMUidKey = "DemoIMUidKey"
     static let IMTokenKey = "DemoIMTokenKey"
@@ -37,8 +34,8 @@ open class AccountViewModel {
     
     private let _disposeBag = DisposeBag()
     
-    // 业务层提供给OIMUIKit数据
-    // 业务查询好友逻辑
+    //The business layer provides data to OIMUIKit
+    // Business query friend logic
     static func ifQueryFriends() {
         
         OIMApi.queryFriendsWithCompletionHandler = { (keywords, completion: @escaping ([UserInfo]) -> Void) in
@@ -53,7 +50,6 @@ open class AccountViewModel {
         }
     }
     
-    // 业务查询用户信息
     static func ifQueryUserInfo() {
         
         OIMApi.queryUsersInfoWithCompletionHandler = { (keywords, completion: @escaping ([UserInfo]) -> Void) in
@@ -77,7 +73,6 @@ open class AccountViewModel {
         }
     }
     
-    // 全局配置信息
     static func ifQeuryConfig() {
         OIMApi.queryConfigHandler = { (completion: @escaping ([String: Any]) -> Void) in
             completion(AccountViewModel.clientConfig?.toMap() ?? [:])
@@ -95,7 +90,6 @@ open class AccountViewModel {
         req.httpBody = body
         req.addValue(UUID().uuidString, forHTTPHeaderField: "operationID")
 
-        print("输入地址：\(req)")
         Alamofire.request(req).responseString { (response: DataResponse<String>) in
             switch response.result {
             case .success(let result):
@@ -145,7 +139,6 @@ open class AccountViewModel {
         req.httpBody = body
         req.addValue(UUID().uuidString, forHTTPHeaderField: "operationID")
         
-        print("输入地址：\(req)")
         Alamofire.request(req).responseString(encoding: .utf8) { (response: DataResponse<String>) in
             switch response.result {
             case .success(let result):
@@ -163,7 +156,7 @@ open class AccountViewModel {
         }
     }
     
-    // [usedFor] 1：注册，2：重置密码， 3: 登录
+    // [usedFor] 1: Register, 2: Reset password, 3: Log in
     static func requestCode(phone: String, areaCode: String, invaitationCode: String? = nil, useFor: UsedFor, completionHandler: @escaping CompletionHandler) {
         let body = JsonTool.toJson(fromObject:
                                     CodeRequest(
@@ -176,7 +169,6 @@ open class AccountViewModel {
         req.httpBody = body
         req.addValue(UUID().uuidString, forHTTPHeaderField: "operationID")
         
-        print("输入地址：\(req)")
         Alamofire.request(req).responseString { (response: DataResponse<String>) in
             switch response.result {
             case .success(let result):
@@ -194,7 +186,6 @@ open class AccountViewModel {
         }
     }
     
-    // [usedFor] 1：注册，2：重置密码
     static func verifyCode(phone: String, areaCode: String, useFor: UsedFor, verificationCode: String, completionHandler: @escaping CompletionHandler) {
         let body = JsonTool.toJson(fromObject:
                                     CodeRequest(
@@ -207,7 +198,6 @@ open class AccountViewModel {
         req.httpBody = body
         req.addValue(UUID().uuidString, forHTTPHeaderField: "operationID")
         
-        print("输入地址：\(req)")
         Alamofire.request(req).responseString { (response: DataResponse<String>) in
             switch response.result {
             case .success(let result):
@@ -241,7 +231,6 @@ open class AccountViewModel {
         req.httpBody = body
         req.addValue(UUID().uuidString, forHTTPHeaderField: "operationID")
         
-        print("输入地址：\(req)")
         Alamofire.request(req).responseString { (response: DataResponse<String>) in
             switch response.result {
             case .success(let result):
@@ -269,7 +258,6 @@ open class AccountViewModel {
         req.httpBody = body
         req.addValue(UUID().uuidString, forHTTPHeaderField: "operationID")
         
-        print("输入地址：\(req)")
         Alamofire.request(req).responseString { (response: DataResponse<String>) in
             switch response.result {
             case .success(let result):
@@ -286,7 +274,6 @@ open class AccountViewModel {
         }
     }
     
-    // 更新个人信息
     static func updateUserInfo(userID: String,
                                account: String? = nil,
                                areaCode: String? = nil,
@@ -321,7 +308,6 @@ open class AccountViewModel {
         req.addValue(UserDefaults.standard.string(forKey: bussinessTokenKey)!, forHTTPHeaderField: "token")
         req.addValue(UUID().uuidString, forHTTPHeaderField: "operationID")
         
-        print("输入地址：\(req)")
         Alamofire.request(req).responseString(encoding: .utf8) { (response: DataResponse<String>) in
             switch response.result {
             case .success(let result):
@@ -338,7 +324,6 @@ open class AccountViewModel {
         }
     }
     
-    // 获取个人信息
     static func queryUserInfo(pageNumber: Int = 1,
                               showNumber: Int = 10,
                               userIDList: [String],
@@ -353,7 +338,6 @@ open class AccountViewModel {
         req.addValue(UserDefaults.standard.string(forKey: bussinessTokenKey)!, forHTTPHeaderField: "token")
         req.addValue(UUID().uuidString, forHTTPHeaderField: "operationID")
         
-        print("输入地址：\(req)")
         Alamofire.request(req).responseString(encoding: .utf8) { (response: DataResponse<String>) in
             switch response.result {
             case .success(let result):
@@ -387,7 +371,6 @@ open class AccountViewModel {
         req.addValue(UserDefaults.standard.string(forKey: bussinessTokenKey)!, forHTTPHeaderField: "token")
         req.addValue(UUID().uuidString, forHTTPHeaderField: "operationID")
         
-        print("输入地址：\(req)")
         Alamofire.request(req).responseString(encoding: .utf8) { (response: DataResponse<String>) in
             switch response.result {
             case .success(let result):
@@ -427,7 +410,7 @@ open class AccountViewModel {
         UserDefaults.standard.set(chatToken, forKey: bussinessTokenKey)
         UserDefaults.standard.synchronize()
         
-        IMController.shared.setup(businessServer: UserDefaults.standard.string(forKey: bussinessSeverAddrKey)!, businessToken: chatToken)
+        IMController.shared.setup(businessServer: UserDefaults.standard.string(forKey: bussinessServerAddrKey)!, businessToken: chatToken)
     }
     
     static func savePreLoginAccount(_ account: String?) {
@@ -450,7 +433,6 @@ open class AccountViewModel {
                           expiredTime: nil)
     }
     
-    // 获取配置
     static func getClientConfig() {
         let body = try! JSONSerialization.data(withJSONObject: ["operationID": UUID().uuidString], options: .prettyPrinted)
         
@@ -472,7 +454,6 @@ open class AccountViewModel {
             }
         }
     }
-    // 配置
     static var clientConfig: ClientConfigData?
 }
 

@@ -16,12 +16,5 @@ public struct CallBack {
     public typealias SearchResultInfoOptionalReturnVoid = (SearchResultInfo?) -> Void
     public typealias BlackListOptionalReturnVoid = ([BlackInfo]) -> Void
     public typealias SearchUsersInfoOptionalReturnVoid = ([SearchUserInfo]) -> Void
-    public typealias SignalingInfoOptionalReturnVoid = (InvitationResultInfo) -> Void
     public typealias ErrorOptionalReturnVoid = (_ errCode: Int, _ errMsg: String?) -> Void
-    public typealias MomentsNewMessageReturnVoid = ([MomentsNewMessageInfo]) -> Void
-    public typealias MeetingReturnVoid = ([MeetingInfo]) -> Void
-    public typealias DepartmentInfoReturnVoid = ([DepartmentInfo]) -> Void
-    public typealias DepartmentMemberInfoReturnVoid = ([DepartmentMemberInfo]) -> Void
-    public typealias UserInDepartmentInfoReturnVoid = ([UserInDepartmentInfo]) -> Void
-    public typealias DepartmentMemberAndSubInfoReturnVoid = (DepartmentMemberAndSubInfo?) -> Void
 }

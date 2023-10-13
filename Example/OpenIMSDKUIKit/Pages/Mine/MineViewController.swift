@@ -93,8 +93,8 @@ public class MineViewController: UIViewController {
                 return "账号设置".localized()
             case .aboutUs:
                 let infoDictionary = Bundle.main.infoDictionary
-                let majorVersion = infoDictionary!["CFBundleShortVersionString"] as! String //主程序版本号
-                let minorVersion = infoDictionary!["CFBundleVersion"] as! String //版本号（内部标示）
+                let majorVersion = infoDictionary!["CFBundleShortVersionString"] as! String
+                let minorVersion = infoDictionary!["CFBundleVersion"] as! String
                 return "关于我们".localized() + "app:\(majorVersion) / build:\(minorVersion)"
             case .logout:
                 return "退出登录".localized()

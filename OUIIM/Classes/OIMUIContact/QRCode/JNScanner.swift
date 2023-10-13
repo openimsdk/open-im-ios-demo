@@ -51,7 +51,6 @@ class JNScanner: NSObject, AVCaptureMetadataOutputObjectsDelegate, AVCapturePhot
 
     func start() {
         _needScan = true
-        // 只可以在调用时设置，在初始化时设置运行时会崩溃
         let types = [AVMetadataObject.ObjectType.qr as NSString,
                      AVMetadataObject.ObjectType.ean13 as NSString,
                      AVMetadataObject.ObjectType.code128 as NSString] as [AVMetadataObject.ObjectType]
@@ -119,7 +118,7 @@ class JNScanner: NSObject, AVCaptureMetadataOutputObjectsDelegate, AVCapturePhot
     }
 
     func metadataOutput(_: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from _: AVCaptureConnection) {
-        // 只处理一个扫描结果
+            
         if !_needScan {
             return
         }

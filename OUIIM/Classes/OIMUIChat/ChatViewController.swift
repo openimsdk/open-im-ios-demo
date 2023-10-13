@@ -595,7 +595,7 @@ extension ChatViewController: UIGestureRecognizerDelegate {
 extension ChatViewController: CoustomInputBarAccessoryViewDelegate {
     
     private func completionHandler() -> ([Section]) -> Void {
-        // 发送结束的操作
+            
         let completion: ([Section]) -> Void = { [weak self] sections in
             self?.inputBarView.sendButton.stopAnimating()
             self?.currentInterfaceActions.options.remove(.sendingMessage)
@@ -614,7 +614,7 @@ extension ChatViewController: CoustomInputBarAccessoryViewDelegate {
     
     public func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith text: String) {
         let messageText = inputBar.inputTextView.text
-        // 发送结束的操作
+            
         let completion = completionHandler()
         
         currentInterfaceActions.options.insert(.sendingMessage)
@@ -637,7 +637,7 @@ extension ChatViewController: CoustomInputBarAccessoryViewDelegate {
     }
     
     func inputBar(_ inputBar: InputBarAccessoryView, didPressSendButtonWith attachments: [CustomAttachment]) {
-        // 发送结束的操作
+            
         let completion = completionHandler()
         
         currentInterfaceActions.options.insert(.sendingMessage)

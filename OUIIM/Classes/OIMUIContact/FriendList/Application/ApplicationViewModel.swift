@@ -52,14 +52,12 @@ class ApplicationViewModel {
         if let friendApplication = friendApplication {
             IMController.shared.acceptFriendApplication(uid: friendApplication.fromUserID) { [weak self] r in
                 completion(r)
-                // 发送通知，告诉列表入群申请或者好友申请数量发生改变
                 NotificationCenter.default.post(name: ContactsViewModel.NotificationApplicationCountChanged, object: nil)
             }
             
         } else if let groupApplication = groupApplication {
             IMController.shared.acceptGroupApplication(groupID: groupApplication.groupID, fromUserId: groupApplication.userID!) { [weak self] r in
                 completion(r)
-                // 发送通知，告诉列表入群申请或者好友申请数量发生改变
                 NotificationCenter.default.post(name: ContactsViewModel.NotificationApplicationCountChanged, object: nil)
             }
         }
@@ -69,14 +67,12 @@ class ApplicationViewModel {
         if let friendApplication = friendApplication {
             IMController.shared.refuseFriendApplication(uid: friendApplication.fromUserID ) { [weak self] r in
                 completion(r)
-                // 发送通知，告诉列表入群申请或者好友申请数量发生改变
                 NotificationCenter.default.post(name: ContactsViewModel.NotificationApplicationCountChanged, object: nil)
             }
             
         } else if let groupApplication = groupApplication {
             IMController.shared.refuseGroupApplication(groupID: groupApplication.groupID, fromUserId: groupApplication.userID!) { [weak self] r in
                 completion(r)
-                // 发送通知，告诉列表入群申请或者好友申请数量发生改变
                 NotificationCenter.default.post(name: ContactsViewModel.NotificationApplicationCountChanged, object: nil)
             }
         }

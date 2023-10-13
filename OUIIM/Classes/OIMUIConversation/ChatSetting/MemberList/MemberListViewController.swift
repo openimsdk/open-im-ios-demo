@@ -216,7 +216,6 @@ class MemberListViewController: UIViewController {
         _viewModel.ownerAndAdminRelay.bind(to: headerTableView.rx.items(cellIdentifier: FriendListUserTableViewCell.className,
                                                                         cellType: FriendListUserTableViewCell.self)) {[weak self] _, model, cell in
             
-            // 展示创建者 和 管理员
             if model.isOwnerOrAdmin {
                 let width = 12 * model.roleLevelString.length
                 let textLabel = UILabel()
@@ -230,7 +229,6 @@ class MemberListViewController: UIViewController {
                 textLabel.textAlignment = .center
                 
                 let image = self?.imageWithUIView(view: textLabel)
-                //创建Image的富文本格式
                 var attach = NSTextAttachment()
                 attach.bounds = .init(x: 0, y: -3, width: width, height: 16)
                 attach.image = image;

@@ -42,7 +42,6 @@ class ChatListViewModel {
         }
     }
 
-    /// 删除指定会话（本地删除）
     func deleteConversation(conversationID: String, completion: ((String?) -> Void)?) {
         IMController.shared.deleteConversation(conversationID: conversationID) { [weak self] r in
             self?.getAllConversations()

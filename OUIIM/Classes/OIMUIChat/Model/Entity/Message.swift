@@ -5,7 +5,7 @@ import Foundation
 import OUICore
 import CoreLocation
 
-// 控制消息出入
+    
 enum MessageType: Hashable {
     case incoming
     case outgoing
@@ -15,17 +15,17 @@ enum MessageType: Hashable {
     }
 }
 
-// 控制已读状态
+    
 enum MessageStatus: Hashable {
     case sent
     case received
 }
 
-// 控制显示类型
+    
 enum MessageRawType: Hashable {
-    case normal // 消息正文
-    case system // 系统提示消息： eg. xxx加入群聊 xxx撤回了一条消息
-    case date   // 日期
+    case normal     
+    case system
+    case date       
 }
 
 enum MediaMessageType: Hashable {
@@ -35,8 +35,8 @@ enum MediaMessageType: Hashable {
 }
 
 enum TextMessageType: Hashable {
-    case text // 普通消息
-    case notice // 公告
+    case text   
+    case notice     
 }
 
 extension ChatItemAlignment {
@@ -127,8 +127,8 @@ struct TextMessageSource: Hashable {
 struct MediaMessageSource: Hashable {
     
     struct Info: Hashable {
-        var url: URL! // 远端地址 & 本地完整地址
-        var relativePath: String? // 考虑断点续传 沙盒问题
+        var url: URL!
+        var relativePath: String?
     }
     
     var image: UIImage?
@@ -137,7 +137,7 @@ struct MediaMessageSource: Hashable {
     var duration: Int?
 }
 
-// 自定义消息
+    
 struct CustomMessageSource: Hashable {
     var data: String?
     private(set) var attributedString: NSAttributedString?
@@ -177,7 +177,7 @@ struct Message: Hashable {
         
         case image(MediaMessageSource, isLocallyStored: Bool)
         
-        case video(MediaMessageSource, isLocallyStored: Bool) // 视频路径，缩略图路径，时长
+        case video(MediaMessageSource, isLocallyStored: Bool) 
         
         case custom(CustomMessageSource)
     }
@@ -196,7 +196,7 @@ struct Message: Hashable {
     
     var status: MessageStatus = .sent
     
-    var isSelected: Bool = false // 编辑状态使用
+    var isSelected: Bool = false    
     
     var isAnchor: Bool = false
 }

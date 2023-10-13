@@ -39,9 +39,9 @@ class ConfigCell: UITableViewCell {
     }
 }
 
-let severAddressKey = "com.oimuikit.adr"
-let adminSeverAddrKey = "com.oiuikit.admin.adr"
-let bussinessSeverAddrKey = "com.oimuikit.bussiness.api.adr"
+let serverAddressKey = "com.oimuikit.adr"
+let adminServerAddrKey = "com.oiuikit.admin.adr"
+let bussinessServerAddrKey = "com.oimuikit.bussiness.api.adr"
 let sdkAPIAddrKey = "com.oimuikit.sdk.api.adr"
 let sdkWSAddrKey = "com.oimuikit.sdk.ws.adr"
 let sdkObjectStorageKey = "com.oimuikit.sdk.os"
@@ -52,13 +52,13 @@ class ConfigViewController: UIViewController {
 
     let disposeBag = DisposeBag()
 
-    let ports = [bussinessSeverAddrKey: bussinessPort, sdkAPIAddrKey: sdkAPIPort, sdkWSAddrKey: sdkWSPort]
-    let routes = [bussinessSeverAddrKey: bussinessRoute, sdkAPIAddrKey: sdkAPIRoute, sdkWSAddrKey: sdkWSRoute]
-    let scheme = [bussinessSeverAddrKey: "http", sdkAPIAddrKey: "http", sdkWSAddrKey: "ws"]
+    let ports = [bussinessServerAddrKey: businessPort, sdkAPIAddrKey: sdkAPIPort, sdkWSAddrKey: sdkWSPort]
+    let routes = [bussinessServerAddrKey: businessRoute, sdkAPIAddrKey: sdkAPIRoute, sdkWSAddrKey: sdkWSRoute]
+    let scheme = [bussinessServerAddrKey: "http", sdkAPIAddrKey: "http", sdkWSAddrKey: "ws"]
 
-    private var severAddress = UserDefaults.standard.string(forKey: severAddressKey) ?? defaultDomain
-    private var bussinessSeverAddr = UserDefaults.standard.string(forKey: bussinessSeverAddrKey) ??
-    "http://\(defaultIP)\(bussinessPort)"
+    private var severAddress = UserDefaults.standard.string(forKey: serverAddressKey) ?? defaultDomain
+    private var bussinessSeverAddr = UserDefaults.standard.string(forKey: bussinessServerAddrKey) ??
+    "http://\(defaultIP)\(businessPort)"
     private var sdkAPIAddr = UserDefaults.standard.string(forKey: sdkAPIAddrKey) ??
     "http://\(defaultIP)\(sdkAPIPort)"
     private var sdkWSAddr = UserDefaults.standard.string(forKey: sdkWSAddrKey) ??
@@ -165,9 +165,9 @@ class ConfigViewController: UIViewController {
                 }
             }
             
-            bussinessSeverAddr = (tlsSwitcher.isOn ? scheme[bussinessSeverAddrKey]!  + "s" : scheme[bussinessSeverAddrKey]!) +
+            bussinessSeverAddr = (tlsSwitcher.isOn ? scheme[bussinessServerAddrKey]!  + "s" : scheme[bussinessServerAddrKey]!) +
             "://" + newValue +
-            (domainSwitcher.isOn ? routes[bussinessSeverAddrKey]! : ports[bussinessSeverAddrKey]!)
+            (domainSwitcher.isOn ? routes[bussinessServerAddrKey]! : ports[bussinessServerAddrKey]!)
             
             sdkAPIAddr = (tlsSwitcher.isOn ? scheme[sdkAPIAddrKey]!  + "s" : scheme[sdkAPIAddrKey]!) +
             "://" + newValue +
@@ -178,9 +178,9 @@ class ConfigViewController: UIViewController {
             (domainSwitcher.isOn ? routes[sdkWSAddrKey]! : ports[sdkWSAddrKey]!)
             
         } else if index == 1 {
-            bussinessSeverAddr = (tlsSwitcher.isOn ? scheme[bussinessSeverAddrKey]!  + "s" : scheme[bussinessSeverAddrKey]!) +
+            bussinessSeverAddr = (tlsSwitcher.isOn ? scheme[bussinessServerAddrKey]!  + "s" : scheme[bussinessServerAddrKey]!) +
             "://" + newValue +
-            (domainSwitcher.isOn ? routes[bussinessSeverAddrKey]! : ports[bussinessSeverAddrKey]!)
+            (domainSwitcher.isOn ? routes[bussinessServerAddrKey]! : ports[bussinessServerAddrKey]!)
         } else if index == 2 {
             sdkAPIAddr = (tlsSwitcher.isOn ? scheme[sdkAPIAddrKey]!  + "s" : scheme[sdkAPIAddrKey]!) +
             "://" + newValue +
@@ -218,8 +218,8 @@ class ConfigViewController: UIViewController {
         self.view.endEditing(true)
 
         let ud = UserDefaults.standard
-        ud.set(severAddress, forKey: severAddressKey)
-        ud.set(bussinessSeverAddr, forKey: bussinessSeverAddrKey)
+        ud.set(severAddress, forKey: serverAddressKey)
+        ud.set(bussinessSeverAddr, forKey: bussinessServerAddrKey)
         ud.set(sdkAPIAddr, forKey: sdkAPIAddrKey)
         ud.set(sdkWSAddr, forKey: sdkWSAddrKey)
         ud.set(sdkObjectStorage, forKey: sdkObjectStorageKey)

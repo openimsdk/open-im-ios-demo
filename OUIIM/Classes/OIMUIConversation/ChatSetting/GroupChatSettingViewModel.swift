@@ -61,7 +61,7 @@ class GroupChatSettingViewModel {
                 self?.allMembers = members.compactMap { $0.userID }
             }
         }
-        // 获取自己的组内信息
+            
         IMController.shared.getGroupMembersInfo(groupId: gid, uids: [IMController.shared.uid]) { [weak self] (members: [GroupMemberInfo]) in
             for member in members {
                 if member.isSelf {

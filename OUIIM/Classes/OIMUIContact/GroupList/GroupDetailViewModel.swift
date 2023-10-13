@@ -30,7 +30,7 @@ class GroupDetailViewModel {
                 self?.allMembers = members.compactMap { $0.userID }
             }
         }
-        // 获取自己的组内信息
+            
         IMController.shared.getGroupMembersInfo(groupId: groupId, uids: [IMController.shared.uid]) { [weak self] (members: [GroupMemberInfo]) in
             self?.isInGroupSubject.onNext(!members.isEmpty)
         }

@@ -159,12 +159,12 @@ final class DefaultDataProvider: DataProvider {
         }
     }
 
-    // 接收消息
+        
     private func addObservers() {
         
         IMController.shared.newMsgReceivedSubject.subscribe(onNext: { [weak self] (message: MessageInfo) in
             guard let self else { return }
-            // 输入状态
+                
             if case .typing = message.contentType {
                 if (self.conversation.userID == message.sendID ||
                     self.conversation.groupID == message.groupID) {

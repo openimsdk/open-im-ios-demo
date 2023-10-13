@@ -170,7 +170,6 @@ class UserDetailTableViewController: UIViewController {
         }
         
         if _viewModel.userId == IMController.shared.uid {
-            // 搜索的是自己，需要把几个功能按钮屏蔽掉
             return
         }
         
@@ -234,7 +233,7 @@ class UserDetailTableViewController: UIViewController {
                 sself.addFriendBtn.isHidden = true
                 sself.sendMessageBtn.isHidden = true
             } else if userInfo.friendInfo != nil, !sself.rowItems.contains(.profile) {
-                //是好友可以查看详细
+                    
                 sself.rowItems.append(.spacer)
                 sself.rowItems.append(.profile)
                 sself.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "ellipsis"), style: .plain, target: self, action: #selector(sself.rightButtonAction))
@@ -250,7 +249,7 @@ class UserDetailTableViewController: UIViewController {
             sself.addFriendBtn.isHidden = true
             
             guard sself._viewModel.groupId != nil else { return }
-            // 群聊才有以下信息
+                
             sself.rowItems = sself.rowItems.count > 1 ? sself.rowItems : [.nickName, .joinTime]
             
             if sself._viewModel.showJoinSource == true, !sself.rowItems.contains(.joinSource) {

@@ -500,7 +500,7 @@
 				CODE_SIGN_ENTITLEMENTS = NotificationService/NotificationService.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 300000;
+				CURRENT_PROJECT_VERSION = 330000;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = BDLHL8GNFV;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -510,7 +510,7 @@
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2022 rentsoft. All rights reserved.";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 3.0.0;
+				MARKETING_VERSION = 3.3.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				OTHER_SWIFT_FLAGS = "$(inherited) -D COCOAPODS";
@@ -539,7 +539,7 @@
 				CODE_SIGN_ENTITLEMENTS = NotificationService/NotificationService.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 300000;
+				CURRENT_PROJECT_VERSION = 330000;
 				DEVELOPMENT_TEAM = BDLHL8GNFV;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -548,7 +548,7 @@
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2022 rentsoft. All rights reserved.";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
-				MARKETING_VERSION = 3.0.0;
+				MARKETING_VERSION = 3.3.0;
 				MTL_FAST_MATH = YES;
 				OTHER_SWIFT_FLAGS = "$(inherited) -D COCOAPODS";
 				PRODUCT_BUNDLE_IDENTIFIER = cn.rentsoft.ios.openim.NotificationService;
@@ -673,7 +673,7 @@
 				CODE_SIGN_ENTITLEMENTS = OpenIMSDKUIKit_Example.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 300000;
+				CURRENT_PROJECT_VERSION = 330000;
 				DEVELOPMENT_TEAM = BDLHL8GNFV;
 				ENABLE_BITCODE = NO;
 				EXCLUDED_ARCHS = "";
@@ -684,7 +684,7 @@
 				INFOPLIST_FILE = OpenIMSDKUIKit/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 3.0.0;
+				MARKETING_VERSION = 3.3.0;
 				MODULE_NAME = ExampleApp;
 				OTHER_SWIFT_FLAGS = "$(inherited) -D COCOAPODS";
 				PRODUCT_BUNDLE_IDENTIFIER = cn.rentsoft.ios.openim;
@@ -708,7 +708,7 @@
 				CODE_SIGN_ENTITLEMENTS = OpenIMSDKUIKit_Example.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 300000;
+				CURRENT_PROJECT_VERSION = 330000;
 				DEVELOPMENT_TEAM = BDLHL8GNFV;
 				ENABLE_BITCODE = NO;
 				EXCLUDED_ARCHS = "";
@@ -719,7 +719,7 @@
 				INFOPLIST_FILE = OpenIMSDKUIKit/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 3.0.0;
+				MARKETING_VERSION = 3.3.0;
 				MODULE_NAME = ExampleApp;
 				OTHER_SWIFT_FLAGS = "$(inherited) -D COCOAPODS";
 				PRODUCT_BUNDLE_IDENTIFIER = cn.rentsoft.ios.openim;

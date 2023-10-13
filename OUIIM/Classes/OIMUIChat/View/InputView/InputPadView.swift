@@ -68,7 +68,6 @@ class InputPadView: UIView, InputItem {
     
     public weak var delegate: InputPadViewDelegate?
     
-    // 每行要展示的 item 数量
     private let itemsPerRow = 4
     private let items: [PadItemType] = PadItemType.allCases
     

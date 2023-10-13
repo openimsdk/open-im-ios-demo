@@ -6,7 +6,7 @@ import UIKit
 //    
 //    case media(UIImage)
 //    
-//    case mediaURL(URL,  isLocalPath: Bool) // 地址，是否是本地,发送的时候用到
+//    case mediaURL(URL,  isLocalPath: Bool)    ，是否是本地,发送的时候用到
 //}
  
 

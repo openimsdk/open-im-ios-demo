@@ -25,7 +25,6 @@ final class MainContainerView<LeadingAccessory: StaticViewFactory, CustomView: U
         containerView.customView
     }
     
-    // 阅后即焚 倒计时
     lazy var leadingCountdownLabel: UILabel = {
         let v = UILabel()
         v.textColor = .systemBlue
@@ -46,7 +45,7 @@ final class MainContainerView<LeadingAccessory: StaticViewFactory, CustomView: U
     private func tapAction() {
         didTapRead?()
     }
-    // 这里调整下右侧头像
+        
 //    var statusView: TrailingAccessory.View? {
 //        containerView.trailingView
 //    }
@@ -145,7 +144,7 @@ final class MainContainerView<LeadingAccessory: StaticViewFactory, CustomView: U
             let maxOffset = min(frame.origin.x, accessoryView.frame.width)
             customView.transform = .identity
             customView.transform = CGAffineTransform(translationX: -(maxOffset * swipeCompletionRate), y: 0)
-            // 调整成头像
+                
 //            if let statusView,
 //               !statusView.isHidden {
 //                statusView.transform = CGAffineTransform(translationX: -(maxOffset * swipeCompletionRate), y: 0)

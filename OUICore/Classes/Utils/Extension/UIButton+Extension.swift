@@ -59,11 +59,9 @@ extension UIButton {
             self.contentVerticalAlignment = .center
             
             var w_di = labelWidth/2.0
-            //如果内容宽度大于button宽度 改变计算方式
             if (labelWidth+imageWith+space) > bWidth{
                 w_di = (bWidth - imageWith)/2
             }
-            //考虑图片+显示文字宽度大于按钮总宽度的情况
             let labelWidth_f = self.titleLabel?.frame.width ?? 0
             if (imageWith+labelWidth_f+space)>bWidth{
                 w_di = (bWidth - imageWith)/2
@@ -83,11 +81,9 @@ extension UIButton {
             self.contentHorizontalAlignment = .center
             self.contentVerticalAlignment = .center
             var w_di = labelWidth/2
-            //如果内容宽度大于button宽度 改变计算方式
             if (labelWidth+imageWith+space) > bWidth{
                 w_di = (bWidth - imageWith)/2
             }
-          //考虑图片+显示文字宽度大于按钮总宽度的情况
             let labelWidth_f = self.titleLabel?.frame.width ?? 0
             if (imageWith+labelWidth_f+space)>bWidth{
                 w_di = (bWidth - imageWith)/2

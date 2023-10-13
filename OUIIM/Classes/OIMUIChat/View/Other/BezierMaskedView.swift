@@ -2,7 +2,7 @@
 import Foundation
 import UIKit
 
-// 气泡绘图
+    
 final class BezierMaskedView<CustomView: UIView>: UIView {
 
     lazy var customView = CustomView(frame: bounds)
@@ -23,7 +23,7 @@ final class BezierMaskedView<CustomView: UIView>: UIView {
     var offset: CGFloat {
         switch bubbleType {
         case .tailed:
-//            return 2 // 默认有尾巴
+//            return 2  
             return 6
         case .normal:
             return 6
@@ -103,7 +103,7 @@ final class BezierMaskedView<CustomView: UIView>: UIView {
 }
 
 private func generateIncomingTailedBezierPath(offset: CGFloat, size: CGSize) -> UIBezierPath {
-    // 默认有尾巴
+        
 //    let size = CGSize(width: size.width - offset, height: size.height)
 //    let bezierPath = UIBezierPath()
 //    bezierPath.move(to: CGPoint(x: 22, y: size.height))

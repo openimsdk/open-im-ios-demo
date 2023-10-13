@@ -73,7 +73,7 @@ class ApplyViewController: UIViewController {
         navigationItem.rightBarButtonItem = rightButton
         
         inputTextView.rx.text.orEmpty.asDriver().map({ $0.count > 0}).drive(rightButton.rx.isEnabled).disposed(by: disposeBag)
-        // 字数限制
+            
         inputTextView.rx.text.map({ [weak self] text in
             guard let self, let text else { return nil }
             return String(text.prefix(self.maxCount))

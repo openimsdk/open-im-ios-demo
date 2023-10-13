@@ -15,21 +15,21 @@ final class DefaultChatController: ChatController {
     
     private var lastReadIDs: [String] = []
     
-    private var hasReadUserID: String? // 群组中已读人
+    private var hasReadUserID: String?  
     
-    private var unReadCount: Int = 0 // 左上角的未读数
+    private var unReadCount: Int = 0    
     
     private var lastReceivedString: String?
     
-    private let receiverId: String // 接收人的uid
+    private let receiverId: String  
     
-    private let senderID: String // 发送人的uid
+    private let senderID: String
     
-    private let conversationType: ConversationType // 会话类型
+    private let conversationType: ConversationType  
     
     private let conversation: ConversationInfo
     
-    private var groupInfo: GroupInfo? // 将其缓存
+    private var groupInfo: GroupInfo?   
     
     private var groupMembers: [GroupMemberInfo]?
     
@@ -37,9 +37,9 @@ final class DefaultChatController: ChatController {
     
     private var messages: [MessageInfo] = []
     
-    private var selecteMessages: [MessageInfo] = [] // 选中的消息id， 可转发、删除、引用消息
+    private var selecteMessages: [MessageInfo] = []
 
-    private var selectedUsers: [String] = [] // 选中的成员, 可做为@成员
+    private var selectedUsers: [String] = []
         
     init(dataProvider: DataProvider, senderID: String, receiverId: String, conversationType: ConversationType, conversation: ConversationInfo) {
         self.dataProvider = dataProvider
@@ -111,7 +111,7 @@ final class DefaultChatController: ChatController {
         selectedUsers.append(contentsOf: usersID)
     }
     
-    // 重置原始消息的选中状态
+        
     private func resetSelectedStatus() {
         messages.forEach { $0.isSelected = false }
     }
@@ -201,7 +201,7 @@ final class DefaultChatController: ChatController {
         IMController.shared.addFriend(uid: receiverId, reqMsg: reqMsg, onSuccess: onSuccess, onFailure: onFailure)
     }
     
-    // 主动撤回
+        
     func revokeMessage(with id: String) {
         if var msg = messages.first(where: { $0.clientMsgID == id}) {
             IMController.shared.revokeMessage(conversationID: conversation.conversationID, clientMsgID: msg.clientMsgID) { [weak self] r in
@@ -241,7 +241,6 @@ final class DefaultChatController: ChatController {
     func sendMessage(_ data: Message.Data, completion: @escaping ([Section]) -> Void) {
         switch data {
         case .text(let source):
-            // 如果有选中的消息，说明是引用消息
             let quoteMsg = selecteMessages.first
             sendText(text: source.text, quoteMessage: quoteMsg, completion: completion)
             
@@ -252,7 +251,6 @@ final class DefaultChatController: ChatController {
             sendImage(source: source, completion: completion)
             
         case .video(let source, isLocallyStored: _):
-            // 发送的时候，图片选择器选择以后，传入的是路径
             sendVideo(source: source, completion: completion)
             
         case .attributeText(_), .custom(_):
@@ -265,11 +263,11 @@ final class DefaultChatController: ChatController {
                                             quoteMessage: quoteMessage,
                                             to: to ?? receiverId,
                                             conversationType: conversationType ?? self.conversationType) { [weak self] msg in
-//            self?.appendMessage(msg, completion: completion) // 刷新太快，界面不好看
+//            self?.appendMessage(msg, completion: completion)  ，界面不好看
         } onComplete: { [weak self] msg in
             guard let completion else { return }
             self?.appendMessage(msg, completion: completion)
-            self?.selecteMessages.removeAll() // 移除选中的引用消息
+            self?.selecteMessages.removeAll()   
             self?.selectedUsers.removeAll()
         }
     }
@@ -329,7 +327,7 @@ final class DefaultChatController: ChatController {
     
     // MARK: 更新数据源
     private func appendMessage(_ message: MessageInfo, completion: @escaping ([Section]) -> Void) {
-        // 刷新数据源
+            
         var exist = false
         
         for (i, item) in messages.enumerated() {
@@ -344,7 +342,7 @@ final class DefaultChatController: ChatController {
             messages.append(message)
         }
         
-        // 刷新界面
+            
         propagateLatestMessages(completion: completion)
     }
     
@@ -390,8 +388,8 @@ final class DefaultChatController: ChatController {
                     }
                 }
             
-            let cells = messagesSplitByDay.enumerated().map { index, messages -> [Cell] in // 按天划分
-                var cells: [Cell] = Array(messages.enumerated().map { index, message -> [Cell] in // 按发送者划分
+            let cells = messagesSplitByDay.enumerated().map { index, messages -> [Cell] in  
+                var cells: [Cell] = Array(messages.enumerated().map { index, message -> [Cell] in   
                     
                     if message.contentType == .system, case .attributeText(let value) = message.data {
                         
@@ -464,7 +462,7 @@ final class DefaultChatController: ChatController {
     }
     
     private func convert(_ msg: MessageInfo) -> Message.Data {
-        var isLocalPath = msg.serverMsgID == nil // 本地发送，先把消息渲染到界面上；发送成功以后，再替换原消息
+        var isLocalPath = msg.serverMsgID == nil
         
         switch msg.contentType {
             
@@ -487,7 +485,7 @@ final class DefaultChatController: ChatController {
             let videoElem = msg.videoElem!
             let url = isLocalPath ? URL(string: videoElem.videoPath!) : URL(string: videoElem.videoUrl!)!
             let thumbURL = isLocalPath ? URL(string: videoElem.snapshotPath!)! : URL(string: videoElem.snapshotUrl!)!
-            let isPresentLocally = imageCache.isEntityCached(for: CacheableImageKey(url: thumbURL)) // 这个值，可以用来判断差分是否有效
+            let isPresentLocally = imageCache.isEntityCached(for: CacheableImageKey(url: thumbURL))
             let duration = msg.videoElem!.duration
             
             let source = MediaMessageSource(source: MediaMessageSource.Info(url: url),
@@ -562,7 +560,7 @@ extension DefaultChatController: DataProviderDelegate {
     }
     
     func received(message: MessageInfo) {
-        // 收到当前界面的消息
+            
         if conversation.userID == message.sendID ||
             conversation.groupID == message.groupID {
             appendConvertingToMessages([message])
@@ -572,7 +570,7 @@ extension DefaultChatController: DataProviderDelegate {
                 }
             }
         } else {
-         // 左上角未读数加1
+            1
             unReadCount += 1
             delegate?.updateUnreadCount(count: unReadCount)
         }
@@ -640,13 +638,12 @@ extension DefaultChatController: ReloadDelegate {
 extension DefaultChatController: EditingAccessoryControllerDelegate {
 
     func selecteMessage(with id: String) {
-        // 将选中的消息计入，用来删除，转发等
         if let index = selecteMessages.firstIndex(where: { $0.clientMsgID == id}) {
             selecteMessages.remove(at: index)
             messages.first(where: { $0.clientMsgID == id})?.isSelected = false
         } else {
             if let item = messages.first(where: { $0.clientMsgID == id}) {
-                item.isSelected = true // 多选的时候用来记录选中项，主要是cell重用问题。
+                item.isSelected = true
                 selecteMessages.append(item)
             }
         }
