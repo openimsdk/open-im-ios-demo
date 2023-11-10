@@ -22,7 +22,7 @@ OpenIM iOS Demo is a set of UI components implemented based on Open-IM SDK, whic
 
 ## Experience app 🌐
 
-<img src="https://www.openim.online/_next/image?url=/fonts/native_ios_qrcode_c_e.png&w=256&q=75" alt="image" style="width: 200px; " />.
+<img src="https://www.openim.io/_next/image?url=/fonts/native_ios_qrcode_c_e.png&w=256&q=75" alt="image" style="width: 200px; " />.
 
 ## Dev Setup 🛠️
 
