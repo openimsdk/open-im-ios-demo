@@ -140,7 +140,6 @@ class VideoZoomCell: UIView, UIScrollViewDelegate, UIGestureRecognizerDelegate, 
                 let filePath = FileHelper.shared.exsit(path: videoURL.absoluteString, name: name)
                 let options = ["AVURLAssetOutOfBandMIMETypeKey": "video/mp4; codecs=\"avc1.42E01E, mp4a.40.2\""]
                 let asset = AVURLAsset(url: filePath != nil ? URL(string: "file://" + filePath!)! : videoURL, options: options)
-                print("=====asset:\(asset.url)")
                 playerItem = AVPlayerItem(asset: asset)
                 removePlayerItemObservers()
                 player.replaceCurrentItem(with: playerItem)
@@ -237,15 +236,9 @@ class VideoZoomCell: UIView, UIScrollViewDelegate, UIGestureRecognizerDelegate, 
         scrollView.delegate = self
         addSubview(scrollView)
         scrollView.addSubview(imageView)
-//        imageView.addSubview(playButton)
         addSubview(playControlView)
         
         NSLayoutConstraint.activate([
-//            playButton.centerXAnchor.constraint(equalTo: imageView.centerXAnchor),
-//            playButton.centerYAnchor.constraint(equalTo: imageView.centerYAnchor),
-//            playButton.heightAnchor.constraint(equalToConstant: 44),
-//            playButton.widthAnchor.constraint(equalToConstant: 44),
-            
             playControlView.centerXAnchor.constraint(equalTo: centerXAnchor),
             playControlView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
             playControlView.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -16),
@@ -272,7 +265,6 @@ class VideoZoomCell: UIView, UIScrollViewDelegate, UIGestureRecognizerDelegate, 
     private func addPlayerObservers() {
         playerTimeObserver = player.addPeriodicTimeObserver(forInterval: CMTimeMake(value: 1, timescale: 100), queue: DispatchQueue.main, using: { [weak self] timeInterval in
             guard let self else { return }
-            print("======paused")
             playControlView.progress = Float(CMTimeGetSeconds(timeInterval))
         })
 
@@ -280,14 +272,12 @@ class VideoZoomCell: UIView, UIScrollViewDelegate, UIGestureRecognizerDelegate, 
             guard let self else { return }
             switch object.timeControlStatus {
             case .paused:
-                print("======paused")
                 playControlView.reset()
             case .playing:
-                print("======playing")
                 playControlView.stopLoading()
                 saveToLocal()
             case .waitingToPlayAtSpecifiedRate:
-                print("======waitingToPlayAtSpecifiedRate")
+                break
             }
         }
     }
@@ -307,7 +297,6 @@ class VideoZoomCell: UIView, UIScrollViewDelegate, UIGestureRecognizerDelegate, 
             let bufferedTime = CMTimeGetSeconds(CMTimeAdd(timeRange.start, timeRange.duration))
             let duration = CMTimeGetSeconds(object.duration)
             let bufferProgress = bufferedTime / duration
-            print("======bufferProgress")
             playControlView.bufferProgress = Float(bufferProgress)
         })
     }
@@ -331,7 +320,6 @@ class VideoZoomCell: UIView, UIScrollViewDelegate, UIGestureRecognizerDelegate, 
         guard FileHelper.shared.exsit(path: videoURL!.relativeString, name: name) == nil else { return }
         
         let task = URLSession.shared.downloadTask(with: URLRequest(url: videoURL!)) { [weak self] tempURL, response, error in
-            print("r=======:\(response)")
             guard let self, let tempURL else { return }
             
             FileHelper.shared.saveVideo(from: tempURL.relativeString, name: name)
@@ -451,18 +439,6 @@ class VideoZoomCell: UIView, UIScrollViewDelegate, UIGestureRecognizerDelegate, 
             
             lantern?.dismiss()
             dismissHandler?()
-            
-//            let isDown = pan.velocity(in: self).y > 0
-//            if isDown {
-//                lantern?.dismiss()
-//                dismissHandler?()
-//            } else {
-//                hiddenProgressHUD(hidden: false)
-//                lantern?.maskView.alpha = 1.0
-//                lantern?.setStatusBar(hidden: true)
-//                lantern?.pageIndicator?.isHidden = false
-//                resetImageViewPosition()
-//            }
         default:
             resetImageViewPosition()
         }

@@ -6,6 +6,11 @@ class ImageZoomCell: LanternImageCell {
     var frameChangedHandler: ((CGRect) -> Void)?
     var dismissHandler: (() -> Void)?
     
+    override func onSingleTap(_ tap: UITapGestureRecognizer) {
+        super.onSingleTap(tap)
+        dismissHandler?()
+    }
+    
     override func onPan(_ pan: UIPanGestureRecognizer) {
         super.onPan(pan)
         
