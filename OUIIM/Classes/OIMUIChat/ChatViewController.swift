@@ -437,11 +437,11 @@ extension ChatViewController: ChatControllerDelegate {
             case .call:
                 break
             case .deletedByFriend:
-                ProgressHUD.show()
+                ProgressHUD.animate()
                 chatController.addFriend { r in
-                    ProgressHUD.showSucceed("添加好友请求已发送".innerLocalized())
+                    ProgressHUD.success("添加好友请求已发送".innerLocalized())
                 } onFailure: { errCode, errMsg in
-                    ProgressHUD.showError("该用户已设置不可添加！".innerLocalized())
+                    ProgressHUD.error("该用户已设置不可添加！".innerLocalized())
                 }
             default:
                 break

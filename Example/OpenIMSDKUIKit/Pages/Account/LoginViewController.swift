@@ -235,9 +235,9 @@ class LoginViewController: UIViewController {
             
             AccountViewModel.requestCode(phone: phone, areaCode: sself.areaCode, useFor: .login) { (errCode, errMsg) in
                 if errMsg != nil {
-                    ProgressHUD.showError(errMsg)
+                    ProgressHUD.error(errMsg)
                 } else {
-                    ProgressHUD.showSuccess("验证码发送成功".localized())
+                    ProgressHUD.success("验证码发送成功".localized())
                 }
             }
         }

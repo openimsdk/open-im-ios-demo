@@ -42,7 +42,7 @@ class UserDetailTableViewController: UIViewController {
         
         tap.rx.event.subscribe(onNext: { [weak self] _ in
             UIPasteboard.general.string = self?._viewModel.userId
-            ProgressHUD.showSuccess("ID已复制".innerLocalized())
+            ProgressHUD.success("ID已复制".innerLocalized())
         }).disposed(by: _disposeBag)
         
         return v
@@ -84,12 +84,12 @@ class UserDetailTableViewController: UIViewController {
         v.layer.cornerRadius = 6
         
         v.rx.tap.subscribe(onNext: { [weak self] _ in
-            ProgressHUD.show()
+            ProgressHUD.animate()
             self?._viewModel.addFriend(onSuccess: { res in
-                ProgressHUD.showSuccess("添加好友请求已发送".innerLocalized())
+                ProgressHUD.success("添加好友请求已发送".innerLocalized())
             }, onFailure: { (errCode, errMsg) in
                 if errCode == SDKError.refuseToAddFriends.rawValue {
-                    ProgressHUD.showError("该用户已设置不可添加！".innerLocalized())
+                    ProgressHUD.error("该用户已设置不可添加！".innerLocalized())
                 }
             })
         }).disposed(by: _disposeBag)

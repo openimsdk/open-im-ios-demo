@@ -159,7 +159,7 @@ class NewGroupViewController: UITableViewController {
                 return
             }
             
-            ProgressHUD.show()
+            ProgressHUD.animate()
             _viewModel.createGroup { [weak self] conversation in
                 ProgressHUD.dismiss()
                 if let conversation = conversation {

@@ -194,7 +194,7 @@ extension UserProfileTableViewController: UITableViewDataSource, UITableViewDele
     }
     
     @objc func deleteFriend() {
-        ProgressHUD.show()
+        ProgressHUD.animate()
         _viewModel.deleteFriend {[weak self] r in
             ProgressHUD.dismiss()
             

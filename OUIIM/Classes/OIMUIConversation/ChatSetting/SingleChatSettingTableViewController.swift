@@ -167,7 +167,7 @@ class SingleChatSettingTableViewController: UITableViewController {
         case .clearRecord:
             presentAlert(title: "确认清空所有聊天记录吗？".innerLocalized()) {
                 self._viewModel.clearRecord(completion: { _ in
-                    ProgressHUD.showSuccess("清空成功".innerLocalized())
+                    ProgressHUD.success("清空成功".innerLocalized())
                 })
             }
         default:

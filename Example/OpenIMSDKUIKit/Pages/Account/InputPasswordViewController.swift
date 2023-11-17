@@ -230,10 +230,10 @@ public class InputPasswordViewController: UIViewController {
         if let psw = againPswTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines), psw.count >= 6 {
             if usedFor == .register {
                 guard let name = nameTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines), !name.isEmpty else {
-                    ProgressHUD.showError("输入昵称".localized())
+                    ProgressHUD.error("输入昵称".localized())
                     return
                 }
-                ProgressHUD.show()
+                ProgressHUD.animate()
                 AccountViewModel.registerAccount(phone: basicInfo["phone"]!,
                                                  areaCode: basicInfo["areaCode"]!,
                                                  verificationCode: basicInfo["verCode"]!,
@@ -242,7 +242,7 @@ public class InputPasswordViewController: UIViewController {
                                                  nickName: name,
                                                  invitationCode: basicInfo["invitationCode"]) { (errCode, errMsg) in
                     if errMsg != nil {
-                        ProgressHUD.showError(errMsg)
+                        ProgressHUD.error(errMsg)
                     } else {
                         AccountViewModel.loginIM(uid: AccountViewModel.baseUser.userID,
                                                  imToken: AccountViewModel.baseUser.imToken,
@@ -266,15 +266,15 @@ public class InputPasswordViewController: UIViewController {
                                                password: psw) { [weak self] (errCode, errMsg) in
                     
                     if errCode == 0, let `self` = self {
-                        ProgressHUD.showSuccess("修改密码成功，请重新登录")
+                        ProgressHUD.success("修改密码成功，请重新登录")
                         self.navigationController?.popToRootViewController(animated: true)
                     } else {
-                        ProgressHUD.showError(errMsg)
+                        ProgressHUD.error(errMsg)
                     }
                 }
             }
         } else {
-            ProgressHUD.showError("输入正确的密码")
+            ProgressHUD.error("输入正确的密码")
         }
     }
 }

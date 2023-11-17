@@ -104,14 +104,13 @@ public class IMController: NSObject {
         self.businessToken = businessToken
     }
     
-    public func setup(sdkAPIAdrr: String, sdkWSAddr: String, sdkOS: String, onKickedOffline: (() -> Void)? = nil) {
+    public func setup(sdkAPIAdrr: String, sdkWSAddr: String, onKickedOffline: (() -> Void)? = nil) {
         self.sdkAPIAdrr = sdkAPIAdrr
         let manager = OIMManager.manager
         
         var config = OIMInitConfig()
         config.apiAddr = sdkAPIAdrr
         config.wsAddr = sdkWSAddr
-        config.objectStorage = sdkOS
         config.logLevel = 3
         
         manager.initSDK(with: config) { [weak self] in
@@ -875,7 +874,9 @@ extension IMController {
     }
     
     public func markMessageAsReaded(byConID: String, msgIDList: [String], onSuccess: @escaping CallBack.StringOptionalReturnVoid) {
-        Self.shared.imManager.markMessageAsRead(byMsgID: byConID, clientMsgIDs: msgIDList, onSuccess: onSuccess)
+        Self.shared.imManager.markConversationMessage(asRead: byConID, onSuccess: onSuccess) { code, msg in
+            
+        }
     }
     
     public func createGroupConversation(users: [UserInfo], groupType: GroupType = .normal, groupName: String = "", onSuccess: @escaping CallBack.GroupInfoOptionalReturnVoid) {
@@ -2125,8 +2126,8 @@ extension OIMGroupInfo {
         item.groupType = GroupType(rawValue: groupType.rawValue) ?? .working
         item.status = GroupStatus(rawValue: status.rawValue) ?? .ok
         item.needVerification = GroupVerificationType(rawValue: needVerification.rawValue) ?? .applyNeedVerificationInviteDirectly
-        item.lookMemberInfo = lookMemberInfo
-        item.applyMemberFriend = applyMemberFriend
+        item.lookMemberInfo = lookMemberInfo.rawValue
+        item.applyMemberFriend = applyMemberFriend.rawValue
         
         return item
     }
@@ -2329,8 +2330,6 @@ extension OIMMessageStatus {
             return .sendSuccess
         case .sendFailure:
             return .sendFailure
-        case .deleted:
-            return .deleted
         case .revoke:
             return .revoke
         @unknown
@@ -2604,7 +2603,7 @@ extension OIMFullUserInfo {
         item.userID = userID
         item.showName = showName
         item.faceURL = faceURL
-        item.gender = Gender(rawValue: gender.rawValue) ?? .male
+
         return item
     }
 }
@@ -2635,9 +2634,6 @@ extension OIMFriendInfo {
         item.createTime = createTime
         item.addSource = addSource
         item.operatorUserID = operatorUserID
-        item.phoneNumber = phoneNumber
-        item.birth = birth
-        item.email = email
         item.attachedInfo = attachedInfo
         item.ex = ex
         return item
@@ -2656,9 +2652,6 @@ extension OIMSearchFriendsInfo {
         item.createTime = createTime
         item.addSource = addSource
         item.operatorUserID = operatorUserID
-        item.phoneNumber = phoneNumber
-        item.birth = birth
-        item.email = email
         item.attachedInfo = attachedInfo
         item.ex = ex
         return item
@@ -2671,7 +2664,7 @@ extension OIMPublicUserInfo {
         item.userID = userID
         item.nickname = nickname
         item.faceURL = faceURL
-        item.gender = Gender(rawValue: gender.rawValue) ?? .male
+
         return item
     }
 }
@@ -2735,8 +2728,8 @@ extension GroupInfo {
         item.groupName = groupName
         item.introduction = introduction
         item.notification = notification
-        item.lookMemberInfo = lookMemberInfo
-        item.applyMemberFriend = applyMemberFriend
+        item.lookMemberInfo = OIMAllowType(rawValue: lookMemberInfo) ?? .allowed
+        item.applyMemberFriend = OIMAllowType(rawValue: applyMemberFriend) ?? .allowed
         item.needVerification = OIMGroupVerificationType(rawValue: needVerification.rawValue)!
         item.groupType = OIMGroupType(rawValue: groupType.rawValue)!
         
@@ -2754,6 +2747,7 @@ public extension SearchParam {
         item.searchTimePosition = searchTimePosition
         item.pageIndex = pageIndex
         item.count = count
+        
         return item
     }
 }

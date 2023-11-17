@@ -60,7 +60,7 @@ open class ChatListViewController: UIViewController, UITableViewDelegate {
                     self?.navigationController?.pushViewController(vc, animated: true)
                     self?.dismiss(animated: false)
                 } else {
-                    ProgressHUD.showError(result)
+                    ProgressHUD.error(result)
                 }
             }
             vc.modalPresentationStyle = .fullScreen

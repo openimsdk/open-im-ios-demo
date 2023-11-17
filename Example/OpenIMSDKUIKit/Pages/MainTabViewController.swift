@@ -71,10 +71,10 @@ class MainTabViewController: UITabBarController {
         if let uid = UserDefaults.standard.object(forKey: AccountViewModel.IMUidKey) as? String,
            let token = UserDefaults.standard.object(forKey: AccountViewModel.IMTokenKey) as? String,
            let chatToken = UserDefaults.standard.object(forKey: AccountViewModel.bussinessTokenKey) as? String {
-            ProgressHUD.show()
+            ProgressHUD.animate()
             AccountViewModel.loginIM(uid: uid, imToken: token, chatToken: chatToken) {[weak self] (errCode, errMsg) in
                 if errMsg != nil {
-                    ProgressHUD.showError(errMsg)
+                    ProgressHUD.error(errMsg)
                     self?.presentLoginController()
                 } else {
                     self?.pushBindAlias()
@@ -98,7 +98,7 @@ class MainTabViewController: UITabBarController {
             guard let controller = vc, let phone = controller.phone, !phone.isEmpty else { return }
             
             guard let phone = controller.phone, !phone.isEmpty else {
-                ProgressHUD.showError("填写正确的手机号码")
+                ProgressHUD.error("填写正确的手机号码")
                 return
             }
             
@@ -106,19 +106,19 @@ class MainTabViewController: UITabBarController {
             let code = controller.verificationCode
             
             guard psw?.isEmpty == false || code?.isEmpty == false else {
-                ProgressHUD.showError("填写正确的密码/验证码")
+                ProgressHUD.error("填写正确的密码/验证码")
                 return
             }
             var account: String?
 
-            ProgressHUD.show()
+            ProgressHUD.animate()
             AccountViewModel.loginDemo(phone: phone,
                                        account: account,
                                        psw: code != nil ? nil : psw,
                                        verificationCode: code,
                                        areaCode: controller.areaCode) {[weak self] (errCode, errMsg) in
                 if errMsg != nil {
-                    ProgressHUD.showError(errMsg)
+                    ProgressHUD.error(errMsg)
                     self?.presentLoginController()
                 } else {
                     self?.pushBindAlias()

@@ -269,7 +269,7 @@ extension GroupDetailViewController: UITableViewDelegate, UITableViewDataSource 
             navigationController?.pushViewController(vc, animated: true)
         case .identifier:
             UIPasteboard.general.string = _viewModel.groupId
-            ProgressHUD.showSuccess("群聊ID已复制".innerLocalized())
+            ProgressHUD.success("群聊ID已复制".innerLocalized())
             
         default:
             break

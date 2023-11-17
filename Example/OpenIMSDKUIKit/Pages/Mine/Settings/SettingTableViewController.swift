@@ -95,9 +95,9 @@ class SettingTableViewController: UITableViewController {
             navigationController?.pushViewController(vc, animated: true)
         case .clearHistory:
             presentAlert(title: "您确定要清空聊天记录吗？".innerLocalized()) {
-                ProgressHUD.show("请等待...".innerLocalized())
+                ProgressHUD.animate("请等待...".innerLocalized())
                 self._viewModel.clearHistory { res in
-                    ProgressHUD.showSuccess("清空完成".innerLocalized())
+                    ProgressHUD.success("清空完成".innerLocalized())
                 }
             }
         }

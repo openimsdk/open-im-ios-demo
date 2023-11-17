@@ -73,9 +73,9 @@ class InputCodeViewController: UIViewController {
             guard let `self` = self else { return }
             AccountViewModel.requestCode(phone: phone, areaCode: areaCode, useFor: self.usedFor) { (errCode, errMsg) in
                 if errCode != 0 {
-                    ProgressHUD.showError(errMsg)
+                    ProgressHUD.error(errMsg)
                 } else {
-                    ProgressHUD.showSuccess("验证码发送成功".localized())
+                    ProgressHUD.success("验证码发送成功".localized())
                     countDownButton.isCounting = true
                 }
             }
@@ -102,7 +102,7 @@ class InputCodeViewController: UIViewController {
             if let t = text, completed, let `self` = self {
                 AccountViewModel.verifyCode(phone: phone, areaCode: areaCode, useFor: self.usedFor, verificationCode: t) { [weak self] errCode, errMsg in
                     if errCode != 0 {
-                        ProgressHUD.showError(errMsg)
+                        ProgressHUD.error(errMsg)
                     } else {
                         guard let sself = self else { return }
                         sself.basicInfo["verCode"] = t

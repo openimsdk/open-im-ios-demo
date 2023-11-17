@@ -183,7 +183,7 @@ open class PhotoHelper {
 //            if let fullPath {
 //                browserHelper(paths: ["file://" + fullPath], forVideo: forVideo, index: index)
 //            } else {
-                ProgressHUD.show(interaction: false)
+                ProgressHUD.animate(interaction: false)
                 let task = connection.dataTask(with: URLRequest(url: URL(string: originPath)!)) { [self] data, responose, error in
                     if let path = responose?.url?.relativeString, let url = URL(string: path) {
                         DispatchQueue.main.async {

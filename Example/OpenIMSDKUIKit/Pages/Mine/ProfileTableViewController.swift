@@ -17,15 +17,15 @@ class ProfileTableViewController: OUIIM.ProfileTableViewController {
         v.setConfigToPickAvatar()
         v.didPhotoSelected = { [weak self] (images: [UIImage], _: [PHAsset], _: Bool) in
             guard var first = images.first else { return }
-            ProgressHUD.show()
+            ProgressHUD.animate()
             first = first.compress(to: 42)
             let result = FileHelper.shared.saveImage(image: first)
                         
             if result.isSuccess {
                 self?._viewModel.uploadFile(fullPath: result.fullPath, onProgress: { [weak self] progress in
-                    ProgressHUD.showProgress(progress)
+                    ProgressHUD.progress(progress)
                 }, onComplete: {
-                    ProgressHUD.showSuccess("头像上传成功".innerLocalized())
+                    ProgressHUD.success("头像上传成功".innerLocalized())
                     self?.getUserOrMemberInfo()
                 })
             } else {
@@ -39,9 +39,9 @@ class ProfileTableViewController: OUIIM.ProfileTableViewController {
                 let result = FileHelper.shared.saveImage(image: photo)
                 if result.isSuccess {
                     self?._viewModel.uploadFile(fullPath: result.fullPath, onProgress: { [weak self] progress in
-                        ProgressHUD.showProgress(progress)
+                        ProgressHUD.progress(progress)
                     }, onComplete: {
-                        ProgressHUD.showSuccess("头像上传成功".innerLocalized())
+                        ProgressHUD.success("头像上传成功".innerLocalized())
                         self?.getUserOrMemberInfo()
                     })
                 }
@@ -141,11 +141,11 @@ class ProfileTableViewController: OUIIM.ProfileTableViewController {
             navigationController?.pushViewController(vc, animated: true)
         case .identifier:
             UIPasteboard.general.string = _viewModel.currentUserRelay.value?.userID
-            ProgressHUD.showSuccess("ID复制成功")
+            ProgressHUD.success("ID复制成功")
         case .email:
             if let email = user?.email, !email.isEmpty {
                 UIPasteboard.general.string = email
-                ProgressHUD.showSuccess("邮箱复制成功")
+                ProgressHUD.success("邮箱复制成功")
             }
             break
         }

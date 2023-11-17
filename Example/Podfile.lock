@@ -1,11 +1,11 @@
 PODS:
   - Alamofire (4.9.1)
-  - ChatLayout (1.3.6):
-    - ChatLayout/Ultimate (= 1.3.6)
-  - ChatLayout/Core (1.3.6)
-  - ChatLayout/Extras (1.3.6):
+  - ChatLayout (2.0.3):
+    - ChatLayout/Ultimate (= 2.0.3)
+  - ChatLayout/Core (2.0.3)
+  - ChatLayout/Extras (2.0.3):
     - ChatLayout/Core
-  - ChatLayout/Ultimate (1.3.6):
+  - ChatLayout/Ultimate (2.0.3):
     - ChatLayout/Core
     - ChatLayout/Extras
   - DifferenceKit (1.3.0):
@@ -18,7 +18,7 @@ PODS:
   - InputBarAccessoryView (5.5.0):
     - InputBarAccessoryView/Core (= 5.5.0)
   - InputBarAccessoryView/Core (5.5.0)
-  - IQKeyboardManagerSwift (6.5.15)
+  - IQKeyboardManagerSwift (6.5.16)
   - JXSegmentedView (1.3.0)
   - Kingfisher (7.7.0)
   - Lantern (1.1.5)
@@ -30,46 +30,46 @@ PODS:
     - Localize-Swift/LocalizeSwiftCore
   - lottie-ios (3.5.0)
   - MJExtension (3.4.1)
-  - MJRefresh (3.7.5)
+  - MJRefresh (3.7.6)
   - MMBAlertsPickers (1.1.93)
-  - OpenIMSDK (3.3.0):
+  - OpenIMSDK (3.4.0):
     - MJExtension
-    - OpenIMSDK/Callbacker (= 3.3.0)
-    - OpenIMSDK/CallbackProxy (= 3.3.0)
-    - OpenIMSDK/Interface (= 3.3.0)
-    - OpenIMSDK/Model (= 3.3.0)
-    - OpenIMSDK/Utils (= 3.3.0)
-    - OpenIMSDKCore (= 3.3.0)
-  - OpenIMSDK/Callbacker (3.3.0):
+    - OpenIMSDK/Callbacker (= 3.4.0)
+    - OpenIMSDK/CallbackProxy (= 3.4.0)
+    - OpenIMSDK/Interface (= 3.4.0)
+    - OpenIMSDK/Model (= 3.4.0)
+    - OpenIMSDK/Utils (= 3.4.0)
+    - OpenIMSDKCore (= 3.4.0)
+  - OpenIMSDK/Callbacker (3.4.0):
     - MJExtension
     - OpenIMSDK/Model
     - OpenIMSDK/Utils
-    - OpenIMSDKCore (= 3.3.0)
-  - OpenIMSDK/CallbackProxy (3.3.0):
+    - OpenIMSDKCore (= 3.4.0)
+  - OpenIMSDK/CallbackProxy (3.4.0):
     - MJExtension
     - OpenIMSDK/Utils
-    - OpenIMSDKCore (= 3.3.0)
-  - OpenIMSDK/Interface (3.3.0):
+    - OpenIMSDKCore (= 3.4.0)
+  - OpenIMSDK/Interface (3.4.0):
     - MJExtension
     - OpenIMSDK/Callbacker
     - OpenIMSDK/CallbackProxy
     - OpenIMSDK/Model
-    - OpenIMSDKCore (= 3.3.0)
-  - OpenIMSDK/Model (3.3.0):
+    - OpenIMSDKCore (= 3.4.0)
+  - OpenIMSDK/Model (3.4.0):
     - MJExtension
     - OpenIMSDK/Utils
-    - OpenIMSDKCore (= 3.3.0)
-  - OpenIMSDK/Utils (3.3.0):
+    - OpenIMSDKCore (= 3.4.0)
+  - OpenIMSDK/Utils (3.4.0):
     - MJExtension
-    - OpenIMSDKCore (= 3.3.0)
-  - OpenIMSDKCore (3.3.0)
+    - OpenIMSDKCore (= 3.4.0)
+  - OpenIMSDKCore (3.4.0)
   - OUICore (0.0.1):
     - Alamofire (= 4.9.1)
     - IQKeyboardManagerSwift
     - Kingfisher (= 7.7.0)
     - Localize-Swift (~> 3.2)
     - lottie-ios (~> 3.0)
-    - OpenIMSDK (= 3.3.0)
+    - OpenIMSDK (= 3.4.0)
     - ProgressHUD
     - RxCocoa (~> 6.0)
     - RxDataSources
@@ -91,7 +91,7 @@ PODS:
     - RxRelay
     - RxSwift
     - SnapKit
-  - ProgressHUD (13.8.4)
+  - ProgressHUD (14.1.0)
   - RxCocoa (6.6.0):
     - RxRelay (= 6.6.0)
     - RxSwift (= 6.6.0)
@@ -163,25 +163,25 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   Alamofire: 85e8a02c69d6020a0d734f6054870d7ecb75cf18
-  ChatLayout: 04d5512e8dd60b3d0305e68b29a37eb62509f02a
+  ChatLayout: 0e958d11b184b64116eb8b37009e4f1aa5b9385f
   DifferenceKit: ab185c4d7f9cef8af3fcf593e5b387fb81e999ca
   Differentiator: e8497ceab83c1b10ca233716d547b9af21b9344d
   InputBarAccessoryView: 1d7b0a672b36e370f01f264b3907ef39d03328e3
-  IQKeyboardManagerSwift: 79fab21f451441935788dc5d80ded21c32685904
+  IQKeyboardManagerSwift: 12d89768845bb77b55cc092ecc2b1f9370f06b76
   JXSegmentedView: fec0d335355b6e019c494fe2e030bde8a36d2df6
   Kingfisher: f043ac666dfc96c1f37604f93effb45a7ee3a3e1
   Lantern: b192e7146c6d04e15e627f37281254a6a8593703
   Localize-Swift: 6f4475136bdb0d7b2882ea3d4ea919d70142b232
   lottie-ios: c55158d67d0629a260625cc2ded2052b829e3c3e
   MJExtension: 21c5f6f8c4d5d8844b7ae8fbae08fed0b501f961
-  MJRefresh: fdf5e979eb406a0341468932d1dfc8b7f9fce961
+  MJRefresh: 2fe7fb43a5167ceda20bb7e63f130c04fd1814a5
   MMBAlertsPickers: d52d288114c7dad4e4f1282fb2b1f1189ccc117a
-  OpenIMSDK: 093a404ac2c943b72501c9f493aae36fdc502ae4
-  OpenIMSDKCore: eb8af354dd72c47384d79c6c3b82ca09c05cc527
-  OUICore: a3dade1494e41b4e8541491f44abea1703d671a7
+  OpenIMSDK: 401be23a28acc9442eb3fb6fa9207c8477368622
+  OpenIMSDKCore: 47e0e830afe0d2dd905ad3dda255e6a6d26a555c
+  OUICore: 7f612f0adfba77841e3aa3b13388f63f0a652f72
   OUICoreView: 005ec463b1f1b6346fdd85da447187a65395f337
   OUIIM: b52a5b47396a785f7f8aad511477d49ecc0b9b66
-  ProgressHUD: b8db7da8b361d5d018f9869f9918ead782514234
+  ProgressHUD: c4a55f108815c46a6bf082407d2f806840b7a869
   RxCocoa: 44a80de90e25b739b5aeaae3c8c371a32e3343cc
   RxDataSources: aa47cc1ed6c500fa0dfecac5c979b723542d79cf
   RxGesture: f3efb47ed2d26a8082f7b660d4a59970e275a7f8
@@ -194,4 +194,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 976fcfbc9f09554bf6cc942541e87de8486d8399
 
-COCOAPODS: 1.12.1
+COCOAPODS: 1.13.0

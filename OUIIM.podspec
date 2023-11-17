@@ -32,13 +32,13 @@ Pod::Spec.new do |s|
   s.static_framework = true
   s.dependency 'OUICore'
   s.dependency 'OUICoreView'
-  s.dependency 'JXSegmentedView'
+  s.dependency 'JXSegmentedView', '1.3.0'
   s.dependency 'MJRefresh'
   s.dependency 'RxSwift'
   s.dependency 'RxRelay'
   s.dependency 'SnapKit'
-  s.dependency 'DifferenceKit'
-  s.dependency 'ChatLayout'
-  s.dependency 'InputBarAccessoryView'
+  s.dependency 'DifferenceKit', '1.3.0'
+  s.dependency 'ChatLayout', '2.0.3'
+  s.dependency 'InputBarAccessoryView', '5.0.0'
 
 end

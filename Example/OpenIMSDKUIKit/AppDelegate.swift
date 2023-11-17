@@ -71,8 +71,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
 
         // Initialize the SDK
         IMController.shared.setup(sdkAPIAdrr: sdkAPIAddress,
-                                  sdkWSAddr: sdkWebSocketAddress,
-                                  sdkOS: sdkObjectStorage) {
+                                  sdkWSAddr: sdkWebSocketAddress) {
             IMController.shared.currentUserRelay.accept(nil)
             AccountViewModel.saveUser(uid: nil, imToken: nil, chatToken: nil)
             NotificationCenter.default.post(name: .init("logout"), object: nil)

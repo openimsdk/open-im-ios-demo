@@ -355,7 +355,7 @@ open class AccountViewModel {
     }
     
     // 查询好友
-    static func queryFriends(pageNumber: Int = 0,
+    static func queryFriends(pageNumber: Int = 1,
                              showNumber: Int = 100,
                              content: String,
                              valueHandler: @escaping ([QueryUserInfo]) -> Void,

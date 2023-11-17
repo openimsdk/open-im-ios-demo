@@ -32,5 +32,5 @@ Pod::Spec.new do |s|
   s.static_framework = true
 
   s.dependency 'OUICore'
-  s.dependency 'Lantern'
+  s.dependency 'Lantern', '1.1.5'
 end

@@ -124,9 +124,9 @@ class GroupChatSettingTableViewController: UITableViewController {
                 vc.nameTextField.text = self?._viewModel.groupInfoRelay.value?.groupName
                 vc.completeBtn.rx.tap.subscribe(onNext: { [weak self, weak vc] in
                     guard let text = vc?.nameTextField.text, !text.isEmpty else { return }
-                    ProgressHUD.show()
+                    ProgressHUD.animate()
                     self?._viewModel.updateGroupName(text, onSuccess: { _ in
-                        ProgressHUD.showSuccess()
+                        ProgressHUD.success()
                         vc?.navigationController?.popViewController(animated: true)
                     })
                 }).disposed(by: vc.disposeBag)

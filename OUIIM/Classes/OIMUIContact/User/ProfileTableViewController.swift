@@ -166,7 +166,7 @@ open class ProfileTableViewController: UITableViewController {
             navigationController?.pushViewController(vc, animated: true)
         case .identifier:
             UIPasteboard.general.string = _viewModel.userInfoRelay.value?.userID
-            ProgressHUD.showSuccess("ID复制成功")
+            ProgressHUD.success("ID复制成功")
         default:
             break
         }
