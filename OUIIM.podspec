@@ -39,6 +39,6 @@ Pod::Spec.new do |s|
   s.dependency 'SnapKit'
   s.dependency 'DifferenceKit', '1.3.0'
   s.dependency 'ChatLayout', '2.0.3'
-  s.dependency 'InputBarAccessoryView', '5.0.0'
+  s.dependency 'InputBarAccessoryView', '5.5.0'
 
 end

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		170703BC2B440A8800DDD2FC /* libresolv.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 170703BB2B440A8800DDD2FC /* libresolv.tbd */; };
 		170A2B3928F29C5000CA68EA /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 170A2B3828F29C5000CA68EA /* NotificationService.swift */; };
 		170A2B3D28F29C5000CA68EA /* NotificationService.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 170A2B3628F29C5000CA68EA /* NotificationService.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		1780764A29260BF50024399B /* InputPasswordViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1780764929260BF50024399B /* InputPasswordViewController.swift */; };
@@ -62,6 +63,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		170703BB2B440A8800DDD2FC /* libresolv.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libresolv.tbd; path = usr/lib/libresolv.tbd; sourceTree = SDKROOT; };
 		170A2B3628F29C5000CA68EA /* NotificationService.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = NotificationService.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		170A2B3828F29C5000CA68EA /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		170A2B3A28F29C5000CA68EA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -117,6 +119,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				170703BC2B440A8800DDD2FC /* libresolv.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -229,6 +232,7 @@
 		641162BB15A7DD76EBF4C191 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				170703BB2B440A8800DDD2FC /* libresolv.tbd */,
 				DC1FAF0F27FF04D000B529B9 /* OpenIMSDKUIKit.framework */,
 				17B485F529C082CA002571B8 /* ReplayKit.framework */,
 			);
@@ -331,12 +335,12 @@
 				TargetAttributes = {
 					170A2B3528F29C5000CA68EA = {
 						CreatedOnToolsVersion = 13.4;
-						DevelopmentTeam = BDLHL8GNFV;
+						DevelopmentTeam = V57RT7LMFH;
 						ProvisioningStyle = Automatic;
 					};
 					607FACCF1AFB9204008FA782 = {
 						CreatedOnToolsVersion = 6.3.1;
-						DevelopmentTeam = BDLHL8GNFV;
+						DevelopmentTeam = V57RT7LMFH;
 						LastSwiftMigration = 1340;
 						ProvisioningStyle = Automatic;
 					};
@@ -502,7 +506,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 330000;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = BDLHL8GNFV;
+				DEVELOPMENT_TEAM = V57RT7LMFH;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = NotificationService/Info.plist;
@@ -514,7 +518,7 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				OTHER_SWIFT_FLAGS = "$(inherited) -D COCOAPODS";
-				PRODUCT_BUNDLE_IDENTIFIER = cn.rentsoft.ios.openim.NotificationService;
+				PRODUCT_BUNDLE_IDENTIFIER = io.openim.ios.demoo.NotificationService;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
@@ -540,7 +544,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 330000;
-				DEVELOPMENT_TEAM = BDLHL8GNFV;
+				DEVELOPMENT_TEAM = V57RT7LMFH;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = NotificationService/Info.plist;
@@ -551,7 +555,7 @@
 				MARKETING_VERSION = 3.3.0;
 				MTL_FAST_MATH = YES;
 				OTHER_SWIFT_FLAGS = "$(inherited) -D COCOAPODS";
-				PRODUCT_BUNDLE_IDENTIFIER = cn.rentsoft.ios.openim.NotificationService;
+				PRODUCT_BUNDLE_IDENTIFIER = io.openim.ios.demoo.NotificationService;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -673,8 +677,8 @@
 				CODE_SIGN_ENTITLEMENTS = OpenIMSDKUIKit_Example.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 330000;
-				DEVELOPMENT_TEAM = BDLHL8GNFV;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = V57RT7LMFH;
 				ENABLE_BITCODE = NO;
 				EXCLUDED_ARCHS = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -684,10 +688,10 @@
 				INFOPLIST_FILE = OpenIMSDKUIKit/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 3.3.0;
+				MARKETING_VERSION = 3.5.0;
 				MODULE_NAME = ExampleApp;
 				OTHER_SWIFT_FLAGS = "$(inherited) -D COCOAPODS";
-				PRODUCT_BUNDLE_IDENTIFIER = cn.rentsoft.ios.openim;
+				PRODUCT_BUNDLE_IDENTIFIER = io.openim.ios.demoo;
 				PRODUCT_NAME = "OpenIM-Native";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";
@@ -708,8 +712,8 @@
 				CODE_SIGN_ENTITLEMENTS = OpenIMSDKUIKit_Example.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 330000;
-				DEVELOPMENT_TEAM = BDLHL8GNFV;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = V57RT7LMFH;
 				ENABLE_BITCODE = NO;
 				EXCLUDED_ARCHS = "";
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -719,10 +723,10 @@
 				INFOPLIST_FILE = OpenIMSDKUIKit/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				MARKETING_VERSION = 3.3.0;
+				MARKETING_VERSION = 3.5.0;
 				MODULE_NAME = ExampleApp;
 				OTHER_SWIFT_FLAGS = "$(inherited) -D COCOAPODS";
-				PRODUCT_BUNDLE_IDENTIFIER = cn.rentsoft.ios.openim;
+				PRODUCT_BUNDLE_IDENTIFIER = io.openim.ios.demoo;
 				PRODUCT_NAME = "OpenIM-Native";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "";
