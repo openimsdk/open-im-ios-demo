@@ -196,3 +196,12 @@
 "申请描述：" = "Descreption:"
 "来源：" = "Join source:"
 "去处理" = "ToDo"
+"callingBusy" = "You are already on a call or in a meeting and cannot perform this operation!";
+"callVoice" = "Voice Call";
+"callVideo" = "Video Call";
+"cancel" = "Cancel";
+"waitingCallHint" = "Calling...";
+"waitingVoiceCallHint" = "Waiting for the other party to pick up ...";
+"invitedVoiceCallHint" = "Inviting you for a voice call...";
+"waitingVideoCallHint" = "Waiting for the other party to accept the invitation";
+"invitedVideoCallHint" = "Inviting you for a video call...";

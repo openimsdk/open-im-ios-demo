@@ -2,6 +2,7 @@
 import OUICore
 import RxRelay
 import RxSwift
+import OUICalling
 
 class ChatListViewModel {
     var conversationsRelay: BehaviorRelay<[ConversationInfo]> = .init(value: [])
@@ -81,6 +82,8 @@ class ChatListViewModel {
             self?.getSelfInfo(onSuccess: { (userInfo: UserInfo?) in
                 self?.loginUserPublish.onNext(userInfo)
             })
+            OUICalling.CallingManager.manager.start()
+            
         }.disposed(by: _disposeBag)
 
         JNNotificationCenter.shared.observeEvent { [weak self] (_: EventRecordClear) in

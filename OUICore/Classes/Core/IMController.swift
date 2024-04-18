@@ -38,19 +38,25 @@ public enum ConnectionStatus: Int {
 }
 
 public enum SDKError: Int {
-    case blockedByFriend = 600 // 被对方拉黑
-    case deletedByFriend = 601 // 被对方删除
-    case refuseToAddFriends = 10007 // 该用户已设置不可添加
+    case blockedByFriend = 600
+    case deletedByFriend = 601
+    case refuseToAddFriends = 10007
 }
 
 public enum CustomMessageType: Int {
-    case call = 901 // 音视频
-    case customEmoji = 902 // emoji
-    case tagMessage = 903 // 标签消息
-    case moments = 904 // 朋友圈
-    case meeting = 905 // 会议
-    case blockedByFriend = 910 // 被拉黑
-    case deletedByFriend = 911 // 被删除
+    case call = 901
+    case customEmoji = 902
+    case tagMessage = 903
+    case moments = 904
+    case meeting = 905
+    case blockedByFriend = 910
+    case deletedByFriend = 911
+    
+    case callingInvite = 200
+    case callingAccept = 201
+    case callingReject = 202
+    case callingCancel = 203
+    case callingHungup = 204
 }
 
 public class IMController: NSObject {
@@ -111,7 +117,7 @@ public class IMController: NSObject {
         var config = OIMInitConfig()
         config.apiAddr = sdkAPIAdrr
         config.wsAddr = sdkWSAddr
-        config.logLevel = 3
+        config.logLevel = 6
         
         manager.initSDK(with: config) { [weak self] in
             self?.connectionRelay.accept(.connecting)
@@ -151,21 +157,6 @@ public class IMController: NSObject {
             UINavigationBar.appearance().scrollEdgeAppearance = app
             UINavigationBar.appearance().standardAppearance = app
         }
-        
-        IQKeyboardManager.shared.enable = true
-        IQKeyboardManager.shared.enableAutoToolbar = false
-        IQKeyboardManager.shared.shouldResignOnTouchOutside = true
-        //        IQKeyboardManager.shared.disabledDistanceHandlingClasses = [
-        //            MessageListViewController.self,
-        //        ]
-        //        IQKeyboardManager.shared.disabledToolbarClasses = [
-        //            MessageListViewController.self,
-        //        ]
-        //        IQKeyboardManager.shared.disabledTouchResignedClasses = [
-        //            SearchResultViewController.self,
-        //            SearchFriendViewController.self,
-        //            SearchGroupViewController.self,
-        //        ]
     }
     
     public func login(uid: String, token: String, onSuccess: @escaping (String?) -> Void, onFail: @escaping (Int, String?) -> Void) {
@@ -446,7 +437,7 @@ extension IMController {
     }
     
     public func inviteUsersToGroup(groupId: String, uids: [String], onSuccess: @escaping CallBack.VoidReturnVoid) {
-        Self.shared.imManager.inviteUser(toGroup: groupId, reason: "", usersID: uids) { (_: [OIMSimpleResultInfo]?) in
+        Self.shared.imManager.inviteUser(toGroup: groupId, reason: "", usersID: uids) { r in
             onSuccess()
         } onFailure: { code, msg in
             print("邀请好友加入失败：\(code), \(msg)")

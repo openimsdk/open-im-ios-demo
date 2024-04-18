@@ -217,6 +217,12 @@ public class InputPasswordViewController: UIViewController {
             make.height.equalTo(40)
         }
 
+        let tap = UITapGestureRecognizer()
+        view.addGestureRecognizer(tap)
+        
+        tap.rx.event.subscribe(onNext: { [weak self] _ in
+            self?.view.endEditing(true)
+        }).disposed(by: _disposeBag)
     }
     
     deinit {

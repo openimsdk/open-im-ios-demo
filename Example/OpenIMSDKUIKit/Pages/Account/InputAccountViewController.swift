@@ -249,6 +249,13 @@ public class InputAccountViewController: UIViewController {
             make.leading.trailing.equalTo(loginBtn)
             make.top.equalTo(loginBtn.snp.bottom).offset(16)
         }
+        
+        let tap = UITapGestureRecognizer()
+        view.addGestureRecognizer(tap)
+        
+        tap.rx.event.subscribe(onNext: { [weak self] _ in
+            self?.view.endEditing(true)
+        }).disposed(by: _disposeBag)
     }
     
     deinit {

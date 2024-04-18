@@ -477,6 +477,8 @@ public struct MessageHelper {
             return "[朋友圈]"
         case .meeting:
             return "[视频会议]"
+        default:
+            return ""
         }
     }
 }

@@ -3,6 +3,7 @@ import Foundation
 import UIKit
 import OUICore
 import RxSwift
+import OUICalling
 
 protocol DataProvider {
 
@@ -143,9 +144,63 @@ final class DefaultDataProvider: DataProvider {
                     return
                 }
                 
+                let msgs = ms.filter { message in
+                    if message.contentType == .custom {
+                        let data = message.customElem!.value()
+                        let customType = message.customElem?.type
+                        
+                        if (customType == CustomMessageType.callingInvite ||
+                            customType == CustomMessageType.callingAccept ||
+                            customType == CustomMessageType.callingReject ||
+                            customType == CustomMessageType.callingCancel ||
+                            customType == CustomMessageType.callingHungup) {
+                            
+                            return false
+                        }
+                    }
+                    
+                    return true
+                }
+                
                 self.lastMinSeq = seq
                 self.startClientMsgID = ms.first?.clientMsgID
-                completion(ms)
+                
+                if msgs.count < 50 {
+                    IMController.shared.getHistoryMessageList(conversationID: conversation.conversationID,
+                                                              conversationType: conversation.conversationType,
+                                                              startCliendMsgId: startClientMsgID,
+                                                              lastMinSeq: lastMinSeq) { [weak self] seq, ms2 in
+                        guard let self, !ms2.isEmpty else {
+                            completion(ms)
+                            return
+                        }
+                        
+                        self.lastMinSeq = seq
+                        self.startClientMsgID = ms2.first?.clientMsgID
+                        
+                        let msgs2 = ms2.filter { message in
+                            if message.contentType == .custom {
+                                let data = message.customElem!.value()
+                                let customType = message.customElem?.type
+                                
+                                if (customType == CustomMessageType.callingInvite ||
+                                    customType == CustomMessageType.callingAccept ||
+                                    customType == CustomMessageType.callingReject ||
+                                    customType == CustomMessageType.callingCancel ||
+                                    customType == CustomMessageType.callingHungup) {
+                                    
+                                    return false
+                                }
+                            }
+                            
+                            return true
+                        }
+                        
+                        completion(msgs + msgs2)
+                    }
+                } else {
+                    completion(msgs)
+                }
             }
         }
     }
@@ -164,15 +219,32 @@ final class DefaultDataProvider: DataProvider {
         
         IMController.shared.newMsgReceivedSubject.subscribe(onNext: { [weak self] (message: MessageInfo) in
             guard let self else { return }
+            
+            var skip = false
+            
+            if message.contentType == .custom {
+                let data = message.customElem!.value()
+                let customType = message.customElem?.type
                 
-            if case .typing = message.contentType {
-                if (self.conversation.userID == message.sendID ||
-                    self.conversation.groupID == message.groupID) {
-                    self.typingState = message.isTyping() ? .typing : .idle
-                    self.delegate?.typingStateChanged(to: self.typingState)
+                if (customType == CustomMessageType.callingInvite ||
+                    customType == CustomMessageType.callingAccept ||
+                    customType == CustomMessageType.callingReject ||
+                    customType == CustomMessageType.callingCancel ||
+                    customType == CustomMessageType.callingHungup) {
+                    skip = true
                 }
-            } else {
-                self.receivedNewMessages(message: message)
+            }
+            
+            if !skip {
+                if case .typing = message.contentType {
+                    if (self.conversation.userID == message.sendID ||
+                        self.conversation.groupID == message.groupID) {
+                        self.typingState = message.isTyping() ? .typing : .idle
+                        self.delegate?.typingStateChanged(to: self.typingState)
+                    }
+                } else {
+                    self.receivedNewMessages(message: message)
+                }
             }
         }).disposed(by: _disposeBag)
 

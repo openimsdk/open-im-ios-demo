@@ -1,1 +1,10 @@
 
+"callingBusy" = "你已在通话中或正在会议中，不能进行此操作！";
+"callVoice" = "语音通话";
+"callVideo" = "视频通话";
+"cancel" = "取消";
+"waitingCallHint" = "正在呼叫中…";
+"waitingVoiceCallHint" = "正在等待对方接听…";
+"invitedVoiceCallHint" = "邀请你进行语音通话…";
+"waitingVideoCallHint" = "正在等待对方接受邀请";
+"invitedVideoCallHint" = "邀请你进行视频通话…";

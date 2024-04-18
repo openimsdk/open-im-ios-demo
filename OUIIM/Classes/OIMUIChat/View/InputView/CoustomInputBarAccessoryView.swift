@@ -145,9 +145,7 @@ class CoustomInputBarAccessoryView: InputBarAccessoryView {
         }
     }
         
-    private func showPadView(_ show: Bool) {
-        print("点击按钮：\(show)")
-        
+    private func showPadView(_ show: Bool) {        
         if show {
             inputTextView.resignFirstResponder()
         } else {
@@ -224,7 +222,7 @@ extension CoustomInputBarAccessoryView: InputPadViewDelegate {
         case .album:
             showImagePickerController(sourceType: .photoLibrary)
         case .camera:
-            showImagePickerController(sourceType: .camera)
+            showImagePickerController(sourceType: .camera)            
         default:
             break
         }

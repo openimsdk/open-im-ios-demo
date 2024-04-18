@@ -18,58 +18,74 @@ PODS:
   - InputBarAccessoryView (5.5.0):
     - InputBarAccessoryView/Core (= 5.5.0)
   - InputBarAccessoryView/Core (5.5.0)
-  - IQKeyboardManagerSwift (6.5.16)
+  - IQKeyboardManagerSwift (7.0.1)
   - JXSegmentedView (1.3.0)
   - Kingfisher (7.7.0)
   - Lantern (1.1.5)
+  - LiveKitClient (1.0.13):
+    - Logging
+    - PromisesSwift
+    - SwiftProtobuf
+    - WebRTC-SDK (~> 104.5112.17)
   - Localize-Swift (3.2.0):
     - Localize-Swift/LocalizeSwiftCore (= 3.2.0)
     - Localize-Swift/UIKit (= 3.2.0)
   - Localize-Swift/LocalizeSwiftCore (3.2.0)
   - Localize-Swift/UIKit (3.2.0):
     - Localize-Swift/LocalizeSwiftCore
+  - Logging (1.4.0)
   - lottie-ios (3.5.0)
   - MJExtension (3.4.1)
   - MJRefresh (3.7.6)
   - MMBAlertsPickers (1.1.93)
-  - OpenIMSDK (3.5.0-rc1):
+  - OpenIMSDK (3.5.1):
     - MJExtension
-    - OpenIMSDK/Callbacker (= 3.5.0-rc1)
-    - OpenIMSDK/CallbackProxy (= 3.5.0-rc1)
-    - OpenIMSDK/Interface (= 3.5.0-rc1)
-    - OpenIMSDK/Model (= 3.5.0-rc1)
-    - OpenIMSDK/Utils (= 3.5.0-rc1)
-    - OpenIMSDKCore (= 3.5.0-rc1)
-  - OpenIMSDK/Callbacker (3.5.0-rc1):
+    - OpenIMSDK/Callbacker (= 3.5.1)
+    - OpenIMSDK/CallbackProxy (= 3.5.1)
+    - OpenIMSDK/Interface (= 3.5.1)
+    - OpenIMSDK/Model (= 3.5.1)
+    - OpenIMSDK/Utils (= 3.5.1)
+    - OpenIMSDKCore (= 3.5.1)
+  - OpenIMSDK/Callbacker (3.5.1):
     - MJExtension
     - OpenIMSDK/Model
     - OpenIMSDK/Utils
-    - OpenIMSDKCore (= 3.5.0-rc1)
-  - OpenIMSDK/CallbackProxy (3.5.0-rc1):
+    - OpenIMSDKCore (= 3.5.1)
+  - OpenIMSDK/CallbackProxy (3.5.1):
     - MJExtension
     - OpenIMSDK/Utils
-    - OpenIMSDKCore (= 3.5.0-rc1)
-  - OpenIMSDK/Interface (3.5.0-rc1):
+    - OpenIMSDKCore (= 3.5.1)
+  - OpenIMSDK/Interface (3.5.1):
     - MJExtension
     - OpenIMSDK/Callbacker
     - OpenIMSDK/CallbackProxy
     - OpenIMSDK/Model
-    - OpenIMSDKCore (= 3.5.0-rc1)
-  - OpenIMSDK/Model (3.5.0-rc1):
+    - OpenIMSDKCore (= 3.5.1)
+  - OpenIMSDK/Model (3.5.1):
     - MJExtension
     - OpenIMSDK/Utils
-    - OpenIMSDKCore (= 3.5.0-rc1)
-  - OpenIMSDK/Utils (3.5.0-rc1):
+    - OpenIMSDKCore (= 3.5.1)
+  - OpenIMSDK/Utils (3.5.1):
     - MJExtension
-    - OpenIMSDKCore (= 3.5.0-rc1)
-  - OpenIMSDKCore (3.5.0-rc.1)
+    - OpenIMSDKCore (= 3.5.1)
+  - OpenIMSDKCore (3.5.1)
+  - OUICalling (0.0.1):
+    - Kingfisher
+    - LiveKitClient
+    - lottie-ios
+    - OpenIMSDK
+    - OUICore
+    - ProgressHUD
+    - RxCocoa
+    - RxSwift
+    - SnapKit
   - OUICore (0.0.1):
     - Alamofire (= 4.9.1)
     - IQKeyboardManagerSwift
     - Kingfisher (= 7.7.0)
     - Localize-Swift (~> 3.2)
     - lottie-ios (~> 3.0)
-    - OpenIMSDK (= 3.5.0-rc1)
+    - OpenIMSDK (= 3.5.1)
     - ProgressHUD (= 14.1.0)
     - RxCocoa (~> 6.0)
     - RxDataSources (= 5.0.0)
@@ -86,12 +102,16 @@ PODS:
     - InputBarAccessoryView (= 5.5.0)
     - JXSegmentedView (= 1.3.0)
     - MJRefresh
+    - OUICalling
     - OUICore
     - OUICoreView
     - RxRelay
     - RxSwift
     - SnapKit
   - ProgressHUD (14.1.0)
+  - PromisesObjC (2.4.0)
+  - PromisesSwift (2.4.0):
+    - PromisesObjC (= 2.4.0)
   - RxCocoa (6.6.0):
     - RxRelay (= 6.6.0)
     - RxSwift (= 6.6.0)
@@ -110,6 +130,8 @@ PODS:
   - RxSwift (6.6.0)
   - SGCodeTextField (0.1.4)
   - SnapKit (4.2.0)
+  - SwiftProtobuf (1.25.2)
+  - WebRTC-SDK (104.5112.17)
   - ZLPhotoBrowser (4.3.0):
     - ZLPhotoBrowser/Core (= 4.3.0)
   - ZLPhotoBrowser/Core (4.3.0)
@@ -117,6 +139,7 @@ PODS:
 DEPENDENCIES:
   - Localize-Swift (~> 3.2)
   - MMBAlertsPickers
+  - OUICalling (from `../`)
   - OUICore (from `../`)
   - OUICoreView (from `../`)
   - OUIIM (from `../`)
@@ -135,7 +158,9 @@ SPEC REPOS:
     - JXSegmentedView
     - Kingfisher
     - Lantern
+    - LiveKitClient
     - Localize-Swift
+    - Logging
     - lottie-ios
     - MJExtension
     - MJRefresh
@@ -143,6 +168,8 @@ SPEC REPOS:
     - OpenIMSDK
     - OpenIMSDKCore
     - ProgressHUD
+    - PromisesObjC
+    - PromisesSwift
     - RxCocoa
     - RxDataSources
     - RxGesture
@@ -151,9 +178,13 @@ SPEC REPOS:
     - RxSwift
     - SGCodeTextField
     - SnapKit
+    - SwiftProtobuf
+    - WebRTC-SDK
     - ZLPhotoBrowser
 
 EXTERNAL SOURCES:
+  OUICalling:
+    :path: "../"
   OUICore:
     :path: "../"
   OUICoreView:
@@ -167,21 +198,26 @@ SPEC CHECKSUMS:
   DifferenceKit: ab185c4d7f9cef8af3fcf593e5b387fb81e999ca
   Differentiator: e8497ceab83c1b10ca233716d547b9af21b9344d
   InputBarAccessoryView: 1d7b0a672b36e370f01f264b3907ef39d03328e3
-  IQKeyboardManagerSwift: 12d89768845bb77b55cc092ecc2b1f9370f06b76
+  IQKeyboardManagerSwift: 7f6b1b1d1497855d2beea7f2f10ffcc6978525b1
   JXSegmentedView: fec0d335355b6e019c494fe2e030bde8a36d2df6
   Kingfisher: f043ac666dfc96c1f37604f93effb45a7ee3a3e1
   Lantern: b192e7146c6d04e15e627f37281254a6a8593703
+  LiveKitClient: c5d736f1b7f17b15419b170d0616974761ca73b5
   Localize-Swift: 6f4475136bdb0d7b2882ea3d4ea919d70142b232
+  Logging: beeb016c9c80cf77042d62e83495816847ef108b
   lottie-ios: c55158d67d0629a260625cc2ded2052b829e3c3e
   MJExtension: 21c5f6f8c4d5d8844b7ae8fbae08fed0b501f961
   MJRefresh: 2fe7fb43a5167ceda20bb7e63f130c04fd1814a5
   MMBAlertsPickers: d52d288114c7dad4e4f1282fb2b1f1189ccc117a
-  OpenIMSDK: 757c7f2eb94a7b2b3b02ff4005c0c11d308ab17c
-  OpenIMSDKCore: a49feed66cab85d19a881b9069192709faaf6707
-  OUICore: e5205b5715610571d9b3f2ac1d11a5510d16829f
+  OpenIMSDK: 9050804353c52289d4eb02f4c69c19028c30849d
+  OpenIMSDKCore: 002ccd940d261619d117eedcb8e6236aae718aaa
+  OUICalling: 958bc625d668f44c79b5ad1264f5f2ae11a82c48
+  OUICore: be036c98b7d3c4a38c0c424a5b1707a465d3f0a1
   OUICoreView: 2bd1543051576d41cd5044f7e521a15524a5dcd1
-  OUIIM: bff92d3630467551c7890947ab874fc69d317468
+  OUIIM: 4780de91df9e9c1bfabde6ac832a491b035aa2e5
   ProgressHUD: c4a55f108815c46a6bf082407d2f806840b7a869
+  PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
+  PromisesSwift: 9d77319bbe72ebf6d872900551f7eeba9bce2851
   RxCocoa: 44a80de90e25b739b5aeaae3c8c371a32e3343cc
   RxDataSources: aa47cc1ed6c500fa0dfecac5c979b723542d79cf
   RxGesture: f3efb47ed2d26a8082f7b660d4a59970e275a7f8
@@ -190,8 +226,10 @@ SPEC CHECKSUMS:
   RxSwift: a4b44f7d24599f674deebd1818eab82e58410632
   SGCodeTextField: 6b65291a52a092c24bd08cc32873e024223b2371
   SnapKit: fe8a619752f3f27075cc9a90244d75c6c3f27e2a
+  SwiftProtobuf: 407a385e97fd206c4fbe880cc84123989167e0d1
+  WebRTC-SDK: 082ae4893212534a779ca233f19a9df8efd5f3bd
   ZLPhotoBrowser: 7c5c3ea5e42428d26dc74a52fe821aa2a9274fa3
 
-PODFILE CHECKSUM: 976fcfbc9f09554bf6cc942541e87de8486d8399
+PODFILE CHECKSUM: a83df4534969451fb40ae964a000c513cdc52b57
 
 COCOAPODS: 1.14.3

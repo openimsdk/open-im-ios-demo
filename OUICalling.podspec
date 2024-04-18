@@ -1,14 +1,14 @@
 #
-# Be sure to run `pod lib lint OIMUIKit.podspec' to ensure this is a
+# Be sure to run `pod lib lint OIMUICalling.podspec' to ensure this is a
 # valid spec before submitting.
 #
 # Any lines starting with a # are optional, but their use is encouraged
 # To learn more about a Podspec see https:#
 
 Pod::Spec.new do |s|
-  s.name             = 'OUICore'
+  s.name             = 'OUICalling'
   s.version          = '0.0.1'
-  s.summary          = '配合OpenIMSDK的iOS原生界面'
+  s.summary          = '配合OpenIMSDK的iOS原生音视频界面'
 
 # This description is used to generate tags and improve search results.
 #   * Think: What does it do? Why did you write it? What is the focus?
@@ -23,31 +23,25 @@ Pod::Spec.new do |s|
   s.homepage         = 'https://www.rentsoft.cn/'
   s.license          = { :type => 'MIT', :file => 'LICENSE' }
   s.author           = { 'rentsoft' => 'https://www.rentsoft.cn/' }
-  s.source           = { :git => 'git@github.com:OIMUI/OUICore.git', :tag => s.version.to_s }
+  s.source           = { :git => 'git@github.com:OIMUI/OUICalling.git', :tag => s.version.to_s }
 
   s.ios.deployment_target = '13.0'
-  s.swift_versions = '5.0'
-  
-  s.source_files = 'OUICore/Classes/**/*'
+  s.swift_version = '5.0'
+
+  s.source_files = 'OUICalling/*.{swift,h,m}'
   s.resource_bundles = {
-    'OIMUIResource' => ['OUICore/Assets/OIMUIResource.bundle/*.*'],
-    'OIMUIEmoji' => ['OUICore/Assets/OIMUIEmoji.bundle/*']
+    'OIMUICalling' => ['OUICalling/OIMUICalling.bundle/**/*.{storyboard,xib,xcassets,json,imageset,png,strings,mp3}'],
   }
 
   s.static_framework = true
 
-  s.dependency 'OpenIMSDK', '3.5.1'
-  s.dependency 'SnapKit', '~> 4.0'
-  s.dependency 'RxSwift', '~> 6.5'
-  s.dependency 'RxCocoa', '~> 6.0'
-  s.dependency 'RxKeyboard', '~> 2.0'
-  s.dependency 'RxDataSources', '5.0.0'
-  s.dependency 'Kingfisher', '7.7.0'
-  s.dependency 'lottie-ios', '~> 3.0'
-  s.dependency 'ZLPhotoBrowser', '4.3.0'
-  s.dependency 'ProgressHUD', '14.1.0'
-  s.dependency 'IQKeyboardManagerSwift'
-  s.dependency 'Localize-Swift', '~> 3.2'
-  s.dependency 'Alamofire', '4.9.1'
-  
+  s.dependency 'OpenIMSDK'
+  s.dependency 'SnapKit'
+  s.dependency 'RxCocoa'
+  s.dependency 'RxSwift'
+  s.dependency 'lottie-ios'
+  s.dependency 'LiveKitClient'
+  s.dependency 'Kingfisher'
+  s.dependency 'ProgressHUD'
+  s.dependency 'OUICore'
 end

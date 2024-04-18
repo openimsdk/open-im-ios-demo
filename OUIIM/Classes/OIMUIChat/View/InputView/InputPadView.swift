@@ -4,13 +4,16 @@ import OUICore
 public enum PadItemType: CaseIterable {
     case album
     case camera
-
+    case media
+    
     var name: String {
         switch self {
         case .album:
             return "相册".innerLocalized()
         case .camera:
             return "拍摄".innerLocalized()
+        case .media:
+            return "音视频".innerLocalized()
         }
     }
 
@@ -21,6 +24,8 @@ public enum PadItemType: CaseIterable {
             imageName = "inputbar_pad_album_icon"
         case .camera:
             imageName = "inputbar_pad_camera_icon"
+        case .media:
+            imageName = "inputbar_pad_voip_icon"
         }
         return UIImage(nameInBundle: imageName)
     }

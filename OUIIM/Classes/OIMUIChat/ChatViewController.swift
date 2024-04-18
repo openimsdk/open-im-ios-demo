@@ -7,6 +7,7 @@ import UIKit
 import OUICore
 import OUICoreView
 import ProgressHUD
+import OUICalling
 
 final class ChatViewController: UIViewController {
     
@@ -88,6 +89,19 @@ final class ChatViewController: UIViewController {
             let vc = GroupChatSettingTableViewController(conversation: conversation, style: .grouped)
             self.navigationController?.pushViewController(vc, animated: true)
         }
+    }
+    
+    lazy var mediaButton: UIBarButtonItem = {
+        let v = UIBarButtonItem(image: UIImage(nameInBundle: "chat_call_btn_icon"), style: .done, target: self, action: #selector(mediaButtonAction))
+        v.tintColor = .black
+        v.imageInsets = UIEdgeInsets(top: 0, left: 18, bottom: 0, right: 0)
+
+        return v
+    }()
+    
+    @objc
+    private func mediaButtonAction() {
+        showMediaLinkSheet()
     }
 
     init(chatController: ChatController,
@@ -226,7 +240,7 @@ final class ChatViewController: UIViewController {
     
     private func setRightButtons(show: Bool) {
         if show {
-            navigationItem.rightBarButtonItems = [settingButton]
+            navigationItem.rightBarButtonItems = [settingButton, mediaButton]
         } else {
             navigationItem.rightBarButtonItems = nil
         }
@@ -266,6 +280,43 @@ final class ChatViewController: UIViewController {
                 self?.reloadInputViews()
             }
         }
+    }
+    
+    private func showMediaLinkSheet() {
+        guard mediaButton.isEnabled, chatController.getConversation().conversationType == .c2c else { return }
+
+        inputBarView.inputTextView.resignFirstResponder()
+
+        let alertController = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+        let action1 = UIAlertAction(title: "callVoice".innerLocalized(), style: .default) { [self] _ in
+            self.startMedia(isVideo: false)
+        }
+        
+        alertController.addAction(action1)
+        
+        let action2 = UIAlertAction(title: "callVideo".innerLocalized(), style: .default) { [self] _ in
+            self.startMedia(isVideo: true)
+        }
+        
+        alertController.addAction(action2)
+        
+        let cancelAction = UIAlertAction(title: "cancel".innerLocalized(), style: .cancel)
+        
+        alertController.addAction(cancelAction)
+        
+        present(alertController, animated: true)
+    }
+    
+    private func startMedia(isVideo: Bool) {
+        let conversation = chatController.getConversation()
+
+        let user = CallingUserInfo(userID: conversation.userID!, nickname: conversation.showName, faceURL: conversation.faceURL)
+        let me = chatController.getSelfInfo()
+        let inviter = CallingUserInfo(userID: me?.userID, nickname: me?.nickname, faceURL: me?.faceURL)
+        
+        CallingManager.manager.startLiveChat(inviter: inviter,
+                                                 others: [user],
+                                                 isVideo: isVideo)
     }
 }
 
@@ -403,7 +454,6 @@ extension ChatViewController: ChatControllerDelegate {
     }
     
     func didTapAvatar(with id: String) {
-        print("点击头像")
         let vc = UserDetailTableViewController(userId: id, groupId: chatController.getConversation().groupID)
         navigationController?.pushViewController(vc, animated: true)
     }
@@ -447,7 +497,6 @@ extension ChatViewController: ChatControllerDelegate {
                 break
             }
         }
-        print("点击内容")
     }
     
     func update(with sections: [Section], requiresIsolatedProcess: Bool) {
@@ -669,6 +718,12 @@ extension ChatViewController: CoustomInputBarAccessoryViewDelegate {
                     }
                 }
             })
+        }
+    }
+    
+    func inputBar(_ inputBar: InputBarAccessoryView, didPressPadItemWith type: PadItemType) {
+        if type == .media {
+            showMediaLinkSheet()
         }
     }
 }

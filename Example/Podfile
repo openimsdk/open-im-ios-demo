@@ -7,6 +7,7 @@ target 'OpenIMSDKUIKit_Example' do
   pod 'OUICore', :path => '../'
   pod 'OUICoreView', :path => '../'
   pod 'OUIIM', :path => '../'
+  pod 'OUICalling', :path => '../'
   
   pod 'Localize-Swift', '~> 3.2'
   pod 'RxGesture', '~> 4.0.4'
@@ -25,6 +26,13 @@ post_install do |installer|
           config.build_settings['EXPANDED_CODE_SIGN_IDENTITY'] = ""
           config.build_settings['CODE_SIGNING_REQUIRED'] = "NO"
           config.build_settings['CODE_SIGNING_ALLOWED'] = "NO"
+          
+          if target.name == 'OUIIM'
+            config.build_settings['OTHER_SWIFT_FLAGS'] = ['$(inherited)',
+            '-D', 'COCOAPODS',
+            '-D', 'ENABLE_CALL',
+            ]
+          end
     end
   end
 end
