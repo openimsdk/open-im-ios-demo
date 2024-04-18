@@ -20,10 +20,6 @@
 
 OpenIM iOS Demo is a set of UI components implemented based on Open-IM SDK, which includes functions such as conversation, chat, relationship chain, group, etc. Based on UI components, you can quickly build your own business logic.
 
-## Experience app 🌐
-
-<img src="https://www.openim.io/_next/image?url=/fonts/native_ios_qrcode_c_e.png&w=256&q=75" alt="image" style="width: 200px; " />.
-
 ## Dev Setup 🛠️
 
 1. Development environment requirements
