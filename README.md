@@ -23,7 +23,7 @@ OpenIM iOS Demo is a set of UI components implemented based on Open-IM SDK, whic
 ## Dev Setup 🛠️
 
 1. Development environment requirements
-     + Xcode 14 and above
+     + Xcode 15 and above
     
      + The minimum deployment target is iOS 13.0.
 
