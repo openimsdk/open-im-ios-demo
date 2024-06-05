@@ -9,7 +9,7 @@ let kGtAppKey = ""
 let kGtAppSecret = ""
 
 //The domain name used by default
-let defaultHost = "14.29.213.197"
+let defaultHost = "127.0.0.1"
 
 // The default IP or domain name used in the settings page. After the settings page is saved, defaultHost will become invalid.
 let defaultIP = "127.0.0.1"
