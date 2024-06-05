@@ -47,7 +47,7 @@ OpenIM iOS Demo is a set of UI components implemented based on Open-IM SDK, whic
 6. Experience your own server
       6.1 If you have [Deploy OpenIM Server](https://github.com/openimsdk/open-im-server#rocket-quick-start) yourself, you can modify the server in the file [AppDelegate.swift](https://github.com/OpenIMSDK/Open-IM-iOS-Demo/blob/main/Example/OpenIMSDKUIKit/AppDelegate.swift) The address is the server address built by yourself;
 
-     6.2 After downloading the app from testflight, click "Welcome to OpenIM" on the [Login] page to enter the setting page, make relevant settings, save and restart to use.
+     6.2 After downloading the [app](https://www.pgyer.com/IM-NCER), click "Welcome to OpenIM" on the [Login] page to enter the setting page, make relevant settings, save and restart to use.
 7. Start development! 🎉
 
 ## Usage 🚀
