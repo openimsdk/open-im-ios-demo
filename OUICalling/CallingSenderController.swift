@@ -112,45 +112,46 @@ class SignalViewController: CallingBaseViewController {
 }
 
 extension SignalViewController: RoomDelegate {
-    func room(_ room: Room, didUpdate connectionState: ConnectionState, oldValue: ConnectionState) {
+    func room(_ room: Room, didFailToConnectWithError error: LiveKitError?) {
+        onConnectFailure?()
+        dismiss()
+    }
+    
+    func room(_ room: Room, didUpdateConnectionState connectionState: ConnectionState, from oldValue: ConnectionState) {
         print("connection state did update")
         DispatchQueue.main.async { [self] in
             if case .disconnected = connectionState {
-                self.cameraTrackState = .notPublished()
-                self.microphoneTrackState = .notPublished()
-                
-                if let error = connectionState.disconnectedWithError {
-                    self.onConnectFailure?()
-                    self.dismiss()
-                }
+ 
             }
         }
     }
     
-    func room(_ room: Room, localParticipant: LocalParticipant, didPublish publication: LocalTrackPublication) {
-        guard let track = publication.track as? VideoTrack else {
+    func room(_ room: Room, participant localParticipant: LocalParticipant, didPublishTrack publication: LocalTrackPublication) {
+        guard let track = localParticipant.firstCameraVideoTrack else {
             print("sender did publish track return")
             return
         }
         
         DispatchQueue.main.async { [self] in
-            self.smallVideoView.track = track
+//            self.smallVideoView.track = track
+            smallTrack = track
         }
     }
     
-    func room(_ room: Room, participantDidJoin participant: RemoteParticipant) {
-        print("participant did join")
+    func room(_ room: Room, participantDidConnect participant: RemoteParticipant) {
+        print("\(#function)")
     }
     
-    func room(_ room: Room, participantDidLeave participant: RemoteParticipant) {
-        print("participant did leave")
+    func room(_ room: Room, participantDidDisconnect participant: RemoteParticipant) {
+        print("\(#function) - \(participant.metadataMap)")
     }
     
-    public func room(_ room: Room, participant: RemoteParticipant, didSubscribe publication: RemoteTrackPublication, track: Track) {
+    func room(_ room: Room, participant: RemoteParticipant, didSubscribeTrack publication: RemoteTrackPublication) {
         DispatchQueue.main.async { [self] in
             if isVideo {
-                if let track = track as? VideoTrack {
-                    bigVideoView.track = track
+                if let track = participant.firstCameraVideoTrack {
+//                    bigVideoView.track = track
+                    bigTrack = track
                 }
                 verStackView?.isHidden = true
                 onlineFuncButtons()
@@ -160,19 +161,20 @@ extension SignalViewController: RoomDelegate {
         }
     }
     
-    func room(_ room: Room, participant: RemoteParticipant, didUnsubscribe publication: RemoteTrackPublication, track: Track) {
-        if linkedTimer != nil, participant.identity == users().last?.userID {
+    func room(_ room: Room, participant: RemoteParticipant, didUnsubscribeTrack publication: RemoteTrackPublication) {
+        if linkedTimer != nil, participant.identity?.stringValue == users().last?.userID {
             linkedTimer = nil
         }
     }
     
-    func room(_ room: Room, participant: Participant, didUpdate publication: TrackPublication, muted: Bool) {
-        print("\(#function) muted \(String(describing: participant.showName)) - \(publication.kind) status:\(!muted)")
-        if publication.kind == .video {
+    func room(_ room: Room, participant: Participant, trackPublication publication: TrackPublication, didUpdateIsMuted muted: Bool) {
+        
+        if publication.kind == .video, publication.source != .microphone {
+
             DispatchQueue.main.async { [self] in
-                let participantUser = CallingUserInfo(userID: participant.identity, nickname: participant.showName, faceURL: participant.faceURL)
+                let participantUser = CallingUserInfo(userID: participant.identity?.stringValue, nickname: participant.showName, faceURL: participant.faceURL)
                 
-                if let user = users().first, participant.identity == user.userID {
+                if let user = users().first, participant.identity?.stringValue == user.userID {
                     remoteMuted = muted
                     
                     if smallViewIsMe {
@@ -182,7 +184,7 @@ extension SignalViewController: RoomDelegate {
                         smallDisableVideoImageView.isHidden = !muted
                         setupSmallPlaceholerView(user: participantUser)
                     }
-                } else if let user = inviter().first, participant.identity == user.userID {
+                } else if let user = inviter().first, participant.identity?.stringValue == user.userID {
                     localMuted = muted
                     
                     if smallViewIsMe {

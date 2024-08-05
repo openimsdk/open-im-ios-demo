@@ -40,3 +40,9 @@ extension UIViewController {
         present(alertController, animated: true)
     }
 }
+
+extension UIApplication {
+    static public var safeAreaInsets: UIEdgeInsets {
+        UIApplication.shared.windows.first?.safeAreaInsets ?? .zero
+    }
+}

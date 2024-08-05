@@ -4,7 +4,6 @@ import Foundation
 import LiveKitClient
 import Lottie
 import ProgressHUD
-import Promises
 import RxSwift
 import UIKit
 import Kingfisher
@@ -40,8 +39,6 @@ public class CallingBaseViewController: CallingBaseController {
     internal let disposeBag = DisposeBag()
     internal var room: Room = Room()
     internal var funcBttonsView: UIStackView?
-    internal var cameraTrackState: TrackPublishState = .notPublished()
-    internal var microphoneTrackState: TrackPublishState = .notPublished()
     internal let sdk = DispatchQueue(label: "com.calling.rtc.queue", qos: .userInitiated)
     internal let ringToneQueue: OperationQueue = {
         let v = OperationQueue()
@@ -66,7 +63,9 @@ public class CallingBaseViewController: CallingBaseController {
         linkedTimer = nil
         stopSounds()
         
-        room.disconnect()
+        Task {
+            await room.disconnect()
+        }
         DispatchQueue.main.async { [self] in
             UIViewController.currentViewController().dismiss(animated: true)
             removeMiniWindow()
@@ -89,12 +88,33 @@ public class CallingBaseViewController: CallingBaseController {
     internal var smallViewIsMe = true
     internal var remoteMuted = false
     internal var localMuted = false
+    internal var smallTrack: VideoTrack? {
+        didSet {
+            smallVideoView?.removeFromSuperview()
+            smallVideoView = nil
+            smallVideoView = setupVideoView()
+            smallVideoView?.track = smallTrack
+            smallContentView.addSubview(smallVideoView!)
+            smallVideoView?.frame = smallContentView.bounds
+        }
+    }
+    
+    internal var bigTrack: VideoTrack? {
+        didSet {
+            bigVideoView?.removeFromSuperview()
+            bigVideoView = nil
+            bigVideoView = setupVideoView()
+            bigVideoView?.track = bigTrack
+            bigContentView.addSubview(bigVideoView!)
+            bigVideoView?.frame = bigContentView.bounds
+        }
+    }
     
     internal func setupSmallPlaceholerView(user: CallingUserInfo) {
         smallDisableVideoImageView.image = nil
         smallAvatarView.reset()
     
-        smallVideoView.bringSubviewToFront(smallDisableVideoImageView)
+        smallVideoView?.bringSubviewToFront(smallDisableVideoImageView)
         
         if let avatar = user.faceURL, !avatar.isEmpty {
             smallDisableVideoImageView.setImage(with: avatar)
@@ -109,7 +129,7 @@ public class CallingBaseViewController: CallingBaseController {
         bigDisableVideoImageView.image = nil
         bigAvatarView.reset()
         
-        bigVideoView.bringSubviewToFront(bigDisableVideoImageView)
+        bigVideoView?.bringSubviewToFront(bigDisableVideoImageView)
         
         if let avatar = user.faceURL, !avatar.isEmpty {
             bigDisableVideoImageView.setImage(with: avatar)
@@ -143,8 +163,10 @@ public class CallingBaseViewController: CallingBaseController {
     internal lazy var bigContentView: UIView = {
         let v = UIView()
         v.frame = view.bounds
-        v.addSubview(bigVideoView)
-        bigVideoView.frame = v.bounds
+        
+        bigVideoView = setupVideoView()
+        v.addSubview(bigVideoView!)
+        bigVideoView!.frame = v.bounds
 
         bigDisableVideoImageView.addSubview(bigAvatarView)
         bigAvatarView.snp.makeConstraints { make in
@@ -159,20 +181,18 @@ public class CallingBaseViewController: CallingBaseController {
         return v
     }()
     
-    internal lazy var bigVideoView: VideoView = {
-        let videoView = VideoView()
-        videoView.layoutMode = .fill
-        
-        return videoView
-    }()
+    private var bigVideoView: VideoView?
     
-    private let localViewTopInset = (UIApplication.shared.windows.first?.safeAreaInsets ?? .zero).top + 70
+    private let localViewTopInset = UIApplication.safeAreaInsets.top + 70
     
     internal lazy var smallContentView: UIView = {
         let v = UIView()
         v.frame = CGRectMake(CGRectGetWidth(UIScreen.main.bounds) - (120 + 12), localViewTopInset, 120, 180)
-        v.addSubview(smallVideoView)
-        smallVideoView.frame = v.bounds
+        
+        smallVideoView = setupVideoView()
+        
+        v.addSubview(smallVideoView!)
+        smallVideoView!.frame = v.bounds
         
         smallDisableVideoImageView.addSubview(smallAvatarView)
         smallAvatarView.snp.makeConstraints { make in
@@ -195,13 +215,14 @@ public class CallingBaseViewController: CallingBaseController {
         return v
     }()
     
-    internal lazy var smallVideoView: VideoView = {
-        let videoView = VideoView()
-        videoView.layoutMode = .fill
-        videoView.mirrorMode = .off
-
-        return videoView
-    }()
+    private var smallVideoView: VideoView?
+    
+    private func setupVideoView() -> VideoView {
+        let t = VideoView()
+        t.layoutMode = .fill
+        
+        return t
+    }
     
     @objc private func movePreview(gesture: UIPanGestureRecognizer) {
 
@@ -250,10 +271,11 @@ public class CallingBaseViewController: CallingBaseController {
         smallViewIsMe = !smallViewIsMe
         smallDisableVideoImageView.isHidden = true
         bigDisableVideoImageView.isHidden = true
+        
+        let temp = smallTrack
 
-        let tempTrack = smallVideoView.track
-        smallVideoView.track = bigVideoView.track
-        bigVideoView.track = tempTrack
+        smallTrack = bigTrack
+        bigTrack = temp
         
         if let user = users().first, let me = inviter().first {
             if smallViewIsMe {
@@ -314,13 +336,18 @@ public class CallingBaseViewController: CallingBaseController {
     
     deinit {
         UIApplication.shared.isIdleTimerDisabled = false
-        room.disconnect()
+        
+        if room.connectionState == .connected {
+            Task {
+                await room.disconnect()
+            }
+        }
         linkedTimer = nil
         NotificationCenter.default.removeObserver(self)
     }
     
     @objc func scale() {
-        self.suspend(coverImageName: "contact_my_friend_icon", tips: self.linkingDuration > 0 ? "通话中".innerLocalized() : nil)
+        self.suspend(coverImageName: "contact_my_friend_icon", tips: self.linkingDuration > 0 ? "calling".innerLocalized() : nil)
     }
     
     private lazy var micButton: UIButton = {
@@ -346,9 +373,8 @@ public class CallingBaseViewController: CallingBaseController {
         sender.isSelected = !sender.isSelected
         sender.isEnabled = false
         
-        toggleMicrophoneEnabled().then { _ in
-            sender.isEnabled = true
-        }.catch { _ in
+        Task {
+            await toggleMicrophoneEnabled()
             sender.isEnabled = true
         }
     }
@@ -357,12 +383,11 @@ public class CallingBaseViewController: CallingBaseController {
         let v = UIButton(type: .custom)
 
         v.setImage(UIImage(nameInBundle: "hang_up"), for: .normal)
-
         v.rx.tap
             .throttle(.seconds(1), scheduler: MainScheduler.instance)
             .subscribe(onNext: { [weak self] _ in
                 
-                self?.cancelButtonAction(sender: v)
+            self?.cancelButtonAction(sender: v)
         }).disposed(by: disposeBag)
         
         return v
@@ -378,12 +403,13 @@ public class CallingBaseViewController: CallingBaseController {
             .throttle(.seconds(1), scheduler: MainScheduler.instance)
             .subscribe(onNext: { [weak self] _ in
                 
-                self?.thirdButtonAction(sender: v)
+            self?.thirdButtonAction(sender: v)
         }).disposed(by: disposeBag)
+        
         return v
     }()
     
-    @objc private func cancelButtonAction(sender: UIButton) {
+    @objc func cancelButtonAction(sender: UIButton) {
         print("\(#function)")
 
         sender.isSelected = !sender.isSelected
@@ -436,13 +462,14 @@ public class CallingBaseViewController: CallingBaseController {
     }()
     
     @objc func cameraEnabledButtonAction(sender: UIButton) {
+        print("\(#function)")
+        
         sender.isSelected = !sender.isSelected
         sender.isEnabled = false
         switchCameraButton.isEnabled = !sender.isSelected
         
-        toggleCameraEnabled().then { [weak self] _ in
-            sender.isEnabled = true
-        }.catch { _ in
+        Task {
+            await toggleCameraEnabled()
             sender.isEnabled = true
         }
     }
@@ -462,12 +489,13 @@ public class CallingBaseViewController: CallingBaseController {
     }()
     
     @objc func cameraPositionButtonAction(sender: UIButton) {
+        print("\(#function)")
+        
         sender.isSelected = !sender.isSelected
         sender.isEnabled = false
         
-        switchCameraPosition().then { _ in
-            sender.isEnabled = true
-        }.catch { _ in
+        Task {
+            await switchCameraPosition()
             sender.isEnabled = true
         }
     }
@@ -574,113 +602,56 @@ public class CallingBaseViewController: CallingBaseController {
     }
     
     internal func publishMicrophone() {
-        room.localParticipant?.setMicrophone(enabled: true).then(on: self.sdk) { [weak self] publication in
-            
-            guard let `self`, let publication = publication else {
-                self?.microphoneTrackState = .notPublished()
-                return
-            }
-            self.microphoneTrackState = .published(publication)
-            
-            DispatchQueue.main.async { [self] in
+        Task {
+            do {
+                await try room.localParticipant.setMicrophone(enabled: true)
+                
                 if self.micButton.isSelected {
-                    self.toggleMicrophoneEnabled(forceEnable: false)
+                    await self.toggleMicrophoneEnabled(forceEnable: false)
                 }
-            }
-            
-        }.catch(on: self.sdk) { error in
-            self.microphoneTrackState = .notPublished(error: error)
-            print("Failed to publish microphone, error: \(error)")
-        }
-    }
-    
-    internal func toggleMicrophoneEnabled(forceEnable: Bool? = nil) -> Promise<Bool> {
-        return Promise { [weak self] fulfill, reject in
-            // Only when there is someone in the room will the microphone be released.
-            guard let self, let localParticipant = room.localParticipant, !room.allParticipants.isEmpty else {
-                fulfill(false)
-                return
-            }
-            
-            guard !microphoneTrackState.isBusy else {
-                fulfill(false)
-                return
-            }
-            
-            DispatchQueue.main.async {
-                self.microphoneTrackState = .busy(isPublishing: !self.microphoneTrackState.isPublished)
-            }
-            
-            let enable = forceEnable ?? !localParticipant.isMicrophoneEnabled()
-            
-            localParticipant.setMicrophone(enabled: enable).then(on: sdk) { publication in
-                DispatchQueue.main.async {
-                    guard let publication = publication else {
-                        fulfill(false)
-                        return
-                    }
-                    self.microphoneTrackState = .published(publication)
-                }
-                fulfill(true)
-                print("Successfully published microphone")
-            }.catch(on: sdk) { error in
+            } catch (let error) {
                 print("Failed to publish microphone, error: \(error)")
-
-                DispatchQueue.main.async {
-                    self.microphoneTrackState = .notPublished(error: error)
-                    reject(error)
-                }
             }
         }
     }
     
-    internal func switchCameraPosition() -> Promise<Bool> {
-        guard case .published(let publication) = cameraTrackState,
-              let track = publication.track as? LocalVideoTrack,
+    internal func toggleMicrophoneEnabled(forceEnable: Bool? = nil) async -> Bool {
+        let enable = forceEnable ?? !room.localParticipant.isMicrophoneEnabled()
+        
+        do {
+            return (try await room.localParticipant.setMicrophone(enabled: enable)) != nil
+        } catch (let error) {
+            print("Failed to publish microphone, error: \(error)")
+            return false
+        }
+    }
+    
+    internal func switchCameraPosition() async -> Bool {
+        
+        guard let track = room.localParticipant.firstCameraPublication?.track as? LocalVideoTrack,
               let cameraCapturer = track.capturer as? CameraCapturer,
-              CameraCapturer.canSwitchPosition()
+              (try? await CameraCapturer.canSwitchPosition()) == true
         else {
-            return Promise(TrackError.state(message: "Track or a CameraCapturer doesn't exist"))
+            print("Track or a CameraCapturer doesn't exist")
+            return false
         }
         
-        return cameraCapturer.switchCameraPosition()
+        do {
+            return try await cameraCapturer.switchCameraPosition()
+        } catch (let error) {
+            print("\(#function) throw an error: \(error)")
+            return false
+        }
     }
     
-    internal func toggleCameraEnabled() -> Promise<Bool>  {
-        return Promise { [weak self] fulfill, reject in
-            guard let self, let localParticipant = room.localParticipant else {
-                fulfill(false)
-                return
-            }
-            
-            guard !cameraTrackState.isBusy else {
-                fulfill(false)
-                return
-            }
-            
-            DispatchQueue.main.async {
-                self.cameraTrackState = .busy(isPublishing: !self.cameraTrackState.isPublished)
-            }
-            
-            localParticipant.setCamera(enabled: !localParticipant.isCameraEnabled()).then(on: sdk) { publication in
-                DispatchQueue.main.async {
-                    guard let publication = publication else {
-                        fulfill(false)
-                        return
-                    }
-                    self.cameraTrackState = .published(publication)
-                }
-                print("Successfully published camera")
-                
-                fulfill(true)
-            }.catch(on: sdk) { error in
-                print("Failed to publish camera, error: \(error)")
-
-                DispatchQueue.main.async {
-                    self.cameraTrackState = .notPublished(error: error)
-                    reject(error)
-                }
-            }
+    internal func toggleCameraEnabled() async -> Bool  {
+        let enable = !room.localParticipant.isCameraEnabled()
+        
+        do {
+            return (try await room.localParticipant.setCamera(enabled: enable) != nil)
+        } catch (let error) {
+            print("\(#function) throw an error: \(error)")
+            return false
         }
     }
     
@@ -716,32 +687,31 @@ public class CallingBaseViewController: CallingBaseController {
             dynacast: true
         )
         
-        room.connect(url, token, roomOptions: roomOptions).then { [weak self] r in
-            ProgressHUD.dismiss()
-            guard let `self` else { return }
-            // Publish camera & mic
-            r.localParticipant?.setCamera(enabled: isVideo).then(on: self.sdk) { [weak self] publication in
+        Task {
+            do {
+                try await room.connect(url: url, token: token, roomOptions: roomOptions)
                 
-                guard let `self`, let publication = publication else {
-                    self?.cameraTrackState = .notPublished()
-                    return
+                ProgressHUD.dismiss()
+                
+                if !isSignal {
+                    onlineFuncButtons()
                 }
+                publishMicrophone()
+                onlineTopMoreFuncButtons()
                 
-                self.cameraTrackState = .published(publication)
-            }.catch(on: self.sdk, { error in
-                self.cameraTrackState = .notPublished(error: error)
-                print("Failed to publish camera, error: \(error)")
-            })
-            
-            if !isSignal {
-                onlineFuncButtons()
+                if let publication = try await room.localParticipant.setCamera(enabled: isVideo) {
+                    return true
+                } else {
+                    return false
+                }
+            } catch (let error) {
+                onConnectFailure?()
+                showLinkingView(show: false)
+                ProgressHUD.dismiss()
+                print("\(#function) throw an error: \(error)")
+                
+                return false
             }
-            publishMicrophone()
-            onlineTopMoreFuncButtons()
-        }.catch { s in
-            // failed to connect
-            self.showLinkingView(show: false)
-            ProgressHUD.dismiss()
         }
     }
     

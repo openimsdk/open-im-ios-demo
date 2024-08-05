@@ -43,6 +43,7 @@ extension UIColor {
     public static let cB3D7FF = #colorLiteral(red: 0.7019607843, green: 0.8431372549, blue: 1, alpha: 1)
     public static let cF0F0F0 = #colorLiteral(red: 0.9411764706, green: 0.9411764706, blue: 0.9411764706, alpha: 1)
     public static let cF1F1F1 = #colorLiteral(red: 0.9450980392, green: 0.9450980392, blue: 0.9450980392, alpha: 1)
+    public static let c666666 = #colorLiteral(red: 0.4, green: 0.4, blue: 0.4, alpha: 1)
     public static let viewBackgroundColor = UIColor.systemGroupedBackground
     public static let cellBackgroundColor = UIColor.tertiarySystemBackground
     public static let sepratorColor = UIColor.separator

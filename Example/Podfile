@@ -8,6 +8,8 @@ target 'OpenIMSDKUIKit_Example' do
   pod 'OUICoreView', :path => '../'
   pod 'OUIIM', :path => '../'
   pod 'OUICalling', :path => '../'
+  pod 'OpenIMSDK', :path => '../../Open-IM-SDK-iOS/'
+  pod 'LiveKitClient', :git => 'https://github.com/livekit/client-sdk-swift.git', :tag => '2.0.10'
   
   pod 'Localize-Swift', '~> 3.2'
   pod 'RxGesture', '~> 4.0.4'

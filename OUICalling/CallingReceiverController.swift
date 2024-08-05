@@ -118,56 +118,63 @@ class ReceiverSignalViewController: CallingBaseViewController {
 }
 
 extension ReceiverSignalViewController: RoomDelegate {
-    func room(_ room: Room, didUpdate connectionState: ConnectionState, oldValue: ConnectionState) {
+    func room(_ room: Room, didFailToConnectWithError error: LiveKitError?) {
+        onConnectFailure?()
+        dismiss()
+    }
+    
+    func room(_ room: Room, didUpdateConnectionState connectionState: ConnectionState, from oldValue: ConnectionState) {
         print("connection state did update")
         DispatchQueue.main.async { [self] in
             if case .disconnected = connectionState {
-                self.cameraTrackState = .notPublished()
-                self.microphoneTrackState = .notPublished()
-                
-                if let error = connectionState.disconnectedWithError {
-                    self.onConnectFailure?()
-                    self.dismiss()
-                } else {
-                    self.onDisconnect?()
-                }
+                onDisconnect?()
             } else if case .connected = connectionState {
                 publishMicrophone()
             }
         }
     }
     
-    func room(_ room: Room, localParticipant: LocalParticipant, didPublish publication: LocalTrackPublication) {
+    func room(_ room: Room, participantDidDisconnect participant: RemoteParticipant) {
+        print("\(#function)")
+    }
+    
+    func room(_ room: Room, participant localParticipant: LocalParticipant, didPublishTrack publication: LocalTrackPublication) {
         print("\(#function)")
         DispatchQueue.main.async { [self] in
             onlineFuncButtons()
             linkingTimer()
             showLinkingView(show: false)
         }
-        guard let track = publication.track as? VideoTrack else {
+        guard let track = localParticipant.firstCameraVideoTrack else {
             print("receiver did publish track return")
             return
         }
         
         DispatchQueue.main.async { [self] in
-            self.smallVideoView.track = track
+            self.smallTrack = track
+//            self.smallVideoView.track = track
         }
     }
     
-    public func room(_ room: Room, participant: RemoteParticipant, didSubscribe publication: RemoteTrackPublication, track: Track) {
+    func room(_ room: Room, participantDidConnect participant: RemoteParticipant) {
+        print("\(#function)")
+    }
+    
+    func room(_ room: Room, participant: RemoteParticipant, didSubscribeTrack publication: RemoteTrackPublication) {
         print("\(#function)")
         DispatchQueue.main.async { [self] in
             if isVideo {
-                if let track = track as? VideoTrack {
-                    bigVideoView.track = track
+                if let track = participant.firstCameraVideoTrack {
+//                    bigVideoView.track = track
+                    self.bigTrack = track
                 }
                 verStackView?.isHidden = true
             }
         }
     }
     
-    func room(_ room: Room, participant: RemoteParticipant, didUnsubscribe publication: RemoteTrackPublication, track: Track) {
-        if linkedTimer != nil, participant.identity == inviter().first?.userID {
+    func room(_ room: Room, participant: RemoteParticipant, didUnsubscribeTrack publication: RemoteTrackPublication) {
+        if linkedTimer != nil, participant.identity?.stringValue == inviter().first?.userID {
             linkedTimer = nil
             DispatchQueue.main.async { [self] in
                 if !room.allParticipants.isEmpty {
@@ -177,13 +184,12 @@ extension ReceiverSignalViewController: RoomDelegate {
         }
     }
     
-    func room(_ room: Room, participant: Participant, didUpdate publication: TrackPublication, muted: Bool) {
-        print("\(#function) muted \(String(describing: participant.showName)) - \(publication.kind) status:\(!muted)")
-        if publication.kind == .video {
+    func room(_ room: Room, participant: Participant, trackPublication publication: TrackPublication, didUpdateIsMuted muted: Bool) {        
+        if publication.kind == .video, publication.source != .microphone {
             DispatchQueue.main.async { [self] in
-                let participantUser = CallingUserInfo(userID: participant.identity, nickname: participant.showName, faceURL: participant.faceURL)
+                let participantUser = CallingUserInfo(userID: participant.identity?.stringValue, nickname: participant.showName, faceURL: participant.faceURL)
 
-                if let user = inviter().first, participant.identity == user.userID {
+                if let user = inviter().first, participant.identity?.stringValue == user.userID {
                     remoteMuted = muted
                     
                     if smallViewIsMe {
@@ -193,7 +199,7 @@ extension ReceiverSignalViewController: RoomDelegate {
                         smallDisableVideoImageView.isHidden = !muted
                         setupSmallPlaceholerView(user: participantUser)
                     }
-                } else if let user = users().first, participant.identity == user.userID {
+                } else if let user = users().first, participant.identity?.stringValue == user.userID {
                     localMuted = muted
                     
                     if smallViewIsMe {

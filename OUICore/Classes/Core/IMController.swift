@@ -133,6 +133,8 @@ public class IMController: NSObject {
             self?.connectionRelay.accept(.kickedOffline)
         } onUserTokenExpired: {
             print("onUserTokenExpired")
+        } onUserTokenInvalid: { _ in
+            print("onUserTokenInvalid")
         }
         
         Self.shared.imManager = manager
