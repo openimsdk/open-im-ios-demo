@@ -23,7 +23,7 @@ OpenIM iOS Demo is a set of UI components implemented based on Open-IM SDK, whic
 ## Dev Setup 🛠️
 
 1. Development environment requirements
-     + Xcode 14 and above
+     + Xcode 15 and above
     
      + The minimum deployment target is iOS 13.0.
 
@@ -47,7 +47,7 @@ OpenIM iOS Demo is a set of UI components implemented based on Open-IM SDK, whic
 6. Experience your own server
       6.1 If you have [Deploy OpenIM Server](https://github.com/openimsdk/open-im-server#rocket-quick-start) yourself, you can modify the server in the file [AppDelegate.swift](https://github.com/OpenIMSDK/Open-IM-iOS-Demo/blob/main/Example/OpenIMSDKUIKit/AppDelegate.swift) The address is the server address built by yourself;
 
-     6.2 After downloading the app from testflight, click "Welcome to OpenIM" on the [Login] page to enter the setting page, make relevant settings, save and restart to use.
+     6.2 After downloading the [app](https://www.pgyer.com/IM-NCER), click "Welcome to OpenIM" on the [Login] page to enter the setting page, make relevant settings, save and restart to use.
 7. Start development! 🎉
 
 ## Usage 🚀
@@ -125,7 +125,7 @@ Step 3: Construct conversation list, chat window, address book interface, settin
 
 - 📚 [OpenIM Community](https://github.com/OpenIMSDK/community)
 - 💕 [OpenIM Interest Group](https://github.com/Openim-sigs)
-- 🚀 [Join our Slack community](https://join.slack.com/t/openimsdk/shared_invite/zt-22720d66b-o_FvKxMTGXtcnnnHiMqe9Q)
+- 🚀 [Join our Slack community](https://join.slack.com/t/openimsdk/shared_invite/zt-2ijy1ys1f-O0aEDCr7ExRZ7mwsHAVg9A)
 - :eyes: [Join our wechat (微信群)](https://openim-1253691595.cos.ap-nanjing.myqcloud.com/WechatIMG20.jpeg)
 
 ## Community Meetings :calendar:
