@@ -38,37 +38,37 @@ PODS:
   - MJExtension (3.4.2)
   - MJRefresh (3.7.9)
   - MMBAlertsPickers (1.1.93)
-  - OpenIMSDK (3.8.0):
+  - OpenIMSDK (3.8.1-rc.0):
     - MJExtension
-    - OpenIMSDK/Callbacker (= 3.8.0)
-    - OpenIMSDK/CallbackProxy (= 3.8.0)
-    - OpenIMSDK/Interface (= 3.8.0)
-    - OpenIMSDK/Model (= 3.8.0)
-    - OpenIMSDK/Utils (= 3.8.0)
-    - OpenIMSDKCore (= 3.8.0)
-  - OpenIMSDK/Callbacker (3.8.0):
+    - OpenIMSDK/Callbacker (= 3.8.1-rc.0)
+    - OpenIMSDK/CallbackProxy (= 3.8.1-rc.0)
+    - OpenIMSDK/Interface (= 3.8.1-rc.0)
+    - OpenIMSDK/Model (= 3.8.1-rc.0)
+    - OpenIMSDK/Utils (= 3.8.1-rc.0)
+    - OpenIMSDKCore (= 3.8.1-rc.0)
+  - OpenIMSDK/Callbacker (3.8.1-rc.0):
     - MJExtension
     - OpenIMSDK/Model
     - OpenIMSDK/Utils
-    - OpenIMSDKCore (= 3.8.0)
-  - OpenIMSDK/CallbackProxy (3.8.0):
+    - OpenIMSDKCore (= 3.8.1-rc.0)
+  - OpenIMSDK/CallbackProxy (3.8.1-rc.0):
     - MJExtension
     - OpenIMSDK/Utils
-    - OpenIMSDKCore (= 3.8.0)
-  - OpenIMSDK/Interface (3.8.0):
+    - OpenIMSDKCore (= 3.8.1-rc.0)
+  - OpenIMSDK/Interface (3.8.1-rc.0):
     - MJExtension
     - OpenIMSDK/Callbacker
     - OpenIMSDK/CallbackProxy
     - OpenIMSDK/Model
-    - OpenIMSDKCore (= 3.8.0)
-  - OpenIMSDK/Model (3.8.0):
+    - OpenIMSDKCore (= 3.8.1-rc.0)
+  - OpenIMSDK/Model (3.8.1-rc.0):
     - MJExtension
     - OpenIMSDK/Utils
-    - OpenIMSDKCore (= 3.8.0)
-  - OpenIMSDK/Utils (3.8.0):
+    - OpenIMSDKCore (= 3.8.1-rc.0)
+  - OpenIMSDK/Utils (3.8.1-rc.0):
     - MJExtension
-    - OpenIMSDKCore (= 3.8.0)
-  - OpenIMSDKCore (3.8.0)
+    - OpenIMSDKCore (= 3.8.1-rc.0)
+  - OpenIMSDKCore (3.8.1-rc.0)
   - OUICalling (0.0.1):
     - Kingfisher
     - LiveKitClient
@@ -85,7 +85,7 @@ PODS:
     - Kingfisher (= 7.7.0)
     - Localize-Swift (~> 3.2)
     - lottie-ios (~> 3.0)
-    - OpenIMSDK (= 3.8.0)
+    - OpenIMSDK (= 3.8.1-rc.0)
     - ProgressHUD (= 14.1.0)
     - RxCocoa (~> 6.0)
     - RxDataSources (= 5.0.0)
@@ -214,10 +214,10 @@ SPEC CHECKSUMS:
   MJExtension: e97d164cb411aa9795cf576093a1fa208b4a8dd8
   MJRefresh: ff9e531227924c84ce459338414550a05d2aea78
   MMBAlertsPickers: d52d288114c7dad4e4f1282fb2b1f1189ccc117a
-  OpenIMSDK: 61a5a8c8e581c989d57147aad9a4cf2a02f6836c
-  OpenIMSDKCore: 6df547cf70573adb3688095bcb59e9a4ba3bf433
+  OpenIMSDK: 01f7bdbb622e8dbee883ed6d1b5063499cd6ac82
+  OpenIMSDKCore: 0c92e9e3eb2a91b6b6528e7781a1e28ed42bc518
   OUICalling: 958bc625d668f44c79b5ad1264f5f2ae11a82c48
-  OUICore: 6c93a58107871913f1b4b2409b9463536730f62c
+  OUICore: c689e314cf2ed591c4bbcc9754e23d9e9f6c2a67
   OUICoreView: 2bd1543051576d41cd5044f7e521a15524a5dcd1
   OUIIM: 4780de91df9e9c1bfabde6ac832a491b035aa2e5
   ProgressHUD: c4a55f108815c46a6bf082407d2f806840b7a869
