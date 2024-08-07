@@ -475,7 +475,7 @@ final class DefaultChatController: ChatController {
             
         case .image:
             let pictureElem = msg.pictureElem!
-            let url = isLocalPath ? URL(string: pictureElem.sourcePath!)! : URL(string: pictureElem.snapshotPicture!.url!)!
+            let url = isLocalPath ? URL(fileURLWithPath: pictureElem.sourcePath!) : URL(string: pictureElem.snapshotPicture!.url!)!
             let isPresentLocally = imageCache.isEntityCached(for: CacheableImageKey(url: url))
             let source = MediaMessageSource(source: MediaMessageSource.Info(url: url))
             
@@ -483,8 +483,8 @@ final class DefaultChatController: ChatController {
             
         case .video:
             let videoElem = msg.videoElem!
-            let url = isLocalPath ? URL(string: videoElem.videoPath!) : URL(string: videoElem.videoUrl!)!
-            let thumbURL = isLocalPath ? URL(string: videoElem.snapshotPath!)! : URL(string: videoElem.snapshotUrl!)!
+            let url = isLocalPath ? URL(fileURLWithPath: videoElem.videoPath!) : URL(string: videoElem.videoUrl!)!
+            let thumbURL = isLocalPath ? URL(fileURLWithPath: videoElem.snapshotPath!) : URL(string: videoElem.snapshotUrl!)!
             let isPresentLocally = imageCache.isEntityCached(for: CacheableImageKey(url: thumbURL))
             let duration = msg.videoElem!.duration
             
