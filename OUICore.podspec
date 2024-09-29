@@ -36,7 +36,7 @@ Pod::Spec.new do |s|
 
   s.static_framework = true
 
-  s.dependency 'OpenIMSDK', '3.8.1-rc.0'
+  s.dependency 'OpenIMSDK', '3.8.1'
   s.dependency 'SnapKit', '~> 4.0'
   s.dependency 'RxSwift', '~> 6.5'
   s.dependency 'RxCocoa', '~> 6.0'

@@ -273,10 +273,10 @@ extension IMController {
     /// 根据id查找用户
     /// - Parameter ids: 用户id
     /// - Returns: 第一个用户id
-    public func getFriendsBy(id: String) -> Observable<FullUserInfo?> {
-        return Observable<FullUserInfo?>.create { observer in
-            Self.shared.imManager.getSpecifiedFriendsInfo([id]) { users in
-                observer.onNext(users?.first?.toFullUserInfo())
+    public func getFriendsBy(id: String) -> Observable<PublicUserInfo?> {
+        return Observable<PublicUserInfo?>.create { observer in
+            Self.shared.imManager.getSpecifiedFriendsInfo([id], filterBlack: false) { users in
+                observer.onNext(users?.first?.toPublicUserInfo())
                 observer.onCompleted()
             } onFailure: { (code: Int, msg: String?) in
                 observer.onError(NetError(code: code, message: msg))
@@ -286,8 +286,8 @@ extension IMController {
     }
     
     public func getFriendsInfo(userIDs: [String], completion: @escaping CallBack.FullUserInfosReturnVoid) {
-        Self.shared.imManager.getSpecifiedFriendsInfo(userIDs) { users in
-            let r = users?.compactMap({ $0.toFullUserInfo() })
+        Self.shared.imManager.getSpecifiedFriendsInfo(userIDs, filterBlack: false) { users in
+            let r = users?.compactMap({ $0.toPublicUserInfo() })
             completion(r ?? [])
         }
     }
@@ -334,12 +334,13 @@ extension IMController {
         })
     }
     
-    public func getFriendList(completion: @escaping ([FullUserInfo]) -> Void) {
-        Self.shared.imManager.getFriendListWith(onSuccess: { friends in
+    public func getFriendList(completion: @escaping ([PublicUserInfo]) -> Void) {
+        Self.shared.imManager.getFriendList(withFilterBlack: false) { friends in
             let arr = friends ?? []
-            let ret = arr.compactMap { $0.toFullUserInfo() }
+            let ret = arr.compactMap({ $0.toPublicUserInfo() })
+            
             completion(ret)
-        })
+        }
     }
     
     public func acceptGroupApplication(groupID: String, fromUserId: String, handleMsg: String? = nil, completion: @escaping (String?) -> Void) {
@@ -512,13 +513,6 @@ extension IMController {
     
     public func getTotalUnreadMsgCount(completion: ((Int) -> Void)?) {
         Self.shared.imManager.getTotalUnreadMsgCountWith(onSuccess: completion, onFailure: nil)
-    }
-    
-    public func getConversationRecvMessageOpt(conversationIds: [String], completion: (([ConversationNotDisturbInfo]?) -> Void)?) {
-        Self.shared.imManager.getConversationRecvMessageOpt(conversationIds) { (conversationInfos: [OIMConversationNotDisturbInfo]?) in
-            let arr = conversationInfos?.compactMap { $0.toConversationNotDisturbInfo() }
-            completion?(arr)
-        }
     }
     
     public func setConversationRecvMessageOpt(conversationID: String, status: ReceiveMessageOpt, completion: ((String?) -> Void)?) {
@@ -1010,7 +1004,7 @@ extension IMController {
     
     public func setGlobalRecvMessageOpt(op: ReceiveMessageOpt, onSuccess: @escaping CallBack.StringOptionalReturnVoid) {
         let opt = OIMReceiveMessageOpt(rawValue: op.rawValue) ?? OIMReceiveMessageOpt.receive
-        Self.shared.imManager.setGlobalRecvMessageOpt(opt, onSuccess: onSuccess) { code, msg in
+        Self.shared.imManager.setGlobalRecvMessageOpt(opt.rawValue, onSuccess: onSuccess) { code, msg in
             print("设置全局免打扰失败:\(code), .msg:\(msg)")
         }
     }
@@ -1043,7 +1037,7 @@ extension IMController {
     
     public func getUserInfo(uids: [String], onSuccess: @escaping CallBack.FullUserInfosReturnVoid) {
         Self.shared.imManager.getUsersInfo(uids) { userInfos in
-            let users = userInfos?.compactMap { $0.toFullUserInfo() } ?? []
+            let users = userInfos?.compactMap { $0.toPublicUserInfo() } ?? []
             onSuccess(users)
         }
     }
@@ -1955,17 +1949,6 @@ extension MessageRevoked {
     }
 }
 
-public class FullUserInfo {
-    public var publicInfo: PublicUserInfo?
-    public var friendInfo: FriendInfo?
-    public var blackInfo: BlackInfo?
-    
-    public var userID: String?
-    public var showName: String?
-    public var faceURL: String?
-    public var gender: Gender = .male
-}
-
 public enum Gender: Int, Codable {
     case undefine = 0
     case male = 1
@@ -1993,15 +1976,17 @@ public class PublicUserInfo: Encodable {
     public var nickname: String?
     public var faceURL: String?
     public var gender: Gender = .male
+    
+    
+    public var phoneNumber: String?
+    public var remark: String?
 }
 
 public class FriendInfo: PublicUserInfo {
     public var ownerUserID: String?
-    public var remark: String?
     public var createTime: Int = 0
     public var addSource: Int = 0
     public var operatorUserID: String?
-    public var phoneNumber: String?
     public var birth: Int = 0
     public var email: String?
     public var attachedInfo: String?
@@ -2181,12 +2166,12 @@ extension OIMFriendApplication {
     }
 }
 
-extension OIMFullUserInfo {
+extension OIMPublicUserInfo {
     public func toUserInfo() -> UserInfo {
-        let item = UserInfo(userID: userID)
+        let item = UserInfo(userID: userID!)
         item.faceURL = faceURL
         // 注意此处值类型的不对应
-        item.nickname = showName
+        item.nickname = nickname
 
         return item
     }
@@ -2583,20 +2568,6 @@ extension OIMReceiptInfo {
         item.msgFrom = msgFrom.toMessageLevel()
         item.contentType = contentType.toMessageContentType()
         item.sessionType = sessionType.toConversationType()
-        return item
-    }
-}
-
-extension OIMFullUserInfo {
-    func toFullUserInfo() -> FullUserInfo {
-        let item = FullUserInfo()
-        item.blackInfo = blackInfo?.toBlackInfo()
-        item.friendInfo = friendInfo?.toFriendInfo()
-        item.publicInfo = publicInfo?.toPublicUserInfo()
-        item.userID = userID
-        item.showName = showName
-        item.faceURL = faceURL
-
         return item
     }
 }

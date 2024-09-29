@@ -256,7 +256,7 @@ public class CallingManager: NSObject {
     
     private func getUsersInfo(_ usersID: [String], callback: @escaping ([CallingUserInfo]) -> Void) {
         
-        OIMManager.manager.getUsersInfo(usersID) { (infos: [OIMFullUserInfo]?) in
+        OIMManager.manager.getUsersInfo(usersID) { infos in
             guard let infos else {
                 callback([])
                 return
@@ -264,9 +264,9 @@ public class CallingManager: NSObject {
             
             let us = infos.map { info in
                 var u = CallingUserInfo()
-                u.nickname = info.showName
+                u.nickname = info.nickname ?? info.userID!
                 u.faceURL = info.faceURL
-                u.userID = info.userID
+                u.userID = info.userID!
                 return u
             }
             

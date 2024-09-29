@@ -44,7 +44,7 @@ public class SearchResultViewController: UIViewController, UISearchResultsUpdati
     }
     private let _disposebag = DisposeBag()
     private let _searchType: SearchType
-    private var userInfo: FullUserInfo?
+    private var userInfo: PublicUserInfo?
     public init(searchType: SearchType) {
         _searchType = searchType
         super.init(nibName: nil, bundle: nil)
@@ -158,7 +158,7 @@ public class SearchResultViewController: UIViewController, UISearchResultsUpdati
                     }
                 })
             } else {
-                IMController.shared.getFriendsBy(id: keyword).subscribe { [weak self] (userInfo: FullUserInfo?) in
+                IMController.shared.getFriendsBy(id: keyword).subscribe { [weak self] userInfo in
                     self?.userInfo = userInfo
                     let uid = userInfo?.userID
                     let shouldHideEmptyView = uid != nil

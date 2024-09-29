@@ -60,8 +60,8 @@ class SingleChatSettingViewModel {
             if let user = userInfos.first {
                 let userInfo = UserInfo(userID: user.userID!)
                 userInfo.faceURL = user.faceURL
-                var nickName: String? = user.showName
-                if let remark = user.friendInfo?.remark, !remark.isEmpty {
+                var nickName: String? = user.nickname
+                if let remark = user.remark, !remark.isEmpty {
                     nickName = nickName?.append(string: "(\(remark))")
                 }
                 userInfo.nickname = nickName

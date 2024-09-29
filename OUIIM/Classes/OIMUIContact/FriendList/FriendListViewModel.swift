@@ -12,7 +12,7 @@ class FriendListViewModel {
     
     func getMyFriendList() {
         IMController.shared.getFriendList { [weak self] users in
-            let r = users.compactMap({ UserInfo(userID: $0.userID!, nickname: $0.showName, faceURL: $0.faceURL) })
+            let r = users.compactMap({ UserInfo(userID: $0.userID!, nickname: $0.nickname, faceURL: $0.faceURL) })
             self?.myFriends = r
             self?.divideUsersInSection(users: r ?? [])
         }

@@ -11,7 +11,7 @@ protocol ChatController {
     func getConversation() -> ConversationInfo
     func getGroupMembers(completion: @escaping ([GroupMemberInfo]) -> Void)
     func getGroupInfo(completion: @escaping (GroupInfo) -> Void)
-    func getOtherInfo(completion: @escaping (FullUserInfo) -> Void)
+    func getOtherInfo(completion: @escaping (PublicUserInfo) -> Void)
     func getSelfInfo() -> UserInfo?
     func getMessageInfo(ids: [String]) -> [MessageInfo]
     

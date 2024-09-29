@@ -35,7 +35,7 @@ class SelectContactsViewModel {
     func getMyFriendList() {
         IMController.shared.getFriendList { [weak self] users in
             guard let `self` = self else { return }
-            self.contacts = users.map{ContactInfo(ID: $0.userID, name: $0.showName, faceURL: $0.faceURL, type: .friends)}
+            self.contacts = users.map{ContactInfo(ID: $0.userID, name: $0.nickname, faceURL: $0.faceURL, type: .friends)}
             self.friends.append(contentsOf: self.contacts)
             self.divideContactsInSection(self.contacts)
         }

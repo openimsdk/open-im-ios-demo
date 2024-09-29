@@ -8,12 +8,13 @@ class UserDetailViewModel {
     let groupId: String?
     let groupInfo: GroupInfo?
     
-    let userInfoRelay: BehaviorRelay<FullUserInfo?> = .init(value: nil)
+    let userInfoRelay: BehaviorRelay<PublicUserInfo?> = .init(value: nil)
     var memberInfoRelay: BehaviorRelay<GroupMemberInfo?> = .init(value: nil)
     var showSetAdmin: Bool = false
     var showJoinSource: Bool = false
     var showMute: Bool = false
     var userDetailFor = UserDetailFor.groupMemberInfo
+    var allowAddFriend = false
 
     private let _disposeBag = DisposeBag()
     init(userId: String, groupId: String?, groupInfo: GroupInfo? = nil, userDetailFor: UserDetailFor) {
@@ -25,20 +26,13 @@ class UserDetailViewModel {
         IMController.shared.friendInfoChangedSubject.subscribe { [weak self] (friendInfo: FriendInfo?) in
             guard let sself = self else { return }
             guard friendInfo?.userID == sself.userId else { return }
-            let user = sself.userInfoRelay.value?.friendInfo
+            let user = sself.userInfoRelay.value
             user?.nickname = friendInfo?.nickname
             if let gender = friendInfo?.gender {
                 user?.gender = gender
             }
-            user?.phoneNumber = friendInfo?.phoneNumber
-            if let birth = friendInfo?.birth {
-                user?.birth = birth
-            }
-            user?.email = friendInfo?.email
             user?.remark = friendInfo?.remark
-            let fullUser = self?.userInfoRelay.value
-            fullUser?.friendInfo = user
-            self?.userInfoRelay.accept(fullUser)
+            self?.userInfoRelay.accept(user)
         }.disposed(by: _disposeBag)
     }
 
@@ -46,12 +40,19 @@ class UserDetailViewModel {
 
         let group = DispatchGroup()
         
-        var userInfo: FullUserInfo?
+        var userInfo: PublicUserInfo?
         var memberInfo: GroupMemberInfo?
 
         group.enter()
         IMController.shared.getUserInfo(uids: [userId]) { users in
             userInfo = users.first
+            group.leave()
+        }
+        
+        group.enter()
+        IMController.shared.getFriendsInfo(userIDs: [userId]) { [self] info in
+            allowAddFriend = info == nil
+            
             group.leave()
         }
         
@@ -78,7 +79,7 @@ class UserDetailViewModel {
                     }
                     
                     IMController.shared.getUserInfo(uids: [memberInfo!.inviterUserID!]) { users in
-                        memberInfo!.inviterUserName = users.first?.showName
+                        memberInfo!.inviterUserName = users.first?.nickname
                         group.leave()
                     }
                 } else {

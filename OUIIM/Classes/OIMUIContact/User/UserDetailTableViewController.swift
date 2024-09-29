@@ -213,26 +213,26 @@ class UserDetailTableViewController: UIViewController {
     }
     
     private func bindData() {
-        _viewModel.userInfoRelay.subscribe(onNext: { [weak self] (userInfo: FullUserInfo?) in
+        _viewModel.userInfoRelay.subscribe(onNext: { [weak self] userInfo in
             guard let userInfo, let sself = self else { return }
             
-            sself.avatarView.setAvatar(url: userInfo.faceURL, text: userInfo.showName) { [weak self] in
+            sself.avatarView.setAvatar(url: userInfo.faceURL, text: userInfo.nickname) { [weak self] in
                 guard let self else { return }
                 let vc = UserProfileTableViewController.init(userId: self._viewModel.userId, groupId: self._viewModel.groupId)
                 self.navigationController?.pushViewController(vc, animated: true)
             }
-            var name: String? = userInfo.showName
-            if let remark = userInfo.friendInfo?.remark, !remark.isEmpty {
+            var name: String? = userInfo.nickname
+            if let remark = userInfo.remark, !remark.isEmpty {
                 name = name?.append(string: "(\(remark))")
             }
             sself.nameLabel.text = name
-            sself.addFriendBtn.isHidden = userInfo.friendInfo != nil
+            sself.addFriendBtn.isHidden = !sself._viewModel.allowAddFriend
             sself.IDLabel.text = userInfo.userID
 
             if userInfo.userID == IMController.shared.uid {
                 sself.addFriendBtn.isHidden = true
                 sself.sendMessageBtn.isHidden = true
-            } else if userInfo.friendInfo != nil, !sself.rowItems.contains(.profile) {
+            } else if !sself._viewModel.allowAddFriend, !sself.rowItems.contains(.profile) {
                     
                 sself.rowItems.append(.spacer)
                 sself.rowItems.append(.profile)

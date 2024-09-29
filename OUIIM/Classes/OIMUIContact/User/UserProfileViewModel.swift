@@ -35,7 +35,7 @@ class UserProfileViewModel {
                 
                 if let u = users.first {
                     user = UserInfo(userID: u.userID!,
-                                    nickname: u.showName,
+                                    nickname: u.nickname,
                                     faceURL: u.faceURL)
                     self?.userInfoRelay.accept(user)
                 }

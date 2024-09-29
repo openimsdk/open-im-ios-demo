@@ -224,8 +224,8 @@ final class ChatViewController: UIViewController {
         if type == .c2c {
             chatController.getOtherInfo { [weak self] info in
                 guard let self else { return }
-                self.setRightButtons(show: info.friendInfo != nil)
-                self.navigationItem.title = info.showName
+                self.setRightButtons(show: true)
+                self.navigationItem.title = info.nickname
             }
         } else if type == .notification {
             navigationItem.title = "系统通知".innerLocalized()

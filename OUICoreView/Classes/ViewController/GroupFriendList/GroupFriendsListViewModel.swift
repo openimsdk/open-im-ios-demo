@@ -38,7 +38,7 @@ class GroupFriendsListViewModel {
     
     func getFriends() {
         IMController.shared.getFriendList { [weak self] friends in
-            let r = friends.map({ UserInfo(userID: $0.userID!, nickname: $0.showName, faceURL: $0.faceURL) })
+            let r = friends.map({ UserInfo(userID: $0.userID!, nickname: $0.nickname, faceURL: $0.faceURL) })
             self?.iMyFriends = r
             self?.myFriendsRelay.accept(r)
         }

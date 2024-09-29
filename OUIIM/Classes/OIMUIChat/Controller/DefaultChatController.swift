@@ -33,7 +33,7 @@ final class DefaultChatController: ChatController {
     
     private var groupMembers: [GroupMemberInfo]?
     
-    private var otherInfo: FullUserInfo?
+    private var otherInfo: PublicUserInfo?
     
     private var messages: [MessageInfo] = []
     
@@ -165,7 +165,7 @@ final class DefaultChatController: ChatController {
         }
     }
     
-    func getOtherInfo(completion: @escaping (FullUserInfo) -> Void) {
+    func getOtherInfo(completion: @escaping (PublicUserInfo) -> Void) {
         if otherInfo == nil {
             IMController.shared.getUserInfo(uids: [receiverId]) { [weak self] info in
                 guard let r = info.first else { return }

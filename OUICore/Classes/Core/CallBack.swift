@@ -6,7 +6,7 @@ public struct CallBack {
     public typealias MessageReturnVoid = (MessageInfo) -> Void
     public typealias UserInfoOptionalReturnVoid = (UserInfo?) -> Void
     public typealias UsersInfoOptionalReturnVoid = ([UserInfo]?) -> Void
-    public typealias FullUserInfosReturnVoid = ([FullUserInfo]) -> Void
+    public typealias FullUserInfosReturnVoid = ([PublicUserInfo]) -> Void
     public typealias GroupInfoOptionalReturnVoid = (GroupInfo?) -> Void
     public typealias GroupInfosReturnVoid = ([GroupInfo]) -> Void
     public typealias GroupSignalingInfoReturnVoid = (String, [GroupMemberInfo]) -> Void
