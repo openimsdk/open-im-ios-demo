@@ -13,7 +13,7 @@ let defaultHost = "127.0.0.1"
 
 // The default IP or domain name used in the settings page. After the settings page is saved, defaultHost will become invalid.
 let defaultIP = "127.0.0.1"
-let defaultDomain = "web.rentsoft.cn"
+let defaultDomain = "xxx.com"
 
 let businessPort = ":10008"
 let businessRoute = "/chat"
