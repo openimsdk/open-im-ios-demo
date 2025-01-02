@@ -11,7 +11,7 @@
   •
   <a href="https://github.com/openimsdk/open-im-server">OpenIM Server</a>
   •
-  <a href="https://github.com/openimsdk/open-im-sdk-flutter">openim-sdk-ios</a>
+  <a href="https://github.com/openimsdk/open-im-sdk-ios">openim-sdk-ios</a>
   •
   <a href="https://github.com/openimsdk/openim-sdk-core">openim-sdk-core</a>
 </p>
