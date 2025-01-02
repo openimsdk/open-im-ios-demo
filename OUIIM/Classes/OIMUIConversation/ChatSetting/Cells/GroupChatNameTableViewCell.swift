@@ -5,12 +5,7 @@ import OUICore
 class GroupChatNameTableViewCell: UITableViewCell {
     var disposeBag = DisposeBag()
     
-    let avatarImageView: UIImageView = {
-        let v = UIImageView()
-        v.layer.cornerRadius = 4
-        v.clipsToBounds = true
-        return v
-    }()
+    let avatarImageView = AvatarView()
 
     let titleLabel: UILabel = {
         let v = UILabel()
@@ -22,7 +17,12 @@ class GroupChatNameTableViewCell: UITableViewCell {
     
     lazy var nameTextFiled: UITextField = {
         let v = UITextField()
-        v.placeholder = "取个群名称方便后续搜索".innerLocalized()
+        v.placeholder = "plsEnterGroupNameHint".innerLocalized()
+        v.rx.text.map({ [weak self] text in
+            guard let self, let text else { return "" }
+            
+            return String(text.prefix(16))
+        }).bind(to: v.rx.text).disposed(by: disposeBag)
         
         return v
     }()

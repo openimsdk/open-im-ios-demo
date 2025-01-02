@@ -17,7 +17,9 @@ class SettingViewModel {
             self?.notDisturbRelay.accept(user?.globalRecvMsgOpt == .receive)
         }
         
-        AccountViewModel.queryUserInfo(userIDList: [IMController.shared.currentUserRelay.value!.userID],
+        guard let userID = IMController.shared.currentUserRelay.value?.userID else { return }
+        
+        AccountViewModel.queryUserInfo(userIDList: [userID],
                                        valueHandler: { [weak self] infos in
             guard let info = infos.first else { return }
             self?.setRingRelay.accept(info.allowBeep == 2)
@@ -79,7 +81,7 @@ class SettingViewModel {
         IMController.shared.deleteAllMsgFromLocalAndSvr(onSuccess: onSuccess)
     }
     
-    func changePassword(password: String, completion: @escaping CompletionHandler) {
-        AccountViewModel.changePassword(userID: IMController.shared.uid, password: password, completionHandler: completion)
+    func changePassword(current password1: String, to password2: String, completion: @escaping CompletionHandler) {
+        AccountViewModel.changePassword(userID: IMController.shared.uid, current: password1, to: password2, completionHandler: completion)
     }
 }

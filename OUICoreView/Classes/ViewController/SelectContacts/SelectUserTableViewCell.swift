@@ -10,9 +10,7 @@ class SelectUserTableViewCell: FriendListUserTableViewCell {
     
     var showSelectedIcon = true {
         didSet {
-            if (!showSelectedIcon) {
-                stateImageView.removeFromSuperview()
-            }
+            stateImageView.isHidden = !showSelectedIcon
         }
     }
 

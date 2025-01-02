@@ -1,6 +1,7 @@
 
 import RxSwift
 import OUICore
+import ProgressHUD
 
 class GroupApplicationTableViewController: UITableViewController {
     private let _viewModel = GroupApplicationViewModel()
@@ -12,20 +13,33 @@ class GroupApplicationTableViewController: UITableViewController {
         tableView.register(GroupApplicationTableViewCell.self, forCellReuseIdentifier: GroupApplicationTableViewCell.className)
         tableView.dataSource = nil
         tableView.backgroundColor = .viewBackgroundColor
+        tableView.rowHeight = UITableView.automaticDimension
+        tableView.separatorColor = .cE8EAEF
         
         bindData()
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
         _viewModel.getGroupApplications()
     }
 
     private func bindData() {
+        _viewModel.loading.asDriver().drive(onNext: { isLoading in
+            if isLoading {
+                ProgressHUD.animate()
+            } else {
+                ProgressHUD.dismiss()
+            }
+        }).disposed(by: _disposeBag)
+        
         _viewModel.applicationItems
             .asDriver(onErrorJustReturn: [])
-            .drive(tableView.rx.items) { (tableView, _, item: GroupApplicationInfo) in
+            .drive(tableView.rx.items) { [weak self] (tableView, _, item: GroupApplicationInfo) in
                 let cell = tableView.dequeueReusableCell(withIdentifier: GroupApplicationTableViewCell.className) as! GroupApplicationTableViewCell
+                
+                guard let self else { return cell }
+                
                 cell.nameLabel.text = item.nickname
                 if let reason = item.reqMsg {
                     cell.setApply(reason: reason)
@@ -35,9 +49,9 @@ class GroupApplicationTableViewController: UITableViewController {
                 }
 
                 if let state = GroupApplicationTableViewCell.ApplyState(rawValue: item.handleResult.rawValue) {
-                    cell.setApplyState(state)
+                    cell.setApplyState(state, isSendOut: _viewModel.isSendOut(userID: item.userID!))
                 }
-                cell.avatarView.setAvatar(url: item.groupFaceURL, text: item.groupName)
+                cell.avatarView.setAvatar(url: item.userFaceURL, text: item.nickname)
                 cell.agreeBtn.rx.tap.subscribe { [weak self] _ in
                     if let uid = item.userID {
                         let vc = ApplicationViewController(groupApplication: item, friendApplication: nil)

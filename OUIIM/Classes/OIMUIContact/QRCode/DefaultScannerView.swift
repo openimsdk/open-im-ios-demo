@@ -31,6 +31,16 @@ class DefaultScannerView: UIView {
             return Disposables.create()
         }
     }
+    
+    func scanQrcodeImage(image: UIImage) -> Observable<ScanResult?> {
+        Observable.create { [weak self] observer in
+            let r = self?._scanner.scanQRImage(image: image)
+            observer.onNext(r?.first)
+            observer.onCompleted()
+            
+            return Disposables.create()
+        }
+    }
 
     func stopScanning() {
         _animationView.stopAnimation()

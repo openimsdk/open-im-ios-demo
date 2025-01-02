@@ -8,5 +8,7 @@ protocol ChatCollectionDataSource: UICollectionViewDataSource, ChatLayoutDelegat
 
     func prepare(with collectionView: UICollectionView)
 
+    func didSelectItemAt(_ collectionView: UICollectionView, indexPath: IndexPath)
     
+    var mediaImageViews: [String: Int] { get set }
 }

@@ -11,8 +11,11 @@ class SingleChatSettingViewModel {
     let setTopContactRelay: BehaviorRelay<Bool> = .init(value: false)
     
     private let _disposeBag = DisposeBag()
-    init(conversation: ConversationInfo) {
+    init(conversation: ConversationInfo, userInfo: UserInfo? = nil) {
         self.conversation = conversation
+        if let userInfo {
+            self.membesRelay.accept([userInfo])
+        }
         IMController.shared.friendInfoChangedSubject.subscribe { [weak self] (friendInfo: FriendInfo?) in
             guard let sself = self else { return }
             if friendInfo?.userID == sself.conversation.userID {
@@ -54,21 +57,32 @@ class SingleChatSettingViewModel {
                 self?.publishConversationInfo()
             }
         }
-
-        IMController.shared.getFriendsInfo(userIDs: [userId]) { [weak self] userInfos in
+        
+        IMController.shared.getFriendsInfo(userIDs: [userId]) { [self] users in
             
-            if let user = userInfos.first {
-                let userInfo = UserInfo(userID: user.userID!)
-                userInfo.faceURL = user.faceURL
+            if let user = users.first {
+                let userInfo = UserInfo(userID: user.userID!, nickname: user.nickname, faceURL: user.faceURL)
                 var nickName: String? = user.nickname
                 if let remark = user.remark, !remark.isEmpty {
                     nickName = nickName?.append(string: "(\(remark))")
                 }
                 userInfo.nickname = nickName
-                // the fake user will be shown as an add btn
+
                 let fakeUser = UserInfo(userID: "")
                 fakeUser.isAddButton = true
-                self?.membesRelay.accept([userInfo, fakeUser])
+                self.membesRelay.accept([userInfo, fakeUser])
+                
+                return;
+            }
+            IMController.shared.getUserInfo(uids: [userId]) { [self] userInfos in
+                
+                if let user = userInfos.first {
+                    let userInfo = UserInfo(userID: user.userID!, nickname: user.nickname, faceURL: user.faceURL)
+
+                    let fakeUser = UserInfo(userID: "")
+                    fakeUser.isAddButton = true
+                    self.membesRelay.accept([userInfo, fakeUser])
+                }
             }
         }
     }
@@ -83,7 +97,7 @@ class SingleChatSettingViewModel {
     }
 
     func toggleTopContacts() {
-        IMController.shared.pinConversation(id: conversation.conversationID, isPinned: setTopContactRelay.value, completion: { [weak self] _ in
+        IMController.shared.pinConversation(id: conversation.conversationID, isPinned: !setTopContactRelay.value, completion: { [weak self] _ in
             guard let sself = self else { return }
             sself.setTopContactRelay.accept(!sself.setTopContactRelay.value)
         })

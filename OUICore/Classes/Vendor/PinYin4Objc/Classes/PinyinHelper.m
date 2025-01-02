@@ -15,7 +15,6 @@
 
 @implementation PinyinHelper
 
-//////async methods
 + (void)toHanyuPinyinStringArrayWithChar:(unichar)ch
                                   outputBlock:(OutputArrayBlock)outputBlock
 {
@@ -97,7 +96,7 @@
              if (nil != array) {
                  NSMutableArray *targetPinyinStringArray = [NSMutableArray arrayWithCapacity:array.count];
                  for (int i = 0; i < (int) [array count]; i++) {
-                    ///to do
+
                  }
                  outputBlock(targetPinyinStringArray);
              }
@@ -122,7 +121,7 @@
             if (nil != array) {
                 NSMutableArray *targetPinyinStringArray = [NSMutableArray arrayWithCapacity:array.count];
                 for (int i = 0; i < (int) [array count]; i++) {
-                    ///to do
+
                 }
                 outputBlock(targetPinyinStringArray);
             }
@@ -139,24 +138,24 @@
                            withNSString:(NSString *)seperater
                             outputBlock:(OutputStringBlock)outputBlock
 {
- //   __block NSMutableString *resultPinyinStrBuf = [[NSMutableString alloc] init];
-//    for (int i = 0; i <  str.length; i++) {
-//         [PinyinHelper getFirstHanyuPinyinStringWithChar:[str characterAtIndex:i] withHanyuPinyinOutputFormat:outputFormat outputBlock:^(NSString *pinYin) {
-//             if (nil != pinYin) {
-//                 [resultPinyinStrBuf appendString:pinYin];
-//                 if (i != [str length] - 1) {
-//                     [resultPinyinStrBuf appendString:seperater];
-//                 }
-//             }
-//             else {
-//                 [resultPinyinStrBuf appendFormat:@"%C",[str characterAtIndex:i]];
-//             }
-//             if (outputBlock) {
-//                 outputBlock(resultPinyinStrBuf);
-//             }
-//
-//         }];
-//    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         __block NSMutableString *resultPinyinStrBuf = [[NSMutableString alloc] init];
         for (int i = 0; i <  str.length; i++) {
@@ -195,7 +194,6 @@
     }];
 }
 
-/////sync methods
 
 + (NSArray *)toHanyuPinyinStringArrayWithChar:(unichar)ch {
     return [PinyinHelper getUnformattedHanyuPinyinStringArrayWithChar:ch];

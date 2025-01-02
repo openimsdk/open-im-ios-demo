@@ -12,14 +12,14 @@ class GroupDetailViewController: UIViewController {
         _viewModel = GroupDetailViewModel(groupId: groupId)
         super.init(nibName: nil, bundle: nil)
     }
-    
+
     @available(*, unavailable)
     required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     private lazy var tableView: UITableView = {
-        let v = UITableView(frame: .zero, style: .insetGrouped)
+        let v = UITableView(frame: .zero, style: .grouped)
         v.tableFooterView = UIView()
         v.dataSource = self
         v.delegate = self
@@ -30,9 +30,9 @@ class GroupDetailViewController: UIViewController {
         v.backgroundColor = .clear
         v.rowHeight = UITableView.automaticDimension
         v.register(GroupBasicInfoCell.self, forCellReuseIdentifier: GroupBasicInfoCell.className)
-        v.register(GroupChatMemberTableViewCell.self, forCellReuseIdentifier: GroupChatMemberTableViewCell.className)
+        v.register(NewGroupMemberCell.self, forCellReuseIdentifier: NewGroupMemberCell.className)
         v.register(OptionTableViewCell.self, forCellReuseIdentifier: OptionTableViewCell.className)
-        
+
         return v
     }()
     
@@ -41,25 +41,31 @@ class GroupDetailViewController: UIViewController {
         v.tintColor = .white
         v.backgroundColor = .c0089FF
         v.layer.cornerRadius = 5
+        v.rx.tap.subscribe(onNext: { [weak self] _ in
+            if (try? self?._viewModel.isInGroupSubject.value()) == true {
+                self?.enterChat()
+            } else {
+                self?.applyJoinGroup()
+            }
+        }).disposed(by: _disposeBag)
         
         return v
     }()
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .viewBackgroundColor
         
         initView()
         bindData()
-        tableView.reloadData()
         _viewModel.getGroupInfo()
     }
-    
+
     private var sectionItems: [[RowType]] = [
         [.header],
         [.identifier],
     ]
-    
+
     private func initView() {
         
         view.addSubview(tableView)
@@ -73,17 +79,17 @@ class GroupDetailViewController: UIViewController {
         view.addSubview(bottomView)
         bottomView.snp.makeConstraints { make in
             make.leading.trailing.bottom.equalToSuperview()
-            make.height.equalTo(100)
+            make.height.equalTo(UIApplication.safeAreaInsets.bottom + 80.h)
         }
         
         bottomView.addSubview(enterButton)
         enterButton.snp.makeConstraints { make in
             make.centerX.equalToSuperview()
             make.leading.top.equalToSuperview().inset(16)
-            make.height.equalTo(44)
+            make.height.equalTo(44.h)
         }
     }
-    
+
     private func bindData() {
         _viewModel.isInGroupSubject.subscribe(onNext: { [weak self] (isInGroup: Bool) in
             guard let self else { return }
@@ -91,24 +97,23 @@ class GroupDetailViewController: UIViewController {
                 self.sectionItems = [
                     [.header],
                     [.identifier],
-                    //                    [.joinGroup],
+
                 ]
                 self.enterButton.setTitle("申请加入群聊".innerLocalized(), for: .normal)
-                self.enterButton.rx.tap.subscribe(onNext: { [weak self] _ in
-                    self?.applyJoinGroup()
-                }).disposed(by: self._disposeBag)
             } else {
                 self.sectionItems = [
                     [.header],
+                    [.members],
                     [.identifier],
-                    //                    [.enterGroupChat],
+
                 ]
                 self.enterButton.setTitle("进入群聊".innerLocalized(), for: .normal)
-                self.enterButton.rx.tap.subscribe(onNext: { [weak self] _ in
-                    self?.enterChat()
-                }).disposed(by: self._disposeBag)
             }
             self.tableView.reloadData()
+        }).disposed(by: _disposeBag)
+        
+        _viewModel.membersCountRelay.subscribe(onNext: { [weak self] _ in
+            self?.tableView.reloadData()
         }).disposed(by: _disposeBag)
     }
     
@@ -137,12 +142,12 @@ class GroupDetailViewController: UIViewController {
             }
         }
     }
-    
+
     enum RowType {
         case header
         case members
         case identifier
-        
+
         var title: String {
             switch self {
             case .header:
@@ -154,11 +159,11 @@ class GroupDetailViewController: UIViewController {
             }
         }
     }
-    
+
     deinit {
-#if DEBUG
-        print("dealloc \(type(of: self))")
-#endif
+        #if DEBUG
+            print("dealloc \(type(of: self))")
+        #endif
     }
 }
 
@@ -167,27 +172,27 @@ extension GroupDetailViewController: UITableViewDelegate, UITableViewDataSource 
     func tableView(_: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         16
     }
-    
+
     func tableView(_: UITableView, viewForHeaderInSection _: Int) -> UIView? {
         UIView()
     }
-    
+
     func tableView(_: UITableView, viewForFooterInSection _: Int) -> UIView? {
         nil
     }
-    
+
     func tableView(_: UITableView, heightForFooterInSection _: Int) -> CGFloat {
         CGFloat.leastNormalMagnitude
     }
-    
+
     func numberOfSections(in _: UITableView) -> Int {
         return sectionItems.count
     }
-    
+
     func tableView(_: UITableView, numberOfRowsInSection section: Int) -> Int {
         return sectionItems[section].count
     }
-    
+
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let rowType = sectionItems[indexPath.section][indexPath.row]
         switch rowType {
@@ -195,73 +200,55 @@ extension GroupDetailViewController: UITableViewDelegate, UITableViewDataSource 
             let cell = tableView.dequeueReusableCell(withIdentifier: GroupBasicInfoCell.className) as! GroupBasicInfoCell
             let groupInfo = _viewModel.groupInfoRelay.value
             cell.avatarView.setAvatar(url: groupInfo?.faceURL, text: groupInfo?.groupName)
-            let count = groupInfo?.memberCount ?? 0
-            cell.textFiled.text = groupInfo?.groupName
-            cell.subLabel.text = Date.timeString(timeInterval: TimeInterval(groupInfo?.createTime ?? 0))
-            cell.textFiled.rightViewMode = .never
+            
+            if let count = groupInfo?.memberCount, count > 0 {
+                cell.titleLabel.text = groupInfo?.groupName?.append(string: "(\(count))")
+            } else {
+                cell.titleLabel.text = groupInfo?.groupName
+            }
+            
+            let attach = NSTextAttachment(image: UIImage(systemName: "clock.fill")!)
+            attach.bounds = CGRect(x: 4, y: -3, width: 16, height: 16)
+            let attachment = NSMutableAttributedString(attachment: attach)
+            
+            let date = Date.formatDate("yyyy年MM月dd日", of: (groupInfo?.createTime ?? 0) / 1000)
+            attachment.append(NSAttributedString(string: " \(date)"))
+            
+            cell.subLabel.attributedText = attachment
             cell.QRCodeButton.isHidden = true
             
             return cell
         case .members:
-            let cell = tableView.dequeueReusableCell(withIdentifier: GroupChatMemberTableViewCell.className) as! GroupChatMemberTableViewCell
+            let cell = tableView.dequeueReusableCell(withIdentifier: NewGroupMemberCell.className) as! NewGroupMemberCell
             cell.memberCollectionView.dataSource = nil
             _viewModel.membersRelay.asDriver(onErrorJustReturn: []).drive(cell.memberCollectionView.rx.items) { (collectionView: UICollectionView, row, item: GroupMemberInfo) in
-                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: GroupChatMemberTableViewCell.ImageCollectionViewCell.className, for: IndexPath(row: row, section: 0)) as! GroupChatMemberTableViewCell.ImageCollectionViewCell
-                if item.isAddButton {
-                    cell.avatarView.setAvatar(url: nil, text: nil, placeHolder: "setting_add_btn_icon")
-                } else if item.isRemoveButton {
-                    cell.avatarView.setAvatar(url: nil, text: nil, placeHolder: "setting_remove_btn_icon")
-                } else {
-                    cell.avatarView.setAvatar(url: item.faceURL, text: item.nickname)
-                    cell.levelLabel.text = item.roleLevelString
-                }
-                
-                cell.nameLabel.text = item.nickname
+                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: NewGroupMemberCell.ImageCollectionViewCell.className, for: IndexPath(row: row, section: 0)) as! NewGroupMemberCell.ImageCollectionViewCell
+
+                cell.avatarView.setAvatar(url: item.faceURL, text: item.nickname, fullText: true)
                 
                 return cell
             }.disposed(by: cell.disposeBag)
             
             cell.reloadData()
             
-            _viewModel.membersCountRelay.map { "（\($0)）" }.bind(to: cell.countLabel.rx.text).disposed(by: cell.disposeBag)
+            _viewModel.membersCountRelay.map { "\("nPerson".innerLocalizedFormat(arguments: $0))" }.bind(to: cell.countLabel.rx.text).disposed(by: cell.disposeBag)
             cell.titleLabel.text = rowType.title
             
-            cell.memberCollectionView.rx.modelSelected(GroupMemberInfo.self).subscribe(onNext: { [weak self] (userInfo: GroupMemberInfo) in
-                guard let sself = self else { return }
-                if userInfo.isAddButton || userInfo.isRemoveButton {
-                    
-                    let vc = SelectContactsViewController()
-                    vc.title = userInfo.isAddButton ? "邀请群成员".innerLocalized() : "移除群成员".innerLocalized()
-                    vc.selectedContact(blocked: userInfo.isAddButton ? sself._viewModel.allMembers + [IMController.shared.uid] : nil) { [weak vc] (r: [ContactInfo]) in
-                        guard let sself = self, let groupID = sself._viewModel.groupInfoRelay.value?.groupID else { return }
-                        
-                        let uids = r.compactMap { $0.ID }
-                        if userInfo.isAddButton {
-                            IMController.shared.inviteUsersToGroup(groupId: groupID, uids: uids) {
-                                vc?.navigationController?.popViewController(animated: true)
-                            }
-                        } else {
-                            IMController.shared.kickGroupMember(groupId: groupID, uids: uids) {
-                                vc?.navigationController?.popViewController(animated: true)
-                            }
-                        }
-                    }
-                    self?.navigationController?.pushViewController(vc, animated: true)
-                }
-            }).disposed(by: cell.disposeBag)
             return cell
-            
+
         case .identifier:
             let cell = tableView.dequeueReusableCell(withIdentifier: OptionTableViewCell.className) as! OptionTableViewCell
             cell.subtitleLabel.text = _viewModel.groupId
+            cell.subtitleLabel.textColor = .c8E9AB0
             cell.titleLabel.text = rowType.title
+            cell.accessoryType = .none
+            
             return cell
         }
     }
-    
+
     func tableView(_: UITableView, didSelectRowAt indexPath: IndexPath) {
         let rowType = sectionItems[indexPath.section][indexPath.row]
-        let sessionType: ConversationType = _viewModel.groupInfoRelay.value?.groupType == .working ? .superGroup : .group;
         
         switch rowType {
         case .members:

@@ -1,7 +1,11 @@
 
 import OUICore
+import RxSwift
 
 public class ShowSelectedTableViewCell: UITableViewCell {
+    let disposeBag = DisposeBag()
+
+    var onTap: (() -> Void)?
     
     public let avatarView: AvatarView = {
         let v = AvatarView()
@@ -10,27 +14,30 @@ public class ShowSelectedTableViewCell: UITableViewCell {
 
     public let titleLabel: UILabel = {
         let v = UILabel()
-        v.font = .systemFont(ofSize: 16)
-        v.textColor = StandardUI.color_333333
+        v.font = .f17
+        v.textColor = .c0C1C33
         return v
     }()
 
     let subtitleLabel: UILabel = {
         let v = UILabel()
-        v.font = .systemFont(ofSize: 12)
-        v.textColor = StandardUI.color_666666
+        v.font = .f12
+        v.textColor = .c0C1C33
         return v
     }()
     
-    let trainingButton: UIButton = {
+    lazy var trainingButton: UIButton = {
         let v = UIButton(type: .system)
-        v.setTitle(" 移除 ", for: .normal)
+        v.setTitle(" \("remove".innerLocalized()) ", for: .normal)
         v.layer.borderColor = UIColor.systemBlue.cgColor
         v.layer.borderWidth = 1
         v.layer.cornerRadius = 2
-        
         v.layer.masksToBounds = true
-        
+        v.rx.tap.subscribe(onNext: { [weak self] _ in
+            guard let self else { return }
+            
+            onTap?()
+        }).disposed(by: disposeBag)
         return v
     }()
     
@@ -45,10 +52,6 @@ public class ShowSelectedTableViewCell: UITableViewCell {
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         selectionStyle = .none
-        
-        avatarView.snp.makeConstraints { make in
-            make.size.equalTo(StandardUI.avatar_42)
-        }
 
         let textStack: UIStackView = {
             let v = UIStackView(arrangedSubviews: [titleLabel, subtitleLabel])

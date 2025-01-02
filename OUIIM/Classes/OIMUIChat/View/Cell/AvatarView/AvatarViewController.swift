@@ -5,8 +5,9 @@ import UIKit
 final class AvatarViewController {
     var name: String?
     var faceURL: String?
-    
-    weak var delegate: ReloadDelegate?
+    var isGif: Bool = false
+        
+    var onTap: ((_ userID: String) -> Void)?
     
     private let user: User
 
@@ -22,10 +23,11 @@ final class AvatarViewController {
         self.user = user
         self.bubble = bubble
         self.name = user.name
-        self.faceURL = user.faceURL
+        self.isGif = user.faceURL?.split(separator: ".").last?.lowercased() == "gif"
+        self.faceURL = isGif ? user.faceURL : user.faceURL?.customThumbnailURLString()
     }
     
     func action() {
-        delegate?.didTapAvatar(with: user.id)
+        onTap?(user.id)
     }
 }

@@ -2,6 +2,7 @@
 import RxSwift
 import OUICore
 import OUICoreView
+import ProgressHUD
 
 open class FriendListViewController: UIViewController {
     var selectCallBack: ((UserInfo) -> Void)?
@@ -17,9 +18,10 @@ open class FriendListViewController: UIViewController {
         v.register(FriendListUserTableViewCell.self, forCellReuseIdentifier: FriendListUserTableViewCell.className)
         v.dataSource = self
         v.delegate = self
-        v.rowHeight = UITableView.automaticDimension
+        v.rowHeight = 60
         v.backgroundColor = .clear
-        
+        v.separatorColor = .clear
+
         if #available(iOS 15.0, *) {
             v.sectionHeaderTopPadding = 0
         }
@@ -53,7 +55,7 @@ open class FriendListViewController: UIViewController {
     private func initView() {
         let searchC: UISearchController = {
             let v = UISearchController(searchResultsController: resultC)
-            v.searchResultsUpdater = resultC
+            v.searchResultsUpdater = self
             v.searchBar.placeholder = "搜索好友".innerLocalized()
             v.obscuresBackgroundDuringPresentation = false
             return v
@@ -72,6 +74,14 @@ open class FriendListViewController: UIViewController {
     }
 
     private func bindData() {
+        _viewModel.loadingSubject.subscribe(onNext: { loading in
+            if loading {
+                ProgressHUD.animate()
+            } else {
+                ProgressHUD.dismiss()
+            }
+        }).disposed(by: _disposeBag)
+        
         _viewModel.lettersRelay.distinctUntilChanged().subscribe(onNext: { [weak self] (values: [String]) in
             guard let sself = self else { return }
             self?.resultC.dataList = sself._viewModel.myFriends
@@ -98,7 +108,7 @@ extension FriendListViewController: UITableViewDataSource, UITableViewDelegate {
     public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: FriendListUserTableViewCell.className) as! FriendListUserTableViewCell
         let user: UserInfo = _viewModel.contactSections[indexPath.section][indexPath.row]
-        cell.titleLabel.text = user.nickname
+        cell.titleLabel.text = user.remark?.isEmpty == false ? user.remark : user.nickname
         cell.avatarImageView.setAvatar(url: user.faceURL, text: user.nickname, onTap: nil)
         return cell
     }
@@ -125,5 +135,18 @@ extension FriendListViewController: UITableViewDataSource, UITableViewDelegate {
 
     public func tableView(_: UITableView, heightForFooterInSection _: Int) -> CGFloat {
         return CGFloat.leastNormalMagnitude
+    }
+}
+
+extension FriendListViewController: UISearchResultsUpdating {
+    public func updateSearchResults(for searchController: UISearchController) {
+        guard let keyword = searchController.searchBar.text?.trimmingCharacters(in: .whitespacesAndNewlines), !keyword.isEmpty else { return }
+        
+        Task {
+            let result = await _viewModel.searchFriend(keyword: keyword)
+            
+            resultC.dataList = result.map({ UserInfo(userID: $0.userID!, nickname: $0.nickname, faceURL: $0.faceURL) })
+            resultC.updateSearchResults(for: searchController)
+        }
     }
 }

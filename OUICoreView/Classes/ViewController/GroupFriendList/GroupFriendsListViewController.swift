@@ -29,7 +29,7 @@ public class GroupFriendsListViewController: UIViewController {
         let v = UITableView()
         v.register(FriendListUserTableViewCell.self, forCellReuseIdentifier: FriendListUserTableViewCell.className)
         v.separatorInset = UIEdgeInsets(top: 0, left: 82, bottom: 0, right: StandardUI.margin_22)
-        v.separatorColor = StandardUI.color_F1F1F1
+        v.separatorColor = .sepratorColor
         v.rowHeight = UITableView.automaticDimension
         v.delegate = self
         if #available(iOS 15.0, *) {
@@ -41,8 +41,8 @@ public class GroupFriendsListViewController: UIViewController {
     private let iGroupBtn: UnderlineButton = {
         let v = UnderlineButton(frame: .zero)
         v.setTitle("我的群组".innerLocalized(), for: .normal)
-        v.setTitleColor(StandardUI.color_333333, for: .normal)
-        v.titleLabel?.font = .systemFont(ofSize: 14)
+        v.setTitleColor(.c0C1C33, for: .normal)
+        v.titleLabel?.font = .f14
         v.isSelected = true
         v.underLineWidth = 30
         return v
@@ -51,8 +51,8 @@ public class GroupFriendsListViewController: UIViewController {
     private let iFriendsBtn: UnderlineButton = {
         let v = UnderlineButton(frame: .zero)
         v.setTitle("我的好友".innerLocalized(), for: .normal)
-        v.setTitleColor(StandardUI.color_333333, for: .normal)
-        v.titleLabel?.font = .systemFont(ofSize: 14)
+        v.setTitleColor(.c0C1C33, for: .normal)
+        v.titleLabel?.font = .f14
         v.underLineWidth = 30
         return v
     }()

@@ -33,8 +33,7 @@ class MultipleTextLineCell: UITableViewCell {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
-    //
+
     func setText(title: String?, value: String?) {
         let titleLabel = UILabel()
         titleLabel.textColor = UIColor.c8E9AB0
@@ -49,5 +48,24 @@ class MultipleTextLineCell: UITableViewCell {
         row.alignment = .leading
         
         colum.addArrangedSubview(row)
+    }
+    
+    func reset() {
+        let views = colum.arrangedSubviews
+        for (_, item) in views.enumerated() {
+            
+            if item != titleLabel {
+                colum.removeArrangedSubview(item)
+            }
+        }
+        
+        let subviews = colum.subviews
+        
+        for (_, item) in subviews.enumerated() {
+            
+            if item != titleLabel {
+                item.removeFromSuperview()
+            }
+        }
     }
 }

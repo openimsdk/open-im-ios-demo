@@ -3,15 +3,26 @@ import Foundation
 import UIKit
 import OUICore
 import RxSwift
+
+#if ENABLE_CALL
 import OUICalling
+#endif
 
 protocol DataProvider {
-
+    
     func loadInitialMessages(completion: @escaping ([MessageInfo]) -> Void)
-
+    
     func loadPreviousMessages(completion: @escaping ([MessageInfo]) -> Void)
     
+    func loadMoreMessages(completion: @escaping ([MessageInfo]) -> Void)
+    
     func getGroupInfo(groupInfoHandler: @escaping (GroupInfo) -> Void)
+    
+    func getGroupMembers(userIDs: [String]?, handler: @escaping ([GroupMemberInfo]) -> Void, isAdminHandler: ((Bool) -> Void)?)
+    
+    func getUserInfo(otherInfo: ((FriendInfo) -> Void)?, mine: ((UserInfo) -> Void)?)
+    
+    func isJoinedGroup(groupID: String, handler: @escaping (Bool) -> Void)
 }
 
 final class DefaultDataProvider: DataProvider {
@@ -21,93 +32,77 @@ final class DefaultDataProvider: DataProvider {
     weak var delegate: DataProviderDelegate?
     
     private var startClientMsgID: String?
-    
+        
     private var lastMinSeq: Int = 0
-    
+
     private var reverseStartClientMsgID: String?
-    
+                
     private var reverseLastMinSeq: Int = 0
-    
+
     private var conversation: ConversationInfo!
-
+    
     private var startingTimestamp = Date().timeIntervalSince1970
-
+    
     private var typingState: TypingState = .idle
-
+    
     private let users: [String] = []
-
+    
     private let receiverId: String!
-
+    
     private var lastMessageIndex: Int = 0
-
+    
     private var lastReadString: String?
-
+    
     private var lastReceivedString: String?
-
-    private let dispatchQueue = DispatchQueue.global(qos: .userInteractive)
-
-    private let enableTyping = true
-
+    
     private let enableNewMessages = true
-
-    private let enableRichContent = true
     
-    private var isAdminOrOwner = false
+    private var anchorMessage: MessageInfo?
     
-    private var anchorID: String?
-
-    private var allUsersIds: [String] {
-        Array([users, [receiverId]].joined())
-    }
-
-    init(conversation: ConversationInfo, anchorID: String? = nil) {
+    private var messageStorage: [MessageInfo] = [] // message cache
+    
+    private let pageSize = 20
+    
+    init(conversation: ConversationInfo, anchorMessage: MessageInfo? = nil) {
         self.conversation = conversation
         self.receiverId = conversation.conversationType == .c2c ? conversation.userID! : conversation.groupID!
-        self.anchorID = anchorID
+        self.anchorMessage = anchorMessage
         
         addObservers()
     }
     
     deinit {
-        print("provider - deinit")
+        iLogger.print("\(type(of: self)) - \(#function)")
     }
-
+    
     func loadInitialMessages(completion: @escaping ([MessageInfo]) -> Void) {
-        if anchorID != nil {
-            startClientMsgID = anchorID
-            reverseStartClientMsgID = anchorID
+        if anchorMessage != nil {
+            startClientMsgID = anchorMessage?.clientMsgID
+            reverseStartClientMsgID = anchorMessage?.clientMsgID
+            anchorMessage?.isAnchor = true
             
-            var r: [MessageInfo] = []
-            let group = DispatchGroup()
+            var r = [anchorMessage!]
             
-            group.enter()
-            getHistoryMessageList { ms in
-                r.append(contentsOf: ms)
-                group.leave()
-            }
-            group.enter()
-            getHistoryMessageList(reverse: true) { ms in
-                r.append(contentsOf: ms)
-                group.leave()
-            }
-            
-            group.notify(queue: .main) { [self]
-                r = r.reduce([]) { partialResult, element in
-                    return partialResult.contains(where: { $0.clientMsgID == element.clientMsgID }) ? partialResult : partialResult + [element]
-                }
-                r.sort(by: { $0.sendTime < $1.sendTime })
-                r.first(where: { $0.clientMsgID == self.anchorID })?.isAnchor = true
-       
+            getHistoryMessageListFromStorage(loadInitial: true, reverse: true) { ms in
+                r = ms + r
                 completion(r)
             }
         } else {
-            
-            getHistoryMessageList(completion: completion)
+            startClientMsgID = nil
+            getHistoryMessageListFromStorage(loadInitial: true, completion: completion)
         }
     }
-
+    
     func loadPreviousMessages(completion: @escaping ([MessageInfo]) -> Void) {
-        getHistoryMessageList(completion: completion)
+        getHistoryMessageListFromStorage(completion: completion)
+    }
+    
+    func loadMoreMessages(completion: @escaping ([MessageInfo]) -> Void) {
+        guard let anchorMessage else {
+            completion([])
+            return
+        }
+        getHistoryMessageListFromStorage(reverse: true, completion: completion)
     }
     
     func getGroupInfo(groupInfoHandler: @escaping (GroupInfo) -> Void) {
@@ -116,207 +111,292 @@ final class DefaultDataProvider: DataProvider {
                 return
             }
             groupInfoHandler(groupInfo)
+            
+            IMController.shared.isJoinedGroup(groupID: receiverId) { [self] isIn in
+                self.delegate?.isInGroup(with: isIn)
+            }
         }
     }
     
-    private func getHistoryMessageList(reverse: Bool = false, completion: @escaping ([MessageInfo]) -> Void) {
+    func getGroupMembers(userIDs: [String]?, handler: @escaping ([GroupMemberInfo]) -> Void, isAdminHandler: ((Bool) -> Void)?) {
+        
+        if let userIDs, !userIDs.isEmpty {
+            IMController.shared.getGroupMembersInfo(groupId: receiverId, uids: userIDs) { infos in
+                handler(infos)
+            }
+        } else {
+            Task {
+                let ms = await IMController.shared.getAllGroupMembers(groupID: receiverId)
+          
+                await MainActor.run {
+                    handler(ms)
+                    
+                    if let isAdminHandler, let r = ms.first(where: { $0.userID == IMController.shared.uid }) {
+                        isAdminHandler(r.isOwnerOrAdmin)
+                    }
+                }
+            }
+        }
+    }
+    
+    func isJoinedGroup(groupID: String, handler: @escaping (Bool) -> Void) {
+        IMController.shared.isJoinedGroup(groupID: groupID) { r in
+            handler(r)
+        }
+    }
+    
+    func getUserInfo(otherInfo: ((FriendInfo) -> Void)?, mine: ((UserInfo) -> Void)?) {
+        if let me = IMController.shared.currentUserRelay.value {
+            mine?(me)
+        }
+        if let otherInfo {
+            IMController.shared.getFriendsInfo(userIDs: [receiverId]) { [weak self] friendInfos in
+                guard let self else { return }
+                
+                if let friendInfo = friendInfos.first {
+                    otherInfo(friendInfo)
+                } else {
+                    otherInfo(FriendInfo(userID: receiverId, nickname: conversation.showName, faceURL: conversation.faceURL))
+                }
+            }
+        }
+    }
+    
+    private func getHistoryMessageListFromStorage(loadInitial: Bool = false, reverse: Bool = false, completion: (([MessageInfo]) -> Void)?) {
+        
+        if loadInitial {
+            getHistoryMessageList(reverse: reverse, count: reverse ? pageSize : pageSize * 4) { [weak self] ms in
+                guard let self else { return }
+                
+                messageStorage.append(contentsOf: ms)
+                let r = Array(messageStorage.suffix(pageSize))
+
+                messageStorage.removeLast(r.count)
+                
+                completion?(r)
+            }
+        } else {
+            if !messageStorage.isEmpty {
+                let r = Array(messageStorage.suffix(pageSize))
+                messageStorage.removeLast(r.count)
+                
+                completion?(r)
+            }
+            getHistoryMessageList(reverse: reverse, count: messageStorage.isEmpty ? pageSize : (reverse ? pageSize : pageSize * 3)) { [weak self] ms in
+                guard let self else { return }
+                
+                if messageStorage.isEmpty {
+                    messageStorage.insert(contentsOf: ms, at: 0)
+                    
+                    let r = Array(messageStorage.suffix(pageSize))
+                    messageStorage.removeLast(r.count)
+                    completion?(r)
+                } else {
+                    messageStorage.insert(contentsOf: ms, at: 0)
+                }
+            }
+        }
+    }
+    
+    private func getHistoryMessageList(reverse: Bool = false, count: Int = 20, completion: @escaping ([MessageInfo]) -> Void) {
 
         if reverse {
             IMController.shared.getHistoryMessageListReverse(conversationID: conversation.conversationID,
                                                              startCliendMsgId: reverseStartClientMsgID,
-                                                             lastMinSeq: reverseLastMinSeq) { [weak self] seq, ms in
-                guard let self, !ms.isEmpty else {
+                                                             count: count) { [weak self] seq, ms in
+                guard let self else {
                     completion([])
                     return
                 }
                 
                 self.reverseLastMinSeq = seq
-                self.reverseStartClientMsgID = ms.last?.clientMsgID
-                completion(ms)
+
+                if ms.isEmpty {
+                    completion([])
+                } else {
+                    self.reverseStartClientMsgID = ms.last?.clientMsgID
+                    completion(ms)
+                }
             }
         } else {
             IMController.shared.getHistoryMessageList(conversationID: conversation.conversationID,
                                                       conversationType: conversation.conversationType,
                                                       startCliendMsgId: startClientMsgID,
-                                                      lastMinSeq: lastMinSeq) { [weak self] seq, ms in
-                guard let self, !ms.isEmpty else {
+                                                      count: count) { [weak self] seq, ms in
+                guard let self else {
                     completion([])
                     return
                 }
                 
-                let msgs = ms.filter { message in
-                    if message.contentType == .custom {
-                        let data = message.customElem!.value()
-                        let customType = message.customElem?.type
-                        
-                        if (customType == CustomMessageType.callingInvite ||
-                            customType == CustomMessageType.callingAccept ||
-                            customType == CustomMessageType.callingReject ||
-                            customType == CustomMessageType.callingCancel ||
-                            customType == CustomMessageType.callingHungup) {
-                            
-                            return false
-                        }
-                    }
-                    
-                    return true
-                }
-                
                 self.lastMinSeq = seq
-                self.startClientMsgID = ms.first?.clientMsgID
-                
-                if msgs.count < 50 {
-                    IMController.shared.getHistoryMessageList(conversationID: conversation.conversationID,
-                                                              conversationType: conversation.conversationType,
-                                                              startCliendMsgId: startClientMsgID,
-                                                              lastMinSeq: lastMinSeq) { [weak self] seq, ms2 in
-                        guard let self, !ms2.isEmpty else {
-                            completion(ms)
-                            return
-                        }
-                        
-                        self.lastMinSeq = seq
-                        self.startClientMsgID = ms2.first?.clientMsgID
-                        
-                        let msgs2 = ms2.filter { message in
-                            if message.contentType == .custom {
-                                let data = message.customElem!.value()
-                                let customType = message.customElem?.type
-                                
-                                if (customType == CustomMessageType.callingInvite ||
-                                    customType == CustomMessageType.callingAccept ||
-                                    customType == CustomMessageType.callingReject ||
-                                    customType == CustomMessageType.callingCancel ||
-                                    customType == CustomMessageType.callingHungup) {
-                                    
-                                    return false
-                                }
-                            }
-                            
-                            return true
-                        }
-                        
-                        completion(msgs + msgs2)
-                    }
+
+                if ms.isEmpty {
+                    completion([])
                 } else {
-                    completion(msgs)
+                    self.startClientMsgID = ms.first?.clientMsgID
+                    completion(ms)
                 }
             }
         }
     }
     
-    private func getSelfInfoInGroup() {
-        IMController.shared.getGroupMembersInfo(groupId: receiverId, uids: [IMController.shared.uid]) { [weak self] ms in
-            if let self, let m = ms.first {
-                self.isAdminOrOwner = m.isOwnerOrAdmin
-                
-            }
-        }
-    }
-
-        
     private func addObservers() {
+#if ENABLE_CALL
+        CallingManager.manager.endCallingHandler = { [weak self] msg in
+            self?.receivedNewMessages(messages: [msg.toMessageInfo()])
+        }
+#endif
+        IMController.shared.connectionRelay.skip(1).subscribe(onNext: { [weak self] value in
+            guard value.status == .syncComplete, let self else { return }
+            startClientMsgID = nil
+            lastMinSeq = 0
+            let count = messageStorage.count < pageSize  ? 4 * pageSize : messageStorage.count
+            
+            getHistoryMessageList(reverse: false, count: count) { [self] ms in
+                self.messageStorage.removeAll()
+                self.messageStorage.append(contentsOf: ms)
+                
+                self.delegate?.received(messages: ms, forceReload: true)
+            }
+            
+        }).disposed(by: _disposeBag)
+        
+        IMController.shared.inputStatusChangedSubject.subscribe(onNext: { [weak self] status in
+            guard let self,
+                    status?.conversationID == conversation.conversationID,
+                    status?.userID == receiverId else { return }
+            
+            self.typingState = status?.platformIDs?.isEmpty == false ? .typing : .idle
+
+            self.delegate?.typingStateChanged(to: self.typingState)
+        }).disposed(by: _disposeBag)
         
         IMController.shared.newMsgReceivedSubject.subscribe(onNext: { [weak self] (message: MessageInfo) in
             guard let self else { return }
             
-            var skip = false
+            let con = IMController.shared.connectionRelay.value
             
-            if message.contentType == .custom {
-                let data = message.customElem!.value()
-                let customType = message.customElem?.type
+            if con.status == .syncProgress, (message.recvID == conversation.userID || message.recvID == conversation.groupID) {
+                let count = messageStorage.count < pageSize  ? 4 * pageSize : messageStorage.count
                 
-                if (customType == CustomMessageType.callingInvite ||
-                    customType == CustomMessageType.callingAccept ||
-                    customType == CustomMessageType.callingReject ||
-                    customType == CustomMessageType.callingCancel ||
-                    customType == CustomMessageType.callingHungup) {
-                    skip = true
+                IMController.shared.getHistoryMessageList(conversationID: conversation.conversationID,
+                                                          conversationType: conversation.conversationType,
+                                                          startCliendMsgId: nil,
+                                                          count: count) { [weak self] seq, ms in
+                    guard let self else { return }
+                
+                    receivedNewMessages(messages: ms, forceReload: true)
                 }
-            }
-            
-            if !skip {
-                if case .typing = message.contentType {
-                    if (self.conversation.userID == message.sendID ||
-                        self.conversation.groupID == message.groupID) {
-                        self.typingState = message.isTyping() ? .typing : .idle
-                        self.delegate?.typingStateChanged(to: self.typingState)
-                    }
-                } else {
-                    self.receivedNewMessages(message: message)
-                }
+            } else {
+                receivedNewMessages(messages: [message])
             }
         }).disposed(by: _disposeBag)
-
-            IMController.shared.c2cReadReceiptReceived.subscribe(onNext: { [weak self] (receiptInfos: [ReceiptInfo]) in
-                let msgIDs = receiptInfos.flatMap { $0.msgIDList ?? [] }
-                self?.delegate?.lastReadIdsChanged(to: msgIDs, readUserID: nil)
-            }).disposed(by: _disposeBag)
-
-            IMController.shared.groupReadReceiptReceived.subscribe(onNext: { [weak self] (receiptInfos: [ReceiptInfo]) in
-                
-                for receiptInfo in receiptInfos {
-                    if let msgIDs = receiptInfo.msgIDList, !msgIDs.isEmpty {
-                        self?.delegate?.lastReadIdsChanged(to: msgIDs, readUserID: receiptInfo.userID)
-                    }
+        
+        IMController.shared.groupMemberInfoChange.subscribe(onNext: { [weak self] info in
+            guard let self, let info, info.groupID == receiverId else { return }
+            
+            for msg in messageStorage {
+                if msg.sendID == info.userID {
+                    msg.senderNickname = info.nickname
+                    msg.senderFaceUrl = info.faceURL
                 }
-                
-            }).disposed(by: _disposeBag)
+            }
             
-            IMController.shared.groupMemberInfoChange.subscribe(onNext: { [weak self] info in
-                guard let info, let self, info.isSelf else { return }
-
-            }).disposed(by: _disposeBag)
+            delegate?.groupMemberInfoChanged(info: info)
+        }).disposed(by: _disposeBag)
+        
+        IMController.shared.joinedGroupAdded.subscribe(onNext: { [weak self] info in
+            guard let self, self.receiverId == info?.groupID else { return }
             
-            IMController.shared.joinedGroupAdded.subscribe(onNext: { [weak self] info in
-                // groupInfo.groupID 即为邀请你的群
-                guard let self, self.receiverId == info?.groupID else { return }
-                
-                self.delegate?.isInGroup(with: true)
-
-            }).disposed(by: _disposeBag)
+            delegate?.isInGroup(with: true)
             
-            IMController.shared.joinedGroupDeleted.subscribe(onNext: { [weak self] info in
-                // groupInfo.groupID 即为踢出你的群
-                guard let self, self.receiverId == info?.groupID else { return }
-                
-                self.delegate?.isInGroup(with: false)
-                
-            }).disposed(by: _disposeBag)
-
+        }).disposed(by: _disposeBag)
+        
+        IMController.shared.joinedGroupDeleted.subscribe(onNext: { [weak self] info in
+            guard let self, self.receiverId == info?.groupID else { return }
+            
+            delegate?.isInGroup(with: false)
+            
+        }).disposed(by: _disposeBag)
+        
         IMController.shared.msgRevokeReceived.subscribe(onNext: { [weak self] revokedInfo in
+            
+            self?.delegate?.receivedRevokedInfo(info: revokedInfo)
         }).disposed(by: _disposeBag)
         
-        IMController.shared.friendInfoChangedSubject.subscribe { [weak self] (friendInfo: FriendInfo?) in
-            guard let sself = self else { return }
-//            if friendInfo?.userID == sself.userId {
-//                var nickName: String? = self?.chatTitle.value
-//                if let remark = friendInfo?.remark {
-//                    nickName = remark
-//                }
-//                self?.chatTitle.accept(nickName)
-//            }
-        }.disposed(by: _disposeBag)
+        IMController.shared.friendInfoChangedSubject.subscribe(onNext:  { [weak self] (friendInfo: FriendInfo?) in
+            guard let self, let friendInfo, friendInfo.userID == receiverId else { return }
+            
+            for msg in messageStorage {
+                if msg.sendID == friendInfo.userID {
+                    msg.senderNickname = friendInfo.showName
+                    msg.senderFaceUrl = friendInfo.faceURL
+                }
+            }
+            delegate?.friendInfoChanged(info: friendInfo)
+        }).disposed(by: _disposeBag)
         
-        IMController.shared.onBlackAddedSubject.subscribe { [weak self] (blcakInfo: BlackInfo?) in
-
-        }.disposed(by: _disposeBag)
+        IMController.shared.onBlackAddedSubject.subscribe(onNext:  { [weak self] (blcakInfo: BlackInfo?) in
+            guard let blcakInfo else { return }
+        }).disposed(by: _disposeBag)
         
-        IMController.shared.onBlackDeletedSubject.subscribe { [weak self] (blcakInfo: BlackInfo?) in
-
-        }.disposed(by: _disposeBag)
+        IMController.shared.onBlackDeletedSubject.subscribe(onNext:  { [weak self] (blcakInfo: BlackInfo?) in
+            guard let blcakInfo else { return }
+        }).disposed(by: _disposeBag)
         
-        IMController.shared.groupInfoChangedSubject.subscribe { [weak self] (groupInfo: GroupInfo?) in
-    
-        }.disposed(by: _disposeBag)
+        IMController.shared.groupInfoChangedSubject.subscribe(onNext:  { [weak self] (groupInfo: GroupInfo?) in
+            guard let groupInfo, groupInfo.groupID == self?.receiverId else { return }
+            
+            self?.delegate?.groupInfoChanged(info: groupInfo)
+        }).disposed(by: _disposeBag)
+        
+        IMController.shared.userStatusSubject.subscribe(onNext: { [weak self] info in
+            guard let info, self?.conversation.conversationType == .c2c, info.userID == self?.receiverId else { return }
+            
+            self?.delegate?.onlineStatus(status: info)
+        }).disposed(by: _disposeBag)
+        
+        IMController.shared.groupMemberAdded.subscribe(onNext:  { [weak self] member in
+            guard let member, member.groupID == self?.receiverId else { return }
+            
+            self?.delegate?.groupMembersChanged(added: true, info: member)
+        }).disposed(by: _disposeBag)
+        
+        IMController.shared.groupMemberDeleted.subscribe(onNext:  { [weak self] member in
+            guard let member, member.groupID == self?.receiverId else { return }
+            
+            self?.delegate?.groupMembersChanged(added: false, info: member)
+        }).disposed(by: _disposeBag)
+        
+        IMController.shared.totalUnreadSubject.subscribe(onNext: { [weak self] count in
+            
+            self?.delegate?.unreadCountChanged(count: count)
+        }).disposed(by: _disposeBag)
+        
+        IMController.shared.currentUserRelay.subscribe(onNext: { [weak self] info in
+            
+            guard let info else { return }
+            
+            self?.delegate?.myUserInfoChanged(info: info)
+        }).disposed(by: _disposeBag)
+        
+        IMController.shared.conversationChangedSubject.subscribe(onNext: { [weak self] conversations in
+            guard let self, let info = conversations.first(where: ({ $0.conversationID == self.conversation.conversationID })) else { return }
+            
+            self.delegate?.conversationChanged(info: info)
+        }).disposed(by: _disposeBag)
+        
+        JNNotificationCenter.shared.observeEvent { [weak self] (_: EventRecordClear) in
+            self?.messageStorage.removeAll()
+            self?.delegate?.clearMessage()
+        }
     }
     
-    private func receivedNewMessages(message: MessageInfo) {
+    private func receivedNewMessages(messages: [MessageInfo], forceReload: Bool = false) {
         guard enableNewMessages else {
             return
         }
-
-        delegate?.received(message: message)
-        delegate?.lastReceivedIdChanged(to: message.clientMsgID)
+        
+        delegate?.received(messages: messages, forceReload: forceReload)
     }
 }

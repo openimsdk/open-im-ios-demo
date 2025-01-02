@@ -6,8 +6,17 @@ class GroupChatMemberTableViewCell: UITableViewCell {
         
     func reloadData() {
         let count = memberCollectionView.numberOfItems(inSection: 0)
-        memberCollectionView.snp.updateConstraints { make in
-            make.height.equalTo(count <= 5 ? 70 : 120)
+        let totalAvatar = CGFloat(count) * StandardUI.avatarWidth
+        let totalSpace = (count - 1) * 16
+        
+        if count > 3, totalAvatar + CGFloat(totalSpace) > memberCollectionView.bounds.width {
+            memberCollectionView.snp.updateConstraints { make in
+                make.height.greaterThanOrEqualTo(150.h)
+            }
+        } else {
+            memberCollectionView.snp.updateConstraints { make in
+                make.height.greaterThanOrEqualTo(70.h)
+            }
         }
         memberCollectionView.reloadData()
     }
@@ -47,7 +56,7 @@ class GroupChatMemberTableViewCell: UITableViewCell {
         contentView.addSubview(memberCollectionView)
         memberCollectionView.snp.makeConstraints { make in
             make.leading.top.trailing.equalToSuperview().inset(16)
-            make.height.equalTo(70)
+            make.height.greaterThanOrEqualTo(70.h)
         }
         
         let line = UIView()
@@ -93,7 +102,7 @@ class GroupChatMemberTableViewCell: UITableViewCell {
         let levelLabel: UILabel = {
             let v = UILabel()
             v.backgroundColor = .cE8EAEF
-            v.textColor = .c0089FF
+            v.textColor = .c6085B1
             v.font = .f12
             v.textAlignment = .center
             
@@ -143,13 +152,13 @@ extension GroupChatMemberTableViewCell: UICollectionViewDelegateFlowLayout {
         if collectionView.numberOfItems(inSection: section) == 1 {
             let flowLayout = collectionViewLayout as! UICollectionViewFlowLayout
 
-            return UIEdgeInsets(top: 0, left: 8, bottom: 0, right: collectionView.frame.width - 150)
+            return UIEdgeInsets(top: 0, left: 8, bottom: 0, right: collectionView.frame.width - 150.w)
         }
 
         return UIEdgeInsets(top: 0, left: 8, bottom: 0, right: 8)
     }
     
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-        return collectionView.numberOfItems(inSection: 0) == 1 ? CGSize(width: 150, height: 50) : CGSize(width: 42, height: 70)
+        return collectionView.numberOfItems(inSection: 0) == 1 ? CGSize(width: 150.w, height: 70.h) : CGSize(width: StandardUI.avatarWidth, height: 70.h)
     }
 }

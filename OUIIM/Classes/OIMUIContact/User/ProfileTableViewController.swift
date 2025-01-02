@@ -18,17 +18,31 @@ open class ProfileTableViewController: UITableViewController {
     
     public var user: UserInfo?
     
+    public func reloadData() {
+        tableView.reloadData()
+    }
+    
     required public init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
     
     private var _viewModel: UserProfileViewModel!
     private var userID: String?
+    public var canEdit = true
     
-    private let rowItems: [[RowType]] = [
-        [.avatar, .nickname, .gender, .birthday],
-        [.landline, .phone, .email]
-    ]
+    open var rowItems: [[RowType]] {
+#if ENABLE_ORGANIZATION
+        [
+            [.avatar, .nickname, .gender, .birthday],
+            [.landline, .phone, .email]
+        ]
+        #else
+        [
+            [.avatar, .nickname, .gender, .birthday],
+            [.phone, .email]
+        ]
+#endif
+    }
 
     private let _disposeBag = DisposeBag()
 
@@ -88,12 +102,15 @@ open class ProfileTableViewController: UITableViewController {
                 cell.avatarView.setAvatar(url: nil, text: nil, placeHolder: "common_qrcode_icon")
                 cell.avatarView.backgroundColor = .clear
             }
+            cell.accessoryType = _viewModel.isMine && canEdit ? .disclosureIndicator : .none
+            
             return cell
         }
         
         let cell = tableView.dequeueReusableCell(withIdentifier: OptionTableViewCell.className, for: indexPath) as! OptionTableViewCell
         cell.titleLabel.text = rowType.title
         cell.titleLabel.textColor = cell.subtitleLabel.textColor
+        cell.accessoryType = _viewModel.isMine && canEdit ? .disclosureIndicator : .none
         
         switch rowType {
         
@@ -120,7 +137,6 @@ open class ProfileTableViewController: UITableViewController {
             
         case .email:
             cell.subtitleLabel.text = user?.email
-            cell.accessoryType = .none
             
         default:
             break
@@ -162,7 +178,7 @@ open class ProfileTableViewController: UITableViewController {
             let vc = QRCodeViewController(idString: IMController.addFriendPrefix.append(string: user.userID))
             vc.nameLabel.text = user.nickname
             vc.avatarView.setAvatar(url: user.faceURL, text: user.nickname)
-            vc.tipLabel.text = "扫一扫下面的二维码，添加为好友"
+            vc.tipLabel.text = "qrcodeHint".innerLocalized()
             navigationController?.pushViewController(vc, animated: true)
         case .identifier:
             UIPasteboard.general.string = _viewModel.userInfoRelay.value?.userID
@@ -178,7 +194,7 @@ open class ProfileTableViewController: UITableViewController {
         #endif
     }
 
-    enum RowType: CaseIterable {
+    public enum RowType: CaseIterable {
         case avatar
         case nickname
         case gender

@@ -2,6 +2,11 @@
 import OUICore
 import ProgressHUD
 import RxSwift
+import OUICoreView
+
+#if ENABLE_CALL
+import OUICalling
+#endif
 
 enum UserDetailFor {
     case groupMemberInfo
@@ -27,7 +32,7 @@ class UserDetailTableViewController: UIViewController {
         let v = UILabel()
         v.font = UIFont.f17
         v.textColor = UIColor.c0C1C33
-        
+
         return v
     }()
     
@@ -73,38 +78,58 @@ class UserDetailTableViewController: UIViewController {
         }).disposed(by: _disposeBag)
         return v
     }()
+    
+#if ENABLE_CALL
+    private lazy var mediaBtn: UIButton = {
+        let v = UIButton(type: .system)
+        v.setImage(UIImage(nameInBundle: "profile_media_button_icon"), for: .normal)
+        v.setTitle("音视频通话".innerLocalized(), for: .normal)
+        v.tintColor = UIColor.c0C1C33
+        v.titleLabel?.font = UIFont.f17
+        v.backgroundColor = .white
+        v.layer.cornerRadius = 6
+        v.titleEdgeInsets = UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
+        v.contentHorizontalAlignment = .center
+        
+        v.rx.tap.subscribe(onNext: { [weak self] _ in
+            self?.showMediaLinkSheet()
+        }).disposed(by: _disposeBag)
+        return v
+    }()
+#endif
 
     private lazy var addFriendBtn: UIButton = {
         let v = UIButton(type: .system)
         v.setImage(UIImage(nameInBundle: "chat_menu_add_friend_icon"), for: .normal)
-        v.setTitle(" 加好友".innerLocalized(), for: .normal)
+        v.setTitle(" " + "加好友".innerLocalized(), for: .normal)
         v.tintColor = .white
         v.backgroundColor = UIColor.c0089FF
         v.titleLabel?.font = UIFont.f14
         v.layer.cornerRadius = 6
+        v.isHidden = true
         
         v.rx.tap.subscribe(onNext: { [weak self] _ in
-            ProgressHUD.animate()
-            self?._viewModel.addFriend(onSuccess: { res in
-                ProgressHUD.success("添加好友请求已发送".innerLocalized())
-            }, onFailure: { (errCode, errMsg) in
-                if errCode == SDKError.refuseToAddFriends.rawValue {
-                    ProgressHUD.error("该用户已设置不可添加！".innerLocalized())
-                }
-            })
+            let vc = ApplyViewController(userID: self?._viewModel.userId)
+            self?.navigationController?.pushViewController(vc, animated: true)
         }).disposed(by: _disposeBag)
         return v
     }()
 
     private let _disposeBag = DisposeBag()
     private let _viewModel: UserDetailViewModel
-    
+    private var hasViewAppeared = false
+
     private lazy var _tableView: UITableView = {
         let v = UITableView()
         v.backgroundColor = .clear
         v.separatorStyle = .none
+        
+        if #available(iOS 15.0, *) {
+            v.sectionHeaderTopPadding = 0
+        }
+        
         let headerView: UIView = {
-            let v = UIView(frame: CGRect(x: 0, y: 0, width: kScreenWidth, height: 96))
+            let v = UIView(frame: CGRect(x: 0, y: 0, width: kScreenWidth, height: 86))
             v.backgroundColor = .tertiarySystemBackground
             
             let vStack: UIStackView = {
@@ -122,9 +147,13 @@ class UserDetailTableViewController: UIViewController {
             
             v.addSubview(hStack)
             hStack.snp.makeConstraints { make in
-                make.leading.top.trailing.bottom.equalToSuperview().inset(8)
+                make.edges.lessThanOrEqualToSuperview().inset(8)
             }
             
+            addFriendBtn.snp.makeConstraints { make in
+                make.width.equalTo(70)
+                make.height.equalTo(30)
+            }
             return v
         }()
         
@@ -139,15 +168,21 @@ class UserDetailTableViewController: UIViewController {
     }()
     
     private var rowItems: [RowType] = [.spacer]
+    private var buttonStack: UIStackView?
+    private var offsetY: CGFloat = 0
     
-    init(userId: String, groupId: String?, groupInfo: GroupInfo? = nil, userDetailFor: UserDetailFor = .groupMemberInfo) {
-        _viewModel = UserDetailViewModel(userId: userId, groupId: groupId, groupInfo: groupInfo, userDetailFor: userDetailFor)
+    init(userId: String, groupId: String? = nil, groupInfo: GroupInfo? = nil, groupMemberInfo: GroupMemberInfo? = nil, userInfo: PublicUserInfo? = nil, userDetailFor: UserDetailFor = .groupMemberInfo) {
+        _viewModel = UserDetailViewModel(userId: userId, groupId: groupId ?? (groupInfo?.groupID), groupInfo: groupInfo, groupMemberInfo: groupMemberInfo, userInfo: userInfo, userDetailFor: userDetailFor)
         super.init(nibName: nil, bundle: nil)
     }
     
     @available(*, unavailable)
     required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    deinit {
+        print("UserDetailTableViewController deinit")
     }
     
     override func viewDidLoad() {
@@ -163,104 +198,162 @@ class UserDetailTableViewController: UIViewController {
         
         _viewModel.getUserOrMemberInfo()
     }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        hasViewAppeared = true
+    }
+    
     private func initView() {
         view.addSubview(_tableView)
         _tableView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
+            make.leading.trailing.bottom.equalToSuperview()
         }
         
         if _viewModel.userId == IMController.shared.uid {
+
             return
         }
         
-        let hStack: UIStackView = {
-            
-            var v: UIStackView = UIStackView(arrangedSubviews: [sendMessageBtn])
-            
-            if let groupInfo = _viewModel.groupInfo, groupInfo.applyMemberFriend != 0 {
-                v = UIStackView(arrangedSubviews: [sendMessageBtn])
-            }
-            v.spacing = 16
-            v.distribution = .fillEqually
-            v.alignment = .center
-            
-            return v
-        }()
+        buttonStack = UIStackView(arrangedSubviews: [sendMessageBtn])
+        buttonStack!.isHidden = true
+#if ENABLE_CALL
+        mediaBtn.snp.makeConstraints { make in
+            make.height.equalTo(46)
+        }
+        buttonStack!.insertArrangedSubview(mediaBtn, at: 0)
+#endif
+    
+        buttonStack!.spacing = 16
+        buttonStack!.distribution = .fillEqually
+        buttonStack!.alignment = .center
         
         sendMessageBtn.snp.makeConstraints { make in
             make.height.equalTo(46)
         }
-
-        if let configHandler = OIMApi.queryConfigHandler {
-            configHandler { [weak self] result in
-                if let `self` = self,  result != nil, let allowSendMsgNotFriend = result["allowSendMsgNotFriend"] as? Int, allowSendMsgNotFriend != 1 {
-                    hStack.removeArrangedSubview(self.sendMessageBtn)
-                    self.sendMessageBtn.removeFromSuperview()
-                }
-            }
-        }
         
-        view.addSubview(hStack)
-        hStack.snp.makeConstraints { make in
-            make.bottom.equalTo(self.view.safeAreaLayoutGuide.snp.bottom).offset(-40)
+        view.addSubview(buttonStack!)
+        buttonStack!.snp.makeConstraints { make in
+            make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).offset(-40.h)
             make.leading.trailing.equalToSuperview().inset(16)
         }
     }
     
-    @objc private func rightButtonAction() {
-        let vc = UserProfileTableViewController(userId: self._viewModel.userId)
-        navigationController?.pushViewController(vc, animated: true)
+    private func showMediaLinkSheet() {
+        presentMediaActionSheet { [weak self] in
+            self?.startMedia(isVideo: false)
+        } videoHandler: { [weak self] in
+            self?.startMedia(isVideo: true)
+        }
     }
     
-    private func bindData() {
+    @objc private func rightButtonAction() {
+        let vc = UserProfileTableViewController(userId: self._viewModel.userId, isFriend: _viewModel.isFriend, allowAddFriend: _viewModel.allowAddFriend.value)
+        navigationController?.pushViewController(vc, animated: true)
+    }
+
+    private func startMedia(isVideo: Bool) {
+#if ENABLE_CALL
+        CallingManager.manager.startLiveChat(othersID: [_viewModel.userId], isVideo: isVideo)
+#endif
+    }
+    
+    private func bindData() {        
         _viewModel.userInfoRelay.subscribe(onNext: { [weak self] userInfo in
             guard let userInfo, let sself = self else { return }
             
-            sself.avatarView.setAvatar(url: userInfo.faceURL, text: userInfo.nickname) { [weak self] in
-                guard let self else { return }
-                let vc = UserProfileTableViewController.init(userId: self._viewModel.userId, groupId: self._viewModel.groupId)
-                self.navigationController?.pushViewController(vc, animated: true)
-            }
-            var name: String? = userInfo.nickname
+            sself.avatarView.setAvatar(url: userInfo.faceURL, text: userInfo.nickname, onTap: { [weak self] in
+                guard let self, let avatar = userInfo.faceURL, let url = URL(string: avatar) else { return }
+                
+                let controller = MediaPreviewViewController(resources: [MediaResource(thumbUrl: url, url: url)])
+                
+                controller.showIn(controller: sself) { [sself] index in
+                    sself.avatarView
+                }
+            })
+            var name = userInfo.nickname
+            
             if let remark = userInfo.remark, !remark.isEmpty {
                 name = name?.append(string: "(\(remark))")
             }
             sself.nameLabel.text = name
-            sself.addFriendBtn.isHidden = !sself._viewModel.allowAddFriend
             sself.IDLabel.text = userInfo.userID
+            
+#if ENABLE_ORGANIZATION
 
-            if userInfo.userID == IMController.shared.uid {
-                sself.addFriendBtn.isHidden = true
-                sself.sendMessageBtn.isHidden = true
-            } else if !sself._viewModel.allowAddFriend, !sself.rowItems.contains(.profile) {
-                    
+            if !sself._viewModel.organizationInfo.value.isEmpty, !sself.rowItems.contains(.organization) {
+                sself.rowItems.append(.spacer)
+                sself.rowItems.append(.organization)
+            }
+#endif
+            if !sself.rowItems.contains(.profile) {
                 sself.rowItems.append(.spacer)
                 sself.rowItems.append(.profile)
-                sself.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "ellipsis"), style: .plain, target: self, action: #selector(sself.rightButtonAction))
+#if ENABLE_MOMENTS
+                sself.rowItems.append(.moments)
+#endif
             }
+            
+            if !sself._viewModel.isMine, userInfo != nil {
+                sself.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage(systemName: "ellipsis"), style: .plain, target: self, action: #selector(sself.rightButtonAction))
+                sself.navigationItem.rightBarButtonItem!.isEnabled = false
+            }
+            
             sself._tableView.reloadData()
         }).disposed(by: _disposeBag)
         
         _viewModel.memberInfoRelay.subscribe(onNext: { [weak self] (memberInfo: GroupMemberInfo?) in
             guard let memberInfo, let sself = self else { return }
+            
             sself.avatarView.setAvatar(url: memberInfo.faceURL, text: memberInfo.nickname, onTap: nil)
             sself.nameLabel.text = memberInfo.nickname
             sself.IDLabel.text = memberInfo.userID
             sself.addFriendBtn.isHidden = true
             
             guard sself._viewModel.groupId != nil else { return }
-                
-            sself.rowItems = sself.rowItems.count > 1 ? sself.rowItems : [.nickName, .joinTime]
+            sself.rowItems = [/*.nickName,*/.spacer, .joinTime, .joinSource]
+
+            sself.rowItems.append(.spacer)
+            sself.rowItems.append(.profile)
             
-            if sself._viewModel.showJoinSource == true, !sself.rowItems.contains(.joinSource) {
-                sself.rowItems.append(.joinSource)
-            }
-            
-            if sself._viewModel.showSetAdmin == true {
-                sself.rowItems.append(.spacer)
-            }
-            
+            sself._tableView.reloadData()
         }).disposed(by: _disposeBag)
+        
+        _viewModel.allowAddFriend.subscribe(onNext: { [weak self] allow in
+            self?.addFriendBtn.isHidden = !allow
+            self?.navigationItem.rightBarButtonItem?.isEnabled = true
+        }).disposed(by: _disposeBag)
+        
+        _viewModel.allowSendMsg.subscribe(onNext: { [weak self] allow in
+            guard let self else { return }
+            
+            buttonStack?.isHidden = !allow
+        }).disposed(by: _disposeBag)
+    }
+}
+
+extension UserDetailTableViewController: UIScrollViewDelegate {
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        guard hasViewAppeared, buttonStack != nil, scrollView.contentSize.height + (navigationController?.navigationBar.frame.maxY ?? 64) > buttonStack!.frame.minY else { return }
+        
+        if scrollView.contentOffset.y > offsetY, scrollView.contentOffset.y > 0 {//向上滑动
+
+            UIView.animate(withDuration: 0.2) { [self] in
+                buttonStack!.alpha = 0
+            } completion: { [self] _ in
+                buttonStack!.isHidden = true
+            }
+            
+        } else if scrollView.contentOffset.y < offsetY, !scrollView.isDecelerating {//向下滑动
+
+            UIView.animate(withDuration: 0.2) { [self] in
+                buttonStack!.alpha = 1
+            } completion: { [self] _ in
+                buttonStack!.isHidden = false
+            }
+        }
+        offsetY = scrollView.contentOffset.y;//将当前位移变成缓存位移
     }
 }
 
@@ -276,26 +369,35 @@ extension UserDetailTableViewController: UITableViewDataSource, UITableViewDeleg
         if rowType == .spacer {
             return tableView.dequeueReusableCell(withIdentifier: SpacerCell.className, for: indexPath)
         }
+
+        if rowType == .profile  {
+            let cell = tableView.dequeueReusableCell(withIdentifier: OptionTableViewCell.className, for: indexPath) as! OptionTableViewCell
+            
+            cell.accessoryType = .none
+            cell.subtitleLabel.textAlignment = .left
+            
+            cell.titleLabel.text = rowType.title
+            cell.accessoryType = .disclosureIndicator
+            
+            return cell
+        }
         
         let cell = tableView.dequeueReusableCell(withIdentifier: OptionTableViewCell.className, for: indexPath) as! OptionTableViewCell
         
         cell.accessoryType = .none
         cell.subtitleLabel.textAlignment = .left
-
-        if rowType == .profile {
-            cell.titleLabel.isHidden = true
-            cell.subtitleLabel.text = rowType.title
-            cell.accessoryType = .disclosureIndicator
-        }
         
         guard let info = _viewModel.memberInfoRelay.value else { return cell }
         cell.titleLabel.text = rowType.title
+        cell.spacer.isHidden = true
         
         if rowType == .nickName {
             cell.subtitleLabel.text = info.nickname
         } else if rowType == .joinTime {
-            cell.subtitleLabel.text = FormatUtil.getFormatDate(formatString: "yyyy年MM月dd日", of: info.joinTime)
+            cell.titleLabel.textColor = .c8E9AB0
+            cell.subtitleLabel.text = FormatUtil.getFormatDate(formatString: "yyyy-MM-dd", of: info.joinTime / 1000)
         } else if rowType == .joinSource {
+            cell.titleLabel.textColor = .c8E9AB0
             cell.subtitleLabel.text = info.joinWay
         }
                 
@@ -306,17 +408,15 @@ extension UserDetailTableViewController: UITableViewDataSource, UITableViewDeleg
         let rowType: RowType = rowItems[indexPath.row]
         switch rowType {
         case .profile:
-            print("跳转个人资料页")
             let vc = ProfileTableViewController(userID: _viewModel.userId)
             navigationController?.pushViewController(vc, animated: true)
-        case .nickName, .joinTime, .joinSource: break
         default:
             break
         }
     }
     
     func tableView(_ tableView: UITableView, estimatedHeightForRowAt indexPath: IndexPath) -> CGFloat {
-        return 40
+        return 56
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {

@@ -44,13 +44,10 @@ final class ChatAvatarView: UIView, StaticViewFactory {
     }
 
     func reloadData() {
-        guard let controller else {
-            return
-        }
-        UIView.performWithoutAnimation {
-            avatarView.customView.setAvatar(url: controller.faceURL, text: controller.name) {
-                controller.action()
-            }
+        guard let controller else { return }
+
+        avatarView.customView.setAvatar(url: controller.faceURL, text: controller.name) { [weak controller] in
+            controller?.action()
         }
     }
 
@@ -69,10 +66,10 @@ final class ChatAvatarView: UIView, StaticViewFactory {
         avatarView.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            avatarView.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
-            avatarView.trailingAnchor.constraint(equalTo: layoutMarginsGuide.trailingAnchor),
-            avatarView.topAnchor.constraint(equalTo: layoutMarginsGuide.topAnchor),
-            avatarView.bottomAnchor.constraint(equalTo: layoutMarginsGuide.bottomAnchor),
+            avatarView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            avatarView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            avatarView.topAnchor.constraint(equalTo: topAnchor),
+            avatarView.bottomAnchor.constraint(equalTo: bottomAnchor),
         ])
     }
 }

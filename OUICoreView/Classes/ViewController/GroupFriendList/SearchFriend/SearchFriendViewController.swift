@@ -14,7 +14,7 @@ class SearchFriendViewController: UIViewController {
         searchC = {
             let v = UISearchController(searchResultsController: resultC)
             v.searchResultsUpdater = resultC
-            v.searchBar.placeholder = "通过用户ID号/手机号/邮箱/昵称搜索添加".innerLocalized()
+            v.searchBar.placeholder = "addFriendHint".innerLocalized()
             return v
         }()
         definesPresentationContext = true

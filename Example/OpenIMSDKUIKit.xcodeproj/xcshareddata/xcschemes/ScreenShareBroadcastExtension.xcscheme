@@ -15,8 +15,8 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "17B485F329C082CA002571B8"
-               BuildableName = "OpenIM&#x76f4;&#x64ad;.appex"
+               BlueprintIdentifier = "17D1A30E2A5BA59A00183905"
+               BuildableName = "ScreenShareBroadcastExtension.appex"
                BlueprintName = "ScreenShareBroadcastExtension"
                ReferencedContainer = "container:OpenIMSDKUIKit.xcodeproj">
             </BuildableReference>
@@ -30,7 +30,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "607FACCF1AFB9204008FA782"
-               BuildableName = "OpenIM-Native.app"
+               BuildableName = "N-DEMO.app"
                BlueprintName = "OpenIMSDKUIKit_Example"
                ReferencedContainer = "container:OpenIMSDKUIKit.xcodeproj">
             </BuildableReference>
@@ -62,7 +62,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "607FACCF1AFB9204008FA782"
-            BuildableName = "OpenIM-Native.app"
+            BuildableName = "N-DEMO.app"
             BlueprintName = "OpenIMSDKUIKit_Example"
             ReferencedContainer = "container:OpenIMSDKUIKit.xcodeproj">
          </BuildableReference>
@@ -81,7 +81,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "607FACCF1AFB9204008FA782"
-            BuildableName = "OpenIM-Native.app"
+            BuildableName = "N-DEMO.app"
             BlueprintName = "OpenIMSDKUIKit_Example"
             ReferencedContainer = "container:OpenIMSDKUIKit.xcodeproj">
          </BuildableReference>

@@ -4,6 +4,8 @@ import OUICore
 public class SelectContactsResultViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
      var dataList: [ContactInfo] = [] {
         didSet {
+            WPFPinYinDataManager.shareInstance().clearDataSource()
+
             for user in dataList {
                 if let ret: [WPFPerson] = WPFPinYinDataManager.getInitializedDataSource() as? [WPFPerson] {
                     if !ret.contains(where: { (item: WPFPerson) in
@@ -23,9 +25,11 @@ public class SelectContactsResultViewController: UIViewController, UITableViewDa
     var removeUsersCallback: (([ContactInfo]) -> Void)!
     var selectedCallback: (([ContactInfo]) -> Void)!
     var removeUsers: [ContactInfo] = []
+    private var allowsMultipleSelection = true
     
-    public init(selectedCallback: @escaping ([ContactInfo]) -> Void, removeCallback: @escaping ([ContactInfo]) -> Void) {
+    public init(allowsMultipleSelection: Bool = true, selectedCallback: @escaping ([ContactInfo]) -> Void, removeCallback: @escaping ([ContactInfo]) -> Void) {
         super.init(nibName: nil, bundle: nil)
+        self.allowsMultipleSelection = allowsMultipleSelection
         self.removeUsersCallback = removeCallback
         self.selectedCallback = selectedCallback
     }
@@ -42,10 +46,11 @@ public class SelectContactsResultViewController: UIViewController, UITableViewDa
         v.dataSource = self
         v.delegate = self
         v.separatorInset = UIEdgeInsets(top: 0, left: 82, bottom: 0, right: StandardUI.margin_22)
-        v.separatorColor = StandardUI.color_F1F1F1
+        v.separatorColor = .sepratorColor
         v.rowHeight = UITableView.automaticDimension
         v.allowsMultipleSelection = true
         v.backgroundColor = .clear
+        v.keyboardDismissMode = .onDrag
         
         if #available(iOS 15.0, *) {
             v.sectionHeaderTopPadding = 0
@@ -108,11 +113,13 @@ public class SelectContactsResultViewController: UIViewController, UITableViewDa
         if selectedUsers.contains(where: { $0.ID == person.personId }) {
             tableView.selectRow(at: indexPath, animated: false, scrollPosition: .none)
         }
+        
+        cell.showSelectedIcon = allowsMultipleSelection
+        
         return cell
     }
     
     public func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        print("select")
         let person = searchArr[indexPath.row]
         let user = dataList.first { $0.ID == person.personId }
         if user != nil {

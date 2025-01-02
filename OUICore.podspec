@@ -30,24 +30,24 @@ Pod::Spec.new do |s|
   
   s.source_files = 'OUICore/Classes/**/*'
   s.resource_bundles = {
-    'OIMUIResource' => ['OUICore/Assets/OIMUIResource.bundle/*.*'],
-    'OIMUIEmoji' => ['OUICore/Assets/OIMUIEmoji.bundle/*']
+    'OIMUIResource' => ['OUICore/Assets/OIMUIResource.bundle/**/*'],
+    'OIMUIEmoji' => ['OUICore/Assets/OIMUIEmoji.bundle/*'],
   }
 
   s.static_framework = true
 
-  s.dependency 'OpenIMSDK', '3.8.2'
+  s.dependency 'OpenIMSDK'
   s.dependency 'SnapKit', '~> 4.0'
   s.dependency 'RxSwift', '~> 6.5'
   s.dependency 'RxCocoa', '~> 6.0'
   s.dependency 'RxKeyboard', '~> 2.0'
-  s.dependency 'RxDataSources', '5.0.0'
-  s.dependency 'Kingfisher', '7.7.0'
+  s.dependency 'RxDataSources'
+  s.dependency 'Kingfisher', '8.0.1'
   s.dependency 'lottie-ios', '~> 3.0'
-  s.dependency 'ZLPhotoBrowser', '4.3.0'
-  s.dependency 'ProgressHUD', '14.1.0'
-  s.dependency 'IQKeyboardManagerSwift'
+  s.dependency 'ProgressHUD'
   s.dependency 'Localize-Swift', '~> 3.2'
   s.dependency 'Alamofire', '4.9.1'
-  
+  s.dependency 'ZLPhotoBrowser'
+  s.dependency 'YYText'
+  s.dependency 'KTVHTTPCache', '3.0.2'
 end

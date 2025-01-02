@@ -6,16 +6,19 @@ import RxGesture
 import MMBAlertsPickers
 import SnapKit
 import ProgressHUD
+import OUICore
 
 public class InputAccountViewController: UIViewController {
     
     private let _disposeBag = DisposeBag()
     private var _areaCode = "+86"
     private var usedFor: UsedFor!
+    private var operateType: LoginType!
     
-    init(usedFor: UsedFor = .register) {
+    init(usedFor: UsedFor = .register, operateType: LoginType) {
         super.init(nibName: nil, bundle: nil)
         self.usedFor = usedFor
+        self.operateType = operateType
     }
     
     required init?(coder: NSCoder) {
@@ -25,8 +28,8 @@ public class InputAccountViewController: UIViewController {
     private lazy var phoneSegment: UILabel = {
         let v = UILabel()
         v.textColor = DemoUI.color_8E9AB0
-        v.text = "手机号".innerLocalized()
-        v.font = .preferredFont(forTextStyle: .footnote)
+        v.text = operateType == .phone ? "phoneNumber".localized() : "email".localized()
+        v.font = .f12
         
         return v
     }()
@@ -61,7 +64,7 @@ public class InputAccountViewController: UIViewController {
         t.setTitle("\(_areaCode)", for: .normal)
         t.setTitleColor(DemoUI.color_0C1C33, for: .normal)
         t.titleLabel?.font = .systemFont(ofSize: 17)
-        
+        t.isHidden = operateType != .phone
         t.rx.tap.subscribe(onNext: { [weak self] _ in
             guard let sself = self else { return }
             let alert = UIAlertController(style: .actionSheet, title: "Phone Codes")
@@ -72,7 +75,7 @@ public class InputAccountViewController: UIViewController {
                 t.setTitle("\(phoneCode)", for: .normal)
             }
             
-            alert.addAction(title: "取消", style: .cancel)
+            alert.addAction(title: "cancel".localized(), style: .cancel)
             sself.present(alert, animated: true)
         }).disposed(by: _disposeBag)
         return t
@@ -80,30 +83,29 @@ public class InputAccountViewController: UIViewController {
         
     private lazy var phoneTextField: UITextField = {
         let v = UITextField()
-        v.keyboardType = .numberPad
-        v.placeholder = "请输入手机号码".localized()
-        v.text = AccountViewModel.perLoginAccount
+        v.keyboardType = operateType == .phone ? .numberPad : .default
         v.borderStyle = .none
         v.textColor = DemoUI.color_0C1C33
         v.clearButtonMode = .whileEditing
         v.leftView = UIView(frame: CGRect(x: 0, y: 0, width: 8, height: 1))
         v.leftViewMode = .always
-        
+        v.placeholder = operateType == .phone ? "plsEnterPhoneNumber".localized() : "plsEnterEmail".localized()
+
         return v
     }()
     
     private let invitationCodeLabel: UILabel = {
         let v = UILabel()
-        v.text = "邀请码".localized()
+        v.text = "invitationCode".localized()
         v.textColor = DemoUI.color_8E9AB0
-        v.font = .preferredFont(forTextStyle: .footnote)
+        v.font = .f12
         
         return v
     }()
     
     private lazy var invitationCodeTextField: UITextField = {
         let v = UITextField()
-        v.placeholder = "请输入邀请码".localized()
+        v.placeholder = "请输入邀请码（选填）".localized()
         v.layer.cornerRadius = DemoUI.cornerRadius
         v.layer.borderColor = DemoUI.color_E8EAEF.cgColor
         v.layer.borderWidth = 1
@@ -118,11 +120,14 @@ public class InputAccountViewController: UIViewController {
     
     lazy var loginBtn: UIButton = {
         let v = UIButton(type: .system)
-        v.setTitle("立即注册".localized(), for: .normal)
+        v.setTitle("registerNow".localized(), for: .normal)
         v.setTitleColor(.white, for: .normal)
-        v.backgroundColor = DemoUI.color_0089FF
-        v.titleLabel?.font = UIFont.preferredFont(forTextStyle: .title3)
+        v.titleLabel?.font = .f20
         v.layer.cornerRadius = DemoUI.cornerRadius
+        v.layer.masksToBounds = true
+        v.isEnabled = false
+        v.setBackgroundColor(.c0089FF, for: .normal)
+        v.setBackgroundColor(.c0089FF.withAlphaComponent(0.5), for: .disabled)
         
         v.rx.tap.subscribe(onNext: { [weak self] _ in
             guard let sself = self else { return }
@@ -140,31 +145,31 @@ public class InputAccountViewController: UIViewController {
     public override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
-        
+
         let bgImageView = UIImageView(image: UIImage(named: "login_bg"))
         bgImageView.frame = view.bounds
         view.addSubview(bgImageView)
         
-        let backButton = UIButton(type: .system)
-        backButton.setImage(UIImage(systemName: "chevron.left"), for: .normal)
+        let backButton = UIButton(type: .custom)
+        backButton.setImage(UIImage(named: "common_back_icon"), for: .normal)
         backButton.rx.tap.subscribe(onNext: { [weak self] in
             self?.navigationController?.popViewController(animated: true)
         }).disposed(by: _disposeBag)
         
         view.addSubview(backButton)
         backButton.snp.makeConstraints { make in
-            make.leading.equalToSuperview().offset(24)
+            make.leading.equalToSuperview().offset(32)
             make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(8)
         }
         let label = UILabel()
-        label.text = "新用户注册".localized()
-        label.font = .systemFont(ofSize: 22, weight: .semibold)
-        label.textColor = .systemBlue
+        label.text = usedFor == .register ? "newUserRegister".localized() : "forgetPassword".localized()
+        label.font = .systemFont(ofSize: 25, weight: .semibold)
+        label.textColor = .c0089FF
         
         view.addSubview(label)
         label.snp.makeConstraints { make in
             make.leading.equalTo(backButton)
-            make.top.equalTo(backButton.snp.bottom).offset(42)
+            make.top.equalTo(backButton.snp.bottom).offset(33.h)
         }
         
         let line = UIView()
@@ -182,7 +187,7 @@ public class InputAccountViewController: UIViewController {
         }
         
         phoneTextField.snp.makeConstraints { make in
-            make.height.equalTo(42)
+            make.height.equalTo(42.h)
         }
         
         line.snp.makeConstraints { make in
@@ -190,35 +195,48 @@ public class InputAccountViewController: UIViewController {
             make.top.bottom.equalToSuperview().inset(4)
         }
         
-        let useInvitationCode = AccountViewModel.clientConfig?.needInvitationCodeRegister == 1
-        
-        if useInvitationCode {
-            invitationCodeTextField.snp.makeConstraints { make in
-                make.height.equalTo(42)
-            }
+        invitationCodeTextField.snp.makeConstraints { make in
+            make.height.equalTo(42.h)
         }
         
-        loginBtn.setTitle(usedFor == .register ? "立即注册" : "获取验证码", for: .normal)
+        let accountVerStack = UIStackView(arrangedSubviews: [phoneSegment, accountStack])
+        accountVerStack.axis = .vertical
+        accountVerStack.spacing = 7
+        
+        let invitationVerStack = UIStackView(arrangedSubviews: [invitationCodeLabel, invitationCodeTextField])
+        invitationVerStack.axis = .vertical
+        invitationVerStack.spacing = 7
+        
+        loginBtn.setTitle(usedFor == .register ? "registerNow".localized() : "sendVerificationCode".localized(), for: .normal)
         let verSV = UIStackView.init(arrangedSubviews: usedFor == .register ?
-                                     (useInvitationCode ? [phoneSegment, accountStack, invitationCodeLabel, invitationCodeTextField] : [phoneSegment, accountStack]) :
-                                        [phoneSegment, accountStack])
+                                     ([accountVerStack, /*invitationVerStack*/]) :
+                                        [accountVerStack])
         
         verSV.axis = .vertical
-        verSV.spacing = 16
+        verSV.spacing = 18.h
         verSV.alignment = .fill
         view.addSubview(verSV)
         
         verSV.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview().inset(32)
-            make.top.equalTo(label.snp.bottom).offset(48)
+            make.top.equalTo(label.snp.bottom).offset(32.h)
         }
         
         view.addSubview(loginBtn)
         loginBtn.snp.makeConstraints { make in
-            make.top.equalTo(verSV.snp.bottom).offset(100)
+            make.top.equalTo(verSV.snp.bottom).offset(148.h)
             make.leading.trailing.equalTo(verSV)
-            make.height.equalTo(40)
+            make.height.equalTo(42.h)
         }
+        
+        let tap = UITapGestureRecognizer()
+        view.addGestureRecognizer(tap)
+        tap.rx.event.subscribe(onNext: { [weak self] _ in
+            guard let self else { return }
+            view.endEditing(true)
+        }).disposed(by: _disposeBag)
+        
+        bindData()
         
         if usedFor == .forgotPassword {
             return
@@ -227,8 +245,8 @@ public class InputAccountViewController: UIViewController {
         let protocalLabel = UILabel()
         protocalLabel.isUserInteractionEnabled = true
         protocalLabel.font = .systemFont(ofSize: 13)
-        let text = NSMutableAttributedString.init(string: "我已阅读并同意:")
-        text.append(NSAttributedString(string: "《服务协议》《隐私权政策》", attributes: [NSAttributedString.Key.foregroundColor: DemoUI.color_0089FF]))
+        let text = NSMutableAttributedString.init(string: "我已阅读并同意:".localized())
+        text.append(NSAttributedString(string: "《服务协议》《隐私权政策》".localized(), attributes: [NSAttributedString.Key.foregroundColor: DemoUI.color_1D6BED]))
         protocalLabel.attributedText = text
         
         protocalLabel.rx
@@ -243,19 +261,19 @@ public class InputAccountViewController: UIViewController {
         let horSV = UIStackView.init(arrangedSubviews: [checkBoxButton, protocalLabel])
         horSV.alignment = .center
         horSV.spacing = 8
-        view.addSubview(horSV)
-        
-        horSV.snp.makeConstraints { make in
-            make.leading.trailing.equalTo(loginBtn)
-            make.top.equalTo(loginBtn.snp.bottom).offset(16)
-        }
-        
-        let tap = UITapGestureRecognizer()
-        view.addGestureRecognizer(tap)
-        
-        tap.rx.event.subscribe(onNext: { [weak self] _ in
-            self?.view.endEditing(true)
-        }).disposed(by: _disposeBag)
+//        view.addSubview(horSV)
+//        
+//        horSV.snp.makeConstraints { make in
+//            make.leading.trailing.equalTo(loginBtn)
+//            make.top.equalTo(loginBtn.snp.bottom).offset(16)
+//        }
+    }
+    
+    private func bindData() {
+        phoneTextField.rx.text.orEmpty
+            .map({ $0.count > 0})
+            .bind(to: loginBtn.rx.isEnabled)
+            .disposed(by: _disposeBag)
     }
     
     deinit {
@@ -268,31 +286,36 @@ public class InputAccountViewController: UIViewController {
         view.endEditing(true)
         
         if let phone = phoneTextField.text?.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines), phone.isEmpty  {
-            ProgressHUD.error("请输入正确的手机号码")
+            if operateType == .phone {
+                ProgressHUD.error("plsEnterRightX".localizedFormat("phoneNumber".localized()))
+            } else {
+                ProgressHUD.error("plsEnterRightX".localizedFormat("email".localized()))
+            }
             return
         }
         
         let invaitationCode = invitationCodeTextField.text?.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines)
+        ProgressHUD.animate()
         
-        AccountViewModel.requestCode(phone: phone!, areaCode: areaCode, invaitationCode: invaitationCode, useFor: usedFor) { [weak self] errCode, errMsg in
-            
+        AccountViewModel.requestCode(phone: operateType == .phone ? phone : nil, areaCode: areaCode, email: operateType == .email ? phone : nil, invaitationCode: invaitationCode, useFor: usedFor) { [weak self] errCode, errMsg in
+
             guard let sself = self else { return }
             
             if errCode != 0 {
-                ProgressHUD.error(errMsg)
+                ProgressHUD.error(String(errCode).localized())
                 
                 if errCode == 20002 {
-                    let vc = InputCodeViewController(usedFor: sself.usedFor)
-                    vc.basicInfo = ["phone": sself.phone!,
+                    let vc = InputCodeViewController(usedFor: sself.usedFor, operateType: sself.operateType)
+                    vc.basicInfo = ["accout": sself.phone!,
                                     "areaCode": sself.areaCode,
                                     "invitationCode": invaitationCode ?? ""]
                     sself.navigationController?.pushViewController(vc, animated: true)
                 }
             } else {
                 
-                ProgressHUD.success("验证码发送成功".localized())
-                let vc = InputCodeViewController(usedFor: sself.usedFor)
-                vc.basicInfo = ["phone": sself.phone!,
+                ProgressHUD.dismiss()
+                let vc = InputCodeViewController(usedFor: sself.usedFor, operateType: sself.operateType)
+                vc.basicInfo = ["accout": sself.phone!,
                                 "areaCode": sself.areaCode,
                                 "invitationCode": invaitationCode ?? ""]
                 sself.navigationController?.pushViewController(vc, animated: true)
@@ -305,6 +328,6 @@ public class InputAccountViewController: UIViewController {
     }
     
     func toPrivacyRule() {
-        UIApplication.shared.openURL(NSURL.init(string:"https://www.baidu.com/")! as URL);
+        UIApplication.shared.openURL(NSURL.init(string:"https://www.openim.io/")! as URL);
     }
 }

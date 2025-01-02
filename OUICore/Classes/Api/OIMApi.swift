@@ -1,15 +1,14 @@
 import Foundation
 import Alamofire
 
-public typealias CompletionHandler<T: Any> = (T) -> Void
+public typealias CompletionHandler<T: Any> = (Int, T) -> Void
 public typealias QueryInfoHandler = ((_ keywords: [String], _ completion: @escaping (([UserInfo]) -> Void)) -> Void)
 public typealias QueryDataHandler<T: Any> = ((_ completion: @escaping CompletionHandler<T>) -> Void)
 
 public class OIMApi {
     
     private static let userOnlineStatus = "/user/get_users_online_status"
-    
-    // 查询在线状态
+
     public static func queryOnlineStatus(userID: String, completionHandler: @escaping ((_ status: [String: String]) -> Void)) {
         let body = JsonTool.toJson(fromObject: OnlineStatusRequest.init(userIDs: [userID])).data(using: .utf8)
         
@@ -22,7 +21,7 @@ public class OIMApi {
             case .success(let result):
                 if let res = JsonTool.fromJson(result, toClass: Response<[OnlineStatus]>.self) {
                     if res.errCode == 0 {
-                        completionHandler(paraseOnlineStatus(res.data!))
+                        completionHandler(paraseOnlineStatus(res.data))
                     } else {
                     }
                 }
@@ -38,13 +37,13 @@ public class OIMApi {
         
         status.forEach({ onlineStatus in
             if (onlineStatus.status == "online") {
-                // IOSPlatformStr     = "IOS"
-                // AndroidPlatformStr = "Android"
-                // WindowsPlatformStr = "Windows"
-                // OSXPlatformStr     = "OSX"
-                // WebPlatformStr     = "Web"
-                // MiniWebPlatformStr = "MiniWeb"
-                // LinuxPlatformStr   = "Linux"
+
+
+
+
+
+
+
                 if let detail = onlineStatus.detailPlatformStatus {
                     var pList: [String] = [];
                     for (index, platform) in detail.enumerated() {
@@ -73,11 +72,9 @@ public class OIMApi {
     public static func post<T: Decodable>(url: String, body: Data?, token: String? = nil, completionHandler: @escaping CompletionHandler<T?>) {
         var req = try! URLRequest.init(url: url, method: .post)
         req.addValue(token ?? IMController.shared.token, forHTTPHeaderField: "token")
-        
+        req.addValue(UUID().uuidString, forHTTPHeaderField: "operationID")
         if body != nil {
             req.httpBody = body!
-            let t = String.init(data: body!, encoding: .utf8)
-            print("\n==========\n post request:\(url)\n\n post body:\(t) \n==========\n")
         }
         DispatchQueue.global().async {
             Alamofire.request(req).responseString(encoding: .utf8) { (response: DataResponse<String>) in
@@ -86,11 +83,9 @@ public class OIMApi {
                     let res = JsonTool.fromJson(result, toClass: Response<T>.self)
                     DispatchQueue.main.async {
                         if let res = res, res.errCode == 0 {
-                            print("\n======== \npost response:\(res.data.debugDescription)\n==========\n")
-                            completionHandler(res.data)
+                            completionHandler(res.errCode, res.data)
                         } else {
-                            print("json err：\(Response<T>.self) \(res?.errMsg) \n ")
-                            completionHandler(nil)
+                            completionHandler(res?.errCode ?? -1, nil)
                         }
                     }
                 case .failure(_):
@@ -100,10 +95,36 @@ public class OIMApi {
         }
     }
     
-    // 查询好友、查询好友信息 - 业务层提供数据
+    public static func postNoDataKey(url: String, body: Data?, token: String? = nil, completionHandler: @escaping CompletionHandler<String?>) {
+        var req = try! URLRequest.init(url: url, method: .post)
+        req.addValue(token ?? IMController.shared.token, forHTTPHeaderField: "token")
+        req.addValue(UUID().uuidString, forHTTPHeaderField: "operationID")
+        if body != nil {
+            req.httpBody = body!
+        }
+        DispatchQueue.global().async {
+            Alamofire.request(req).responseString(encoding: .utf8) { (response: DataResponse<String>) in
+                switch response.result {
+                case .success(let result):
+                    let res = JsonTool.fromJson(result, toClass: NoDataKeyResponse.self)
+                    DispatchQueue.main.async {
+                        if let res = res, res.errCode == 0 {
+                            completionHandler(res.errCode, nil)
+                        } else {
+                            completionHandler(res?.errCode ?? -1, res?.errMsg)
+                        }
+                    }
+                case .failure(_):
+                    break
+                }
+            }
+        }
+    }
+
     public static var queryFriendsWithCompletionHandler: QueryInfoHandler?
     public static var queryUsersInfoWithCompletionHandler: QueryInfoHandler?
     public static var queryConfigHandler: QueryDataHandler<[String: Any]>?
+    public static var rotationHandler: ((UIInterfaceOrientationMask) -> Void)?
 }
 
 extension OIMApi {
@@ -128,8 +149,15 @@ extension OIMApi {
     }
     
     public class Response<T: Decodable>: Decodable {
-        public var data: T? = nil
+        public var data: T
         public var errCode: Int = 0
-        public var errMsg: String? = nil
+        public var errMsg: String?
+        public var errDlt: String?
+    }
+    
+    public class NoDataKeyResponse: Decodable {
+        public var errCode: Int = 0
+        public var errMsg: String?
+        public var errDlt: String?
     }
 }

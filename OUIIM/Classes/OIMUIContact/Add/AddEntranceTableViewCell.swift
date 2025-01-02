@@ -9,15 +9,15 @@ class AddEntranceTableViewCell: UITableViewCell {
 
     let titleLabel: UILabel = {
         let v = UILabel()
-        v.font = UIFont.systemFont(ofSize: 18, weight: .medium)
-        v.textColor = StandardUI.color_333333
+        v.font = .f20
+        v.textColor = .c0C1C33
         return v
     }()
 
     let subtitleLabel: UILabel = {
         let v = UILabel()
-        v.font = UIFont.systemFont(ofSize: 12)
-        v.textColor = StandardUI.color_999999
+        v.font = .f12
+        v.textColor = .c8E9AB0
         return v
     }()
 

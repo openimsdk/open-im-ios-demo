@@ -30,7 +30,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "607FACCF1AFB9204008FA782"
-               BuildableName = "OpenIM-Native.app"
+               BuildableName = "N-DEMO.app"
                BlueprintName = "OpenIMSDKUIKit_Example"
                ReferencedContainer = "container:OpenIMSDKUIKit.xcodeproj">
             </BuildableReference>
@@ -62,7 +62,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "607FACCF1AFB9204008FA782"
-            BuildableName = "OpenIM-Native.app"
+            BuildableName = "N-DEMO.app"
             BlueprintName = "OpenIMSDKUIKit_Example"
             ReferencedContainer = "container:OpenIMSDKUIKit.xcodeproj">
          </BuildableReference>
@@ -74,13 +74,14 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES"
+      askForAppToLaunch = "Yes"
       launchAutomaticallySubstyle = "2">
       <BuildableProductRunnable
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "607FACCF1AFB9204008FA782"
-            BuildableName = "OpenIM-Native.app"
+            BuildableName = "N-DEMO.app"
             BlueprintName = "OpenIMSDKUIKit_Example"
             ReferencedContainer = "container:OpenIMSDKUIKit.xcodeproj">
          </BuildableReference>

@@ -4,13 +4,8 @@ import Foundation
 import UIKit
 import OUICore
 
-final class MainContainerView<LeadingAccessory: StaticViewFactory, CustomView: UIView, TrailingAccessory: StaticViewFactory>: UIView, SwipeNotifierDelegate {
+final class MainContainerView<LeadingAccessory: StaticViewFactory, CustomView: UIView, TrailingAccessory: StaticViewFactory>: UIView, SwipeNotifierDelegate  {
 
-    private var timer: DispatchSourceTimer?
-    private var countdownTime: Int = 0
-    
-    private var didTapRead: (() -> Void)?
-    
     var swipeCompletionRate: CGFloat = 0 {
         didSet {
             updateOffsets()
@@ -21,37 +16,19 @@ final class MainContainerView<LeadingAccessory: StaticViewFactory, CustomView: U
         containerView.leadingView
     }
 
-    var customView: BezierMaskedView<CustomView> {
-        containerView.customView
+    var maskedView: BezierMaskedView<CustomView> {
+        containerView.customView.contentView
     }
-    
-    lazy var leadingCountdownLabel: UILabel = {
-        let v = UILabel()
-        v.textColor = .systemBlue
-        v.font = .preferredFont(forTextStyle: .footnote)
-        
-        return v
-    }()
-    
-    lazy var trailingCountdownLabel: UILabel = {
-        let v = UILabel()
-        v.textColor = .systemBlue
-        v.font = .preferredFont(forTextStyle: .footnote)
-        
-        return v
-    }()
-    
-    @objc
-    private func tapAction() {
-        didTapRead?()
-    }
-        
-//    var statusView: TrailingAccessory.View? {
-//        containerView.trailingView
-//    }
+
+
+
     
     var rightAvatarView: TrailingAccessory.View? {
         containerView.trailingView
+    }
+    
+    var contentContainer: ContentContainerView<BezierMaskedView<CustomView>> {
+        containerView.customView
     }
 
     weak var accessoryConnectingView: UIView? {
@@ -76,7 +53,7 @@ final class MainContainerView<LeadingAccessory: StaticViewFactory, CustomView: U
         }
     }
 
-    private(set) lazy var containerView = CellLayoutContainerView<LeadingAccessory, BezierMaskedView<CustomView>, TrailingAccessory>()
+    private(set) lazy var containerView = CellLayoutContainerView<LeadingAccessory, ContentContainerView<BezierMaskedView<CustomView>>, TrailingAccessory>()
 
     private weak var accessoryOffsetConstraint: NSLayoutConstraint?
 
@@ -89,29 +66,22 @@ final class MainContainerView<LeadingAccessory: StaticViewFactory, CustomView: U
         super.init(coder: coder)
         setupSubviews()
     }
-    
-    deinit {
-        timer = nil
-    }
 
     private func setupSubviews() {
         translatesAutoresizingMaskIntoConstraints = false
         insetsLayoutMarginsFromSafeArea = false
         layoutMargins = .zero
         clipsToBounds = false
+        
         containerView.translatesAutoresizingMaskIntoConstraints = false
         
-        let containerStack = UIStackView(arrangedSubviews: [leadingCountdownLabel, containerView, trailingCountdownLabel])
-        containerStack.spacing = 8
-        containerStack.translatesAutoresizingMaskIntoConstraints = false
-        
-        addSubview(containerStack)
+        addSubview(containerView)
         
         NSLayoutConstraint.activate([
-            containerStack.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
-            containerStack.trailingAnchor.constraint(equalTo: layoutMarginsGuide.trailingAnchor),
-            containerStack.topAnchor.constraint(equalTo: layoutMarginsGuide.topAnchor),
-            containerStack.bottomAnchor.constraint(equalTo: layoutMarginsGuide.bottomAnchor),
+            containerView.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
+            containerView.trailingAnchor.constraint(equalTo: layoutMarginsGuide.trailingAnchor),
+            containerView.topAnchor.constraint(equalTo: layoutMarginsGuide.topAnchor),
+            containerView.bottomAnchor.constraint(equalTo: layoutMarginsGuide.bottomAnchor),
         ])
         
         accessoryView.translatesAutoresizingMaskIntoConstraints = false
@@ -136,19 +106,15 @@ final class MainContainerView<LeadingAccessory: StaticViewFactory, CustomView: U
            !avatarView.isHidden {
             avatarView.transform = CGAffineTransform(translationX: -((avatarView.bounds.width + accessorySafeAreaInsets.left) * swipeCompletionRate), y: 0)
         }
-        switch containerView.customView.messageType {
+        switch containerView.customView.contentView.messageType {
         case .incoming:
-            customView.transform = .identity
-            customView.transform = CGAffineTransform(translationX: -(customView.frame.origin.x * swipeCompletionRate), y: 0)
+            maskedView.transform = .identity
+            maskedView.transform = CGAffineTransform(translationX: -(maskedView.frame.origin.x * swipeCompletionRate), y: 0)
         case .outgoing:
             let maxOffset = min(frame.origin.x, accessoryView.frame.width)
-            customView.transform = .identity
-            customView.transform = CGAffineTransform(translationX: -(maxOffset * swipeCompletionRate), y: 0)
-                
-//            if let statusView,
-//               !statusView.isHidden {
-//                statusView.transform = CGAffineTransform(translationX: -(maxOffset * swipeCompletionRate), y: 0)
-//            }
+            maskedView.transform = .identity
+            maskedView.transform = CGAffineTransform(translationX: -(maxOffset * swipeCompletionRate), y: 0)
+            
             if let rightAvatarView,
                !rightAvatarView.isHidden {
                 rightAvatarView.transform = CGAffineTransform(translationX: -(maxOffset * swipeCompletionRate), y: 0)

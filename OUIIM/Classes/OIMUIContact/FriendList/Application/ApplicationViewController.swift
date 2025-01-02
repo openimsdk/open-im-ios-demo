@@ -36,7 +36,6 @@ class ApplicationViewController: UIViewController {
         let v = UILabel()
         v.font = .f14
         v.textColor = .c8E9AB0
-        v.text = "来源：".innerLocalized()
         v.textAlignment = .right
         
         return v
@@ -86,8 +85,7 @@ class ApplicationViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .viewBackgroundColor
-        
-            
+
         let bStack = UIStackView(arrangedSubviews: [nickNameLabel, companyLabel])
         bStack.axis = .vertical
         bStack.spacing = 4
@@ -101,7 +99,7 @@ class ApplicationViewController: UIViewController {
         btnStack.spacing = 8
         btnStack.distribution = .fillEqually
         
-        let vStack = UIStackView(arrangedSubviews: [pStack, descTextView, btnStack])
+        let vStack = UIStackView(arrangedSubviews: [pStack, descTextView, joinSourceLabel, btnStack])
         vStack.spacing = 16
         vStack.axis = .vertical
         
@@ -120,7 +118,7 @@ class ApplicationViewController: UIViewController {
         }
         
         descTextView.snp.makeConstraints { make in
-            make.height.equalTo(80)
+            make.height.equalTo(80.h)
         }
         
         refuseButton.snp.makeConstraints { make in
@@ -145,6 +143,7 @@ class ApplicationViewController: UIViewController {
         avatarView.setAvatar(url: faceURL, text: nickName, onTap: nil)
         nickNameLabel.text = nickName
         descTextView.text = viewModel.requestDescString
+        descTextView.isHidden = viewModel.requestDescString.isEmpty
         
         if viewModel.groupApplication != nil {
             companyLabel.attributedText = viewModel.companyString

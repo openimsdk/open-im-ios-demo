@@ -28,17 +28,17 @@ class ApplicationViewModel {
     
     var joinSourceString: String {
         get {
-            var v = "来源：".innerLocalized()
+            var v = ""
             switch groupApplication.joinSource {
             case .search:
-                v += "搜索".innerLocalized()
+                v = "search".innerLocalized()
             case .QRCode:
-                v += "二维码".innerLocalized()
+                v = "qrcode".innerLocalized()
             case .invited:
-                v += "邀请".innerLocalized()
+                v = "invite".innerLocalized()
             }
             
-            return v
+            return v.isEmpty ? "" : "sourceFrom".innerLocalizedFormat(arguments: v)
         }
     }
     
@@ -52,13 +52,15 @@ class ApplicationViewModel {
         if let friendApplication = friendApplication {
             IMController.shared.acceptFriendApplication(uid: friendApplication.fromUserID) { [weak self] r in
                 completion(r)
-                NotificationCenter.default.post(name: ContactsViewModel.NotificationApplicationCountChanged, object: nil)
+
+
             }
             
         } else if let groupApplication = groupApplication {
             IMController.shared.acceptGroupApplication(groupID: groupApplication.groupID, fromUserId: groupApplication.userID!) { [weak self] r in
                 completion(r)
-                NotificationCenter.default.post(name: ContactsViewModel.NotificationApplicationCountChanged, object: nil)
+
+
             }
         }
     }
@@ -67,13 +69,15 @@ class ApplicationViewModel {
         if let friendApplication = friendApplication {
             IMController.shared.refuseFriendApplication(uid: friendApplication.fromUserID ) { [weak self] r in
                 completion(r)
-                NotificationCenter.default.post(name: ContactsViewModel.NotificationApplicationCountChanged, object: nil)
+
+
             }
             
         } else if let groupApplication = groupApplication {
             IMController.shared.refuseGroupApplication(groupID: groupApplication.groupID, fromUserId: groupApplication.userID!) { [weak self] r in
                 completion(r)
-                NotificationCenter.default.post(name: ContactsViewModel.NotificationApplicationCountChanged, object: nil)
+
+
             }
         }
     }

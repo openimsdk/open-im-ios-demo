@@ -3,8 +3,34 @@ import Kingfisher
 import UIKit
 
 extension UIImageView {
-    public func setImage(with string: String?, placeHolder: String? = nil, completion: ((UIImage) -> Void)? = nil) {
-        guard let string = string, !string.isEmpty, let url = URL(string: string.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!) else {
+    public func setImage(url: URL, thumbURL: URL? = nil, processorSize: CGSize = CGSize(width: 420.0, height: 420.0)) {
+        kf.indicatorType = .activity
+        
+        let option: KingfisherOptionsInfo = thumbURL != nil ?
+        [.backgroundDecode] :
+            [
+            .processor(DownsamplingImageProcessor(size: processorSize)),
+            .scaleFactor(UIScreen.main.scale),
+            .cacheOriginalImage,
+        ]
+        
+        kf.setImage(with: thumbURL ?? url, options: option) { [weak self] r in
+            guard let self else { return }
+            
+            if thumbURL != nil {
+                kf.setImage(with: url, options: option)
+            }
+        }
+    }
+    
+    public func setImage(with string: String?,
+                         placeHolder: String? = nil,
+                         placeholderImage: UIImage? = nil,
+                         showIndicator: Bool = false,
+                         original: Bool = true,
+                         completion: ((UIImage?) -> Void)? = nil) {
+        
+        guard let string, !string.isEmpty, let url = URL(string: string) else {
             if let placeHolder = placeHolder {
                 image = UIImage(named: placeHolder, in: ViewControllerFactory.getBundle(), compatibleWith: nil)
             } else {
@@ -13,19 +39,38 @@ extension UIImageView {
             return
         }
         let placeImage: UIImage?
-        if let placeHolder = placeHolder {
+        if let placeHolder {
             placeImage = UIImage(named: placeHolder, in: ViewControllerFactory.getBundle(), compatibleWith: nil)
+        } else if let placeholderImage {
+            placeImage = placeholderImage
         } else {
             placeImage = nil
         }
-    
-        kf.setImage(with: url, placeholder: placeImage) { r in
-            if case .success(let image) = r {
-                completion?(image.image)
-            }
+                
+        if showIndicator {
+            kf.indicatorType = .activity
+        } else {
+            kf.indicatorType = .none
+        }
+        
+        var options: KingfisherOptionsInfo = original ? [.backgroundDecode, .cacheOriginalImage] :
+            [.processor(DownsamplingImageProcessor(size: CGSize(width: 120, height: 120))),
+            .scaleFactor(UIScreen.main.scale),
+            .backgroundDecode]
+        
+        kf.setImage(with: url,
+                    placeholder: placeImage,
+                    options: options) { [weak self] r in
+                            guard let self else { return }
+                            
+                            if case .success(let image) = r {
+                                completion?(image.image)
+                            } else {
+                                completion?(nil)
+                            }
         }
     }
-
+    
     public func setImagePath(_ path: String, placeHolder _: String?) {
         if !FileManager.default.fileExists(atPath: path) {
             return
@@ -33,13 +78,17 @@ extension UIImageView {
         let url = URL(fileURLWithPath: path)
         image = UIImage(contentsOfFile: url.path)
     }
+    
+    public func cancelDownload() {
+        kf.cancelDownloadTask()
+    }
 }
 
 extension UIImage {
     public convenience init?(nameInBundle: String) {
         self.init(named: nameInBundle, in: ViewControllerFactory.getBundle(), compatibleWith: nil)
     }
-
+    
     public convenience init?(nameInEmoji: String) {
         self.init(named: nameInEmoji, in: ViewControllerFactory.getEmojiBundle(), compatibleWith: nil)
     }
@@ -51,14 +100,51 @@ extension UIImage {
             return nil
         }
     }
+    
+    public func compress(expectSize: Int) -> UIImage {
+        
+        if let inputData = pngData(), let data = ImageCompress.compressImageData(inputData, expectSize: expectSize) {
+            return UIImage(data: data) ?? self
+        }
+        
+        return self
+    }
+}
+
+extension UIImage {
+    public class func gifImageWithData(_ data: Data) -> UIImage? {
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil) else {
+            return nil
+        }
+        
+        let frameCount = CGImageSourceGetCount(source)
+        var images: [UIImage] = []
+        
+        for i in 0..<frameCount {
+            if let cgImage = CGImageSourceCreateImageAtIndex(source, i, nil) {
+                let image = UIImage(cgImage: cgImage)
+                images.append(image)
+            }
+        }
+        
+        return UIImage.animatedImage(with: images, duration: 0.0)
+    }
 }
 
 extension UIImageView {
-    public func loadGif(name: String) {
+    public func loadGif(name: String? = nil, url: String? = nil, expectSize: Int = 200 * 1024) {
+        
         DispatchQueue.global().async {
-            let image = UIImage.gif(name: name)
-            DispatchQueue.main.async {
-                self.image = image
+            if name != nil {
+                let image = UIImage.gif(name: name!)
+                DispatchQueue.main.async {
+                    self.image = image
+                }
+            } else if url != nil {
+                let image = UIImage.gif(url: url!, expectSize: expectSize)
+                DispatchQueue.main.async {
+                    self.image = image
+                }
             }
         }
     }
@@ -66,34 +152,44 @@ extension UIImageView {
 
 extension UIImage {
     public class func gif(data: Data) -> UIImage? {
-        // Create source from data
+
         guard let source = CGImageSourceCreateWithData(data as CFData, nil) else {
             print("SwiftGif: Source for the image does not exist")
             return nil
         }
         return UIImage.animatedImageWithSource(source)
     }
-    public class func gif(url: String) -> UIImage? {
-        // Validate URL
+    public class func gif(url: String, expectSize: Int) -> UIImage? {
+
         guard let bundleURL = URL(string: url) else {
             print("SwiftGif: This image named \"\(url)\" does not exist")
             return nil
         }
-        // Validate data
-        guard let imageData = try? Data(contentsOf: bundleURL) else {
-            print("SwiftGif: Cannot turn image named \"\(url)\" into NSData")
-            return nil
+        
+        if let path = FileHelper.shared.exsit(path: url),
+           let data = try? Data(contentsOf: URL(fileURLWithPath: path)) {
+            return gif(data: data)
+        } else {
+
+            guard let imageData = try? Data(contentsOf: bundleURL) else {
+                print("SwiftGif: Cannot turn image named \"\(url)\" into NSData")
+                return nil
+            }
+            
+            let compressData = ImageCompress.compressImageData(imageData, expectSize: expectSize) ?? imageData
+            FileHelper.shared.saveFileData(data: compressData, path: url)
+            
+            return gif(data: compressData)
         }
-        return gif(data: imageData)
     }
     
     public class func gif(name: String) -> UIImage? {
-        // Check for existance of gif
+
         guard let bundle = ViewControllerFactory.getBundle(), let bundleURL = bundle.url(forResource: name, withExtension: "gif") else {
             print("SwiftGif: This image named \"\(name)\" does not exist")
             return nil
         }
-        // Validate data
+
         guard let imageData = try? Data(contentsOf: bundleURL) else {
             print("SwiftGif: Cannot turn image named \"\(name)\" into NSData")
             return nil
@@ -102,14 +198,14 @@ extension UIImage {
     }
     internal class func delayForImageAtIndex(_ index: Int, source: CGImageSource!) -> Double {
         var delay = 0.1
-        // Get dictionaries
+
         let cfProperties = CGImageSourceCopyPropertiesAtIndex(source, index, nil)
         let gifPropertiesPointer = UnsafeMutablePointer<UnsafeRawPointer?>.allocate(capacity: 0)
         if CFDictionaryGetValueIfPresent(cfProperties, Unmanaged.passUnretained(kCGImagePropertyGIFDictionary).toOpaque(), gifPropertiesPointer) == false {
             return delay
         }
         let gifProperties:CFDictionary = unsafeBitCast(gifPropertiesPointer.pointee, to: CFDictionary.self)
-        // Get delay time
+
         var delayObject: AnyObject = unsafeBitCast(
             CFDictionaryGetValue(gifProperties,
                                  Unmanaged.passUnretained(kCGImagePropertyGIFUnclampedDelayTime).toOpaque()),
@@ -127,7 +223,7 @@ extension UIImage {
     internal class func gcdForPair(_ a: Int?, _ b: Int?) -> Int {
         var a = a
         var b = b
-        // Check if one of them is nil
+
         if b == nil || a == nil {
             if b != nil {
                 return b!
@@ -137,13 +233,13 @@ extension UIImage {
                 return 0
             }
         }
-        // Swap for modulo
+
         if a! < b! {
             let c = a
             a = b
             b = c
         }
-        // Get greatest common divisor
+
         var rest: Int
         while true {
             rest = a! % b!
@@ -169,18 +265,18 @@ extension UIImage {
         let count = CGImageSourceGetCount(source)
         var images = [CGImage]()
         var delays = [Int]()
-        // Fill arrays
+
         for i in 0..<count {
-            // Add image
+
             if let image = CGImageSourceCreateImageAtIndex(source, i, nil) {
                 images.append(image)
             }
-            // At it's delay in cs
+
             let delaySeconds = UIImage.delayForImageAtIndex(Int(i),
                                                             source: source)
             delays.append(Int(delaySeconds * 1000.0)) // Seconds to ms
         }
-        // Calculate full duration
+
         let duration: Int = {
             var sum = 0
             for val: Int in delays {
@@ -188,7 +284,7 @@ extension UIImage {
             }
             return sum
         }()
-        // Get frames
+
         let gcd = gcdForArray(delays)
         var frames = [UIImage]()
         var frame: UIImage
@@ -200,10 +296,23 @@ extension UIImage {
                 frames.append(frame)
             }
         }
-        // Heyhey
+
         let animation = UIImage.animatedImage(with: frames,
                                               duration: Double(duration) / 3000.0)
         return animation
     }
 }
 
+extension UIImage {
+    public class func image(with color: UIColor) -> UIImage? {
+        let rect = CGRect(x: 0.0, y: 0.0, width: 1.0, height: 1.0)
+        UIGraphicsBeginImageContext(rect.size)
+        let context = UIGraphicsGetCurrentContext()
+        context?.setFillColor(color.cgColor)
+        context?.fill(rect)
+        let image = UIGraphicsGetImageFromCurrentImageContext()
+        UIGraphicsEndImageContext()
+        
+        return image
+    }
+}

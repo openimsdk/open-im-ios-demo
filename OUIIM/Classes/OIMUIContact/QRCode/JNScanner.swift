@@ -51,13 +51,16 @@ class JNScanner: NSObject, AVCaptureMetadataOutputObjectsDelegate, AVCapturePhot
 
     func start() {
         _needScan = true
+
         let types = [AVMetadataObject.ObjectType.qr as NSString,
                      AVMetadataObject.ObjectType.ean13 as NSString,
                      AVMetadataObject.ObjectType.code128 as NSString] as [AVMetadataObject.ObjectType]
         _output.metadataObjectTypes = types
 
         if !_session.isRunning {
-            _session.startRunning()
+            DispatchQueue.global().async { [self] in
+                _session.startRunning()
+            }
         }
     }
 
@@ -118,7 +121,7 @@ class JNScanner: NSObject, AVCaptureMetadataOutputObjectsDelegate, AVCapturePhot
     }
 
     func metadataOutput(_: AVCaptureMetadataOutput, didOutput metadataObjects: [AVMetadataObject], from _: AVCaptureConnection) {
-            
+
         if !_needScan {
             return
         }

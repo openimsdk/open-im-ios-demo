@@ -5,51 +5,76 @@ import ProgressHUD
 import UIKit
 import OUICore
 import OUIIM
+import Kingfisher
 
 class ProfileTableViewController: OUIIM.ProfileTableViewController {
-    private var rowItems: [RowType] = RowType.allCases
-
+    
+    override var rowItems: [[ProfileTableViewController.RowType]] {
+#if ENABLE_ORGANIZATION
+        [[.avatar, .nickname, .gender, .birthday],
+         [.landline, .phone, .email]
+        ]
+#else
+        [[.avatar, .nickname, .gender, .birthday],
+         [.phone, .email]
+        ]
+#endif
+    }
+    
     private let _viewModel = MineViewModel()
     private let _disposeBag = DisposeBag()
-
+    
     private lazy var _photoHelper: PhotoHelper = {
         let v = PhotoHelper()
         v.setConfigToPickAvatar()
-        v.didPhotoSelected = { [weak self] (images: [UIImage], _: [PHAsset], _: Bool) in
+        v.didPhotoSelected = { [weak self] (images: [UIImage], _: [PHAsset]) in
             guard var first = images.first else { return }
-            ProgressHUD.animate()
-            first = first.compress(to: 42)
+            ProgressHUD.animate(interaction: false)
+            first = first.compress(expectSize: 20 * 1024)
             let result = FileHelper.shared.saveImage(image: first)
-                        
+            
             if result.isSuccess {
                 self?._viewModel.uploadFile(fullPath: result.fullPath, onProgress: { [weak self] progress in
-                    ProgressHUD.progress(progress)
-                }, onComplete: {
-                    ProgressHUD.success("头像上传成功".innerLocalized())
-                    self?.getUserOrMemberInfo()
+//                    ProgressHUD.progress(progress)
+                }, onComplete: { [weak self] code, msg in
+                    if code == 0 {
+                        self?.user?.faceURL = "file://" + result.fullPath
+                        self?.reloadData()
+                        ProgressHUD.dismiss()
+                    } else {
+                        ProgressHUD.error(msg)
+                    }
                 })
             } else {
                 ProgressHUD.dismiss()
             }
         }
-
+        
         v.didCameraFinished = { [weak self] (photo: UIImage?, _: URL?) in
             guard let sself = self else { return }
-            if let photo = photo {
+            if var photo {
+                ProgressHUD.animate(interaction: false)
+                
+                photo = photo.compress(expectSize: 20 * 1024)
                 let result = FileHelper.shared.saveImage(image: photo)
                 if result.isSuccess {
                     self?._viewModel.uploadFile(fullPath: result.fullPath, onProgress: { [weak self] progress in
-                        ProgressHUD.progress(progress)
-                    }, onComplete: {
-                        ProgressHUD.success("头像上传成功".innerLocalized())
-                        self?.getUserOrMemberInfo()
+//                        ProgressHUD.progress(progress)
+                    }, onComplete: { [weak self] code, msg in
+                        if code == 0 {
+                            self?.user?.faceURL = "file://" + result.fullPath
+                            self?.reloadData()
+                            ProgressHUD.dismiss()
+                        } else {
+                            ProgressHUD.error(msg)
+                        }
                     })
                 }
             }
         }
         return v
     }()
-
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         getUserOrMemberInfo()
@@ -58,6 +83,8 @@ class ProfileTableViewController: OUIIM.ProfileTableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.title = "我的信息".innerLocalized()
+        canEdit = (LoginType(rawValue: UserDefaults.standard.integer(forKey: loginTypeKey)) ?? .phone) != .account
+        tableView.allowsSelection = canEdit
     }
     
     private func callPhoneTel(phone : String){
@@ -66,16 +93,42 @@ class ProfileTableViewController: OUIIM.ProfileTableViewController {
             UIApplication.shared.open(url)
         }
     }
-
+    
     override func tableView(_: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let rowType: RowType = rowItems[indexPath.row]
+        let rowType = rowItems[indexPath.section][indexPath.row]
+        
+#if ENABLE_ORGANIZATION
+        switch rowType {
+        case .phone:
+            callPhoneTel(phone: user?.phoneNumber ?? "")
+            break
+        case .qrcode:
+            let vc = QRCodeViewController(idString: IMController.addFriendPrefix.append(string: user?.userID))
+            vc.nameLabel.text = user?.nickname
+            vc.avatarView.setAvatar(url: user?.faceURL, text: user?.nickname)
+            vc.tipLabel.text = "qrcodeHint".localized()
+            navigationController?.pushViewController(vc, animated: true)
+        case .identifier:
+            UIPasteboard.general.string = _viewModel.currentUserRelay.value?.userID
+            ProgressHUD.success("复制成功".localized())
+        case .email:
+            if let email = user?.email, !email.isEmpty {
+                UIPasteboard.general.string = email
+                ProgressHUD.success("复制成功".localized())
+            }
+            break
+        default:
+            break
+        }
+        return
+#endif
         
         switch rowType {
         case .avatar:
-            presentActionSheet(action1Title: "从相册中选取".innerLocalized(), action1Handler: { [weak self] in
+            presentSelectedPictureActionSheet { [weak self] in
                 guard let self else { return }
                 _photoHelper.presentPhotoLibrary(byController: self)
-            }, action2Title: "照相".innerLocalized()) { [weak self] in
+            } cameraHandler: {[weak self] in
                 guard let self else { return }
                 _photoHelper.presentCamera(byController: self)
             }
@@ -89,47 +142,61 @@ class ProfileTableViewController: OUIIM.ProfileTableViewController {
             vc.completeBtn.rx.tap.subscribe(onNext: { [weak self, weak vc] in
                 guard let text = vc?.nameTextField.text?.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines),
                       !text.isEmpty else { return }
-                self?._viewModel.updateNickname(text) {
+                ProgressHUD.animate()
+                self?._viewModel.updateNickname(text) { [weak self, weak vc] code, msg in
+                    if code == 0 {
+                        self?.user?.nickname = text
+                        self?.reloadData()
+                        ProgressHUD.dismiss()
+                    } else {
+                        ProgressHUD.error(msg)
+                    }
                     vc?.navigationController?.popViewController(animated: true)
                 }
             }).disposed(by: vc.disposeBag)
             navigationController?.pushViewController(vc, animated: true)
         case .gender:
-            let sheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
-            let maleAction: UIAlertAction = {
-                let v = UIAlertAction(title: "男".innerLocalized(), style: .default) { [weak self] _ in
-                    self?._viewModel.updateGender(.male) { [weak self] in
-                        self?.getUserOrMemberInfo()
+            presentActionSheet(action1Title: "男".innerLocalized(), action1Handler: { [weak self] in
+                ProgressHUD.animate()
+                self?._viewModel.updateGender(.male) { [weak self] code, msg in
+                    if code == 0 {
+                        self?.user?.gender = .male
+                        self?.reloadData()
+                        ProgressHUD.dismiss()
+                    } else {
+                        ProgressHUD.error(msg)
                     }
                 }
-                return v
-            }()
-
-            let femaleAction: UIAlertAction = {
-                let v = UIAlertAction(title: "女".innerLocalized(), style: .default) { [weak self] _ in
-                    self?._viewModel.updateGender(.female) { [weak self] in
-                        self?.getUserOrMemberInfo()
+            }, action2Title: "女".innerLocalized()) { [weak self] in
+                ProgressHUD.animate()
+                self?._viewModel.updateGender(.female) { [weak self] code, msg in
+                    if code == 0 {
+                        self?.user?.gender = .female
+                        self?.reloadData()
+                        ProgressHUD.dismiss()
+                    } else {
+                        ProgressHUD.error(msg)
                     }
                 }
-                return v
-            }()
-            let cancelAction = UIAlertAction(title: "取消".innerLocalized(), style: UIAlertAction.Style.cancel, handler: nil)
-            sheet.addAction(maleAction)
-            sheet.addAction(femaleAction)
-            sheet.addAction(cancelAction)
-            present(sheet, animated: true, completion: nil)
-            
+            }
         case .birthday:
             JNDatePickerView.show(onWindowOfView: view) { (pickerView: JNDatePickerView) in
                 pickerView.datePicker.maximumDate = Date()
                 pickerView.datePicker.minimumDate = Date(timeIntervalSince1970: 0)
             } confirmAction: { [weak self] (selectedDate: Date) in
+                ProgressHUD.animate()
                 let timeStamp = selectedDate.timeIntervalSince1970
-                self?._viewModel.updateBirthday(timeStampSeconds: Int(timeStamp)) { [weak self] in
-                    self?.getUserOrMemberInfo()
+                self?._viewModel.updateBirthday(timeStampSeconds: Int(timeStamp)) { [weak self] code, msg in
+                    if code == 0 {
+                        self?.user?.birth = Int(timeStamp) * 1000
+                        self?.reloadData()
+                        ProgressHUD.dismiss()
+                    } else {
+                        ProgressHUD.error(msg)
+                    }
                 }
             }
-        case .phone:
+        case .phone, .landline:
             callPhoneTel(phone: user?.phoneNumber ?? "")
             break
         case .qrcode:
@@ -137,55 +204,48 @@ class ProfileTableViewController: OUIIM.ProfileTableViewController {
             let vc = QRCodeViewController(idString: IMController.addFriendPrefix.append(string: user.userID))
             vc.nameLabel.text = user.nickname
             vc.avatarView.setAvatar(url: user.faceURL, text: user.nickname)
-            vc.tipLabel.text = "扫一扫下面的二维码，添加我为好友"
+            vc.tipLabel.text = "qrcodeHint".localized()
             navigationController?.pushViewController(vc, animated: true)
         case .identifier:
             UIPasteboard.general.string = _viewModel.currentUserRelay.value?.userID
-            ProgressHUD.success("ID复制成功")
+            ProgressHUD.success("复制成功".localized())
         case .email:
-            if let email = user?.email, !email.isEmpty {
-                UIPasteboard.general.string = email
-                ProgressHUD.success("邮箱复制成功")
-            }
+            updateEmail()
+            break
+        case .spacer:
             break
         }
     }
-
-    deinit {
-        #if DEBUG
-            print("dealloc \(type(of: self))")
-        #endif
-    }
-
-    enum RowType: CaseIterable {
-        case avatar
-        case nickname
-        case gender
-        case birthday
-        case phone
-        case email
-        case qrcode
-        case identifier
-
-        var title: String {
-            switch self {
-            case .avatar:
-                return "头像".innerLocalized()
-            case .nickname:
-                return "昵称".innerLocalized()
-            case .gender:
-                return "性别".innerLocalized()
-            case .phone:
-                return "手机号码".innerLocalized()
-            case .email:
-                return "邮箱".innerLocalized()
-            case .qrcode:
-                return "二维码名片".innerLocalized()
-            case .identifier:
-                return "ID号".innerLocalized()
-            case .birthday:
-                return "生日".innerLocalized()
+    
+    private func updateEmail() {
+        let vc = SimpleInputViewController()
+        vc.maxLength = 100
+        vc.textField.text = user?.email
+        vc.onComplete = { [weak self] inputText in
+            if inputText.isValidEmail() {
+                ProgressHUD.animate()
+                self?._viewModel.updateUserInfo(email: inputText) { [weak self] code, msg in
+                    if code == 0 {
+                        self?.user?.email = inputText
+                        self?.reloadData()
+                        
+                        ProgressHUD.dismiss()
+                        self?.navigationController?.popViewController(animated: true)
+                    } else {
+                        ProgressHUD.error(msg)
+                    }
+                }
+            } else {
+                ProgressHUD.error("emailFormatError".localized())
             }
         }
+        
+        navigationController?.pushViewController(vc, animated: true)
+    }
+    
+    deinit {
+#if DEBUG
+        print("dealloc \(type(of: self))")
+#endif
     }
 }

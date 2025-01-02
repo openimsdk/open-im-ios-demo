@@ -1,6 +1,7 @@
 
 import RxSwift
 import OUICore
+import OUICoreView
 
 open class BlockedListViewController: UIViewController {
 
@@ -21,7 +22,7 @@ open class BlockedListViewController: UIViewController {
     
     private let emptyLabel: UILabel = {
         let v = UILabel()
-        v.text = "暂无黑名单"
+        v.text = "暂无黑名单".localized()
         v.font = .f17
         v.textColor = .c8E9AB0
         v.textAlignment = .center
@@ -43,7 +44,7 @@ open class BlockedListViewController: UIViewController {
 
     override open func viewDidLoad() {
         super.viewDidLoad()
-        navigationItem.title = "黑名单".innerLocalized()
+        navigationItem.title = "通讯录黑名单".localized()
         view.backgroundColor = .viewBackgroundColor
         
         initView()
@@ -100,7 +101,7 @@ open class BlockedListViewController: UIViewController {
 extension BlockedListViewController: UITableViewDelegate {
 
     public func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        return .init(actions: [.init(style: .destructive, title: "移除黑名单".innerLocalized(), handler: {[weak self] (action, view, complete) in
+        return .init(actions: [.init(style: .destructive, title: "移除黑名单".localized(), handler: {[weak self] (action, view, complete) in
             let user: BlackInfo = (self?._viewModel.blockedList.value[indexPath.row])!
             self?._viewModel.removeFromBlockedList(uid: user.userID!) { r in
                 complete(true)

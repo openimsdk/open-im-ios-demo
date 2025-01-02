@@ -1,9 +1,9 @@
-//
-//  OIMSignalingInfo.h
-//  OpenIMSDK
-//
-//  Created by x on 2022/3/17.
-//
+
+
+
+
+
+
 
 #import <Foundation/Foundation.h>
 #import "OIMMessageInfo.h"
@@ -84,7 +84,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @end
 
-/// Participant Information
 @interface OIMParticipantMetaData : NSObject
 
 @property (nonatomic, strong) OIMGroupInfo *groupInfo;
@@ -105,7 +104,6 @@ NS_ASSUME_NONNULL_BEGIN
 
 @property (nonatomic, copy) NSArray<OIMParticipantMetaData *> *metaData;
 
-// --- Query Room ---
 @property (nonatomic, copy) NSArray<OIMParticipantMetaData *> *participant;
 
 @property (nonatomic, copy) NSString *token;

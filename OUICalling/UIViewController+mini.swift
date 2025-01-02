@@ -23,7 +23,7 @@ extension UIViewController {
         SuspendTool.keySuspendWindow()?.tipsLabel.text = text
     }
     
-    func removeMiniWindow() {
+    public func removeMiniWindow() {
         SuspendTool.removeKey()
     }
     

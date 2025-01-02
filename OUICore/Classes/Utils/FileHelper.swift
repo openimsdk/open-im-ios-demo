@@ -38,10 +38,10 @@ public class FileHelper {
             do {
                 try FileManager.default.createDirectory(atPath: path, withIntermediateDirectories: true)
             } catch let err {
-                print("路径创建错误:\(err)")
+                print("\(#function):\(err)")
             }
         } else {
-            print("文件夹存在")
+            print("\(#function): exist")
         }
     }
 
@@ -50,10 +50,10 @@ public class FileHelper {
             do {
                 try FileManager.default.createFile(atPath: path, contents: data)
             } catch let err {
-                print("路径创建错误:\(err)")
+                print("\(#function):\(err)")
             }
         } else {
-            print("文件存在")
+            print("\(#function): exist")
         }
     }
 
@@ -61,7 +61,7 @@ public class FileHelper {
         do {
             try FileManager.default.moveItem(atPath: path, toPath: toPath)
         } catch {
-            print("文件迁移失败：\(error)")
+            print("\(#function):\(error)")
             return false
         }
 
@@ -72,27 +72,26 @@ public class FileHelper {
         do {
             try FileManager.default.copyItem(atPath: path, toPath: toPath)
         } catch {
-            print("文件copy失败：\(error)")
+            print("\(#function)：\(error)")
             return false
         }
 
         return true
     }
     
-    private func removeFile(path: String) -> Bool {
+    public func removeFile(path: String) -> Bool {
         do {
             try FileManager.default.removeItem(atPath: path)
         } catch {
-            print("删除文件失败：\(error)")
+            print("\(#function)：\(error)")
             return false
         }
 
         return true
     }
-    
-    // fileName: 链接最后的名字
+
     public func exsit(path: String, name: String? = nil) -> String? {
-        let ext = path.split(separator: ".").last!
+        let ext = path.split(separator: ".").last ?? ""
         let fileName = name ?? "\(path.md5).\(ext)"
         
         let imagePath = documents + imageDirectory + fileName
@@ -122,7 +121,7 @@ public class FileHelper {
         return nil
     }
 
-    public func saveImage(image: UIImage) -> FileWriteResult {
+    public func saveImage(image: UIImage, name: String? = nil) -> FileWriteResult {
         var imageData: Data?
         var fileType = ""
         if let pngData = image.pngData() {
@@ -139,19 +138,37 @@ public class FileHelper {
         }
 
         let data = NSData(data: imageData)
-        let fileName = getImageName(with: fileType)
+        let fileName = name ?? getImageName(with: fileType)
         let filePath = documents + imageDirectory + fileName
-
+        
+        if FileManager.default.fileExists(atPath: filePath) {
+            removeFile(path: filePath)
+        }
         createFileIfNotExist(path: filePath, data: imageData)
 
         return FileWriteResult(relativeFilePath: imageDirectory + fileName, fullPath: filePath, isSuccess: true)
+    }
+    
+    public static func saveImageData(data: Data, name: String? = nil) -> FileWriteResult {
+        
+        var fileType = data.imageFormat.type
+        let fileName = name ?? Self.shared.getImageName(with: fileType)
+
+        let filePath = Self.shared.documents + Self.shared.imageDirectory + fileName
+
+        if FileManager.default.fileExists(atPath: filePath) {
+            Self.shared.removeFile(path: filePath)
+        }
+        Self.shared.createFileIfNotExist(path: filePath, data: data)
+        
+        return FileWriteResult(relativeFilePath: Self.shared.imageDirectory + fileName, fullPath: filePath, isSuccess: true)
     }
 
     public func saveAudio(from path: String, name: String? = nil) -> FileWriteResult {
         let ext = path.split(separator: ".").last!
         let fileName = name ?? "\(path.md5).\(ext)"
         let filePath = documents + audioDirectory + fileName
-        print("源路径:\(path) 移动目标路径:\(filePath)")
+
         if !moveFile(path: path, toPath: filePath) {
             return FileWriteResult(relativeFilePath: "", fullPath: "", isSuccess: false)
         }
@@ -182,7 +199,21 @@ public class FileHelper {
 
         return FileWriteResult(relativeFilePath: fileDirecotory + fileName, fullPath: toPath, isSuccess: true)
     }
-
+    
+    public func saveFileData(data: Data, path: String, name: String? = nil) {
+        let ext = path.split(separator: ".").last!
+        let fileName = name ?? "\(path.md5).\(ext)"
+        let toPath = documents + fileDirecotory + fileName
+        
+        let url = URL(fileURLWithPath: toPath)
+        
+        do {
+            try? data.write(to: url, options: .atomic)
+        } catch (let e) {
+            print("\(#function) - \(e)")
+        }
+    }
+    
     func getContentTypeOf(imageData: NSData) -> String? {
         var c: UInt8?
         imageData.getBytes(&c, length: 1)
@@ -257,32 +288,5 @@ public class FileHelper {
         public let relativeFilePath: String
         public let fullPath: String
         public let isSuccess: Bool
-    }
-}
-
-extension UIImage {
-    public func compress(to maxSize: Int) -> UIImage {
-        if let size = self.jpegData(compressionQuality: 1)?.count, size <= maxSize {
-            return self
-        }
-        var min: CGFloat = 0
-        var max: CGFloat = 1
-        var data: Data?
-        for _ in 0..<6 {
-            let mid = (min + max) / 2
-            data = self.jpegData(compressionQuality: mid)
-            let compressSize = data?.count ?? 0
-            if compressSize > maxSize {
-                max = mid
-            } else if compressSize < maxSize {
-                min = mid
-            } else {
-                break
-            }
-        }
-        guard let d = data else {
-            return self
-        }
-        return UIImage(data: d) ?? self
     }
 }

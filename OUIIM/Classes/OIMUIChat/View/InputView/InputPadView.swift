@@ -5,15 +5,24 @@ public enum PadItemType: CaseIterable {
     case album
     case camera
     case media
-    
+    case file
+    case card
+    case location
+
     var name: String {
         switch self {
         case .album:
             return "相册".innerLocalized()
         case .camera:
             return "拍摄".innerLocalized()
+        case .card:
+            return "名片".innerLocalized()
         case .media:
             return "音视频".innerLocalized()
+        case .location:
+            return "定位".innerLocalized()
+        case .file:
+            return "文件".innerLocalized()
         }
     }
 
@@ -24,8 +33,14 @@ public enum PadItemType: CaseIterable {
             imageName = "inputbar_pad_album_icon"
         case .camera:
             imageName = "inputbar_pad_camera_icon"
+        case .card:
+            imageName = "inputbar_pad_business_card_icon"
         case .media:
             imageName = "inputbar_pad_voip_icon"
+        case .location:
+            imageName = "inputbar_pad_location_icon"
+        case .file:
+            imageName = "inputbar_pad_file_icon"
         }
         return UIImage(nameInBundle: imageName)
     }
@@ -35,59 +50,37 @@ public protocol InputPadViewDelegate: AnyObject {
     func didSelect(type: PadItemType)
 }
 
-class InputPadView: UIView, InputItem {
-    var inputBarAccessoryView: InputBarAccessoryView?
-    var parentStackViewPosition: InputStackView.Position?
-    
-    func textViewDidChangeAction(with textView: InputTextView) {
-        
-    }
-    
-    func keyboardSwipeGestureAction(with gesture: UISwipeGestureRecognizer) {
-        
-    }
-    
-    func keyboardEditingEndsAction() {
-        
-    }
-    
-    func keyboardEditingBeginsAction() {
-        
-    }
-    
-    func setSize(_ newValue: CGSize?, animated: Bool) {
-        size = newValue
-    }
+class InputPadView: UIView {
 
-    private var size: CGSize? = CGSize(width: UIScreen.main.bounds.width, height: 160) {
+    private var size: CGSize? = CGSize(width: UIScreen.main.bounds.width, height: 220) {
         didSet {
             invalidateIntrinsicContentSize()
         }
     }
     
     open override var intrinsicContentSize: CGSize {
-        var contentSize = size ?? super.intrinsicContentSize
-        contentSize.height += 20
-        return contentSize
+        size ?? super.intrinsicContentSize
     }
     
     public weak var delegate: InputPadViewDelegate?
-    
+
     private let itemsPerRow = 4
     private let items: [PadItemType] = PadItemType.allCases
     
     private lazy var collectionView: UICollectionView = {
         
         var layout = UICollectionViewFlowLayout()
-        layout.itemSize = CGSize(width: intrinsicContentSize.width / CGFloat(itemsPerRow) - 30, height: 90.0)
-        layout.minimumLineSpacing = 16
-
+        layout.minimumLineSpacing = 8
+        layout.minimumInteritemSpacing = 10.0
+        
+        layout.itemSize = CGSize(width: (intrinsicContentSize.width - layout.minimumInteritemSpacing * 3) / CGFloat(itemsPerRow), height: (intrinsicContentSize.height - layout.minimumLineSpacing) / 2.0)
+        
         let v = UICollectionView(frame: .zero, collectionViewLayout: layout)
         v.showsVerticalScrollIndicator = false
         v.showsHorizontalScrollIndicator = false
         v.register(ItemCell.self, forCellWithReuseIdentifier: ItemCell.className)
         v.backgroundColor = .clear
-        
+        v.isScrollEnabled = false
         v.dataSource = self
         v.delegate = self
         
@@ -97,7 +90,9 @@ class InputPadView: UIView, InputItem {
     override init(frame: CGRect) {
         super.init(frame: frame)
         backgroundColor = .secondarySystemBackground
-
+        translatesAutoresizingMaskIntoConstraints = false
+        layoutMargins = .zero
+        
         addSubview(collectionView)
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         
@@ -118,6 +113,9 @@ class InputPadView: UIView, InputItem {
 private class ItemCell: UICollectionViewCell {
     let imageView: UIImageView = {
         let v = UIImageView()
+        v.translatesAutoresizingMaskIntoConstraints = false
+        v.setContentHuggingPriority(.defaultHigh, for: .vertical)
+        
         return v
     }()
 
@@ -125,14 +123,15 @@ private class ItemCell: UICollectionViewCell {
         let v = UILabel()
         v.font = .f12
         v.textColor = .c0C1C33
+        
         return v
     }()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        
+
         let vStack: UIStackView = {
-            let v = UIStackView(arrangedSubviews: [UIView(), imageView, titleLabel])
+            let v = UIStackView(arrangedSubviews: [imageView, titleLabel])
             v.axis = .vertical
             v.alignment = .center
             v.spacing = 8
@@ -144,10 +143,10 @@ private class ItemCell: UICollectionViewCell {
         vStack.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            vStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            vStack.topAnchor.constraint(equalTo: contentView.topAnchor),
-            vStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            vStack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
+            vStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
+            vStack.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 16),
+            vStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
+            vStack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8)
         ])
     }
 

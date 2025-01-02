@@ -65,7 +65,7 @@ public class QRCodeViewController: UIViewController {
     public override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
-        navigationItem.title = "二维码".innerLocalized()
+        navigationItem.title = "qrcode".innerLocalized()
         initView()
         bindData()
     }

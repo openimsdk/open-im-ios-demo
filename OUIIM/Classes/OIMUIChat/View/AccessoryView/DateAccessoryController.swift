@@ -9,7 +9,7 @@ final class DateAccessoryController {
 
     init(date: Date) {
         self.date = date
-        accessoryText = MessageDateFormatter.shared.string(from: date)
+        accessoryText = Date.timeString(date: date)
     }
 
 }

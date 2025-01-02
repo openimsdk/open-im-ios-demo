@@ -14,3 +14,13 @@ extension Array {
         return ret
     }
 }
+
+extension UIViewController {
+    func showAlertView(message: String) {
+        let alertView = UIAlertController.init(title: nil, message: message, preferredStyle: .alert)
+        let action = UIAlertAction.init(title: "取消", style: .cancel)
+        alertView.addAction(action)
+        
+        present(alertView, animated: true)
+    }
+}

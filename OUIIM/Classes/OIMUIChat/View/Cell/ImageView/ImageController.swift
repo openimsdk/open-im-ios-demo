@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-final class ImageController {
+final class ImageController: CellBaseController {
 
     weak var view: ImageView? {
         didSet {
@@ -9,27 +9,19 @@ final class ImageController {
         }
     }
 
-    weak var delegate: ReloadDelegate?
-    
-    var state: ImageViewState {
-        guard let image else {
-            return .loading
-        }
-        return .image(image)
-    }
+    var size: CGSize = CGSize(width: 120, height: 120)
+    var image: UIImage?
+    var source: MediaMessageSource! = nil
 
-    private var image: UIImage?
-
-    private let messageId: String
-
-    private let source: MediaMessageSource
-
-    private let bubbleController: BubbleController
-
-    init(source: MediaMessageSource, messageId: String, bubbleController: BubbleController) {
+    init(source: MediaMessageSource, messageID: String, bubbleController: BubbleController) {
+        super.init(messageID: messageID, bubbleController: bubbleController)
+        
         self.source = source
-        self.messageId = messageId
-        self.bubbleController = bubbleController
+        
+        if let size = source.thumb?.size {
+            self.size = size
+        }
+        
         loadImage()
     }
     
@@ -37,24 +29,10 @@ final class ImageController {
         if let image = source.image {
             self.image = image
             view?.reloadData()
-        } else {
-            guard let url = source.source.url else { return }
-            if let image = try? imageCache.getEntity(for: .init(url: url)) {
-                self.image = image
-                view?.reloadData()
-            } else {
-                loader.loadImage(from: url) { [weak self] _ in
-                    guard let self else {
-                        return
-                    }
-                    
-                    self.delegate?.reloadMessage(with: self.messageId)
-                }
-            }
         }
     }
 
     func action() {
-        delegate?.didTapContent(with: messageId, data: .image(source, isLocallyStored: true))
+        onTap?(.image(source, isLocallyStored: true))
     }
 }

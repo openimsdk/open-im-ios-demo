@@ -32,5 +32,12 @@ Pod::Spec.new do |s|
   s.static_framework = true
 
   s.dependency 'OUICore'
-  s.dependency 'Lantern', '1.1.5'
+  s.dependency 'Lantern'
+  s.dependency 'SnapKit'
+  s.dependency 'ZFPlayer', '~> 4.0'
+  s.dependency 'ZFPlayer/ControlView', '~> 4.0'
+  s.dependency 'ZFPlayer/AVPlayer', '~> 4.0'
+
+  s.dependency 'KTVHTTPCache'
+
 end

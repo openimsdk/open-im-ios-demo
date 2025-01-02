@@ -10,7 +10,6 @@ class GroupStructureTableViewController: UITableViewController {
         }
     }
 
-    // MARK: - Table view data source
 
     override func numberOfSections(in tableView: UITableView) -> Int {
         return super.numberOfSections(in: tableView)

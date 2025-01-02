@@ -1,31 +1,22 @@
 import UIKit
 import Localize_Swift
+import Kingfisher
 
 public class CallingBaseController: UIViewController {
-
     @objc public var onAccepted: (() -> Void)?
-
     @objc public var onRejected: (() -> Void)?
-
     @objc public var onCancel: (() -> Void)?
-
     @objc public var onHungup: ((_ duration: Int) -> Void)?
-
-    @objc public var onBeHungup: ((_ duration: Int) -> Void)?
-
     @objc public var onInvitedOthers: (() -> Void)?
-
     @objc public var onConnectFailure: (() -> Void)?
-
     @objc public var onDisconnect: (() -> Void)?
-
     @objc public func startLiveChat(inviter: @escaping UserInfoHandler,
                                     others: @escaping UserInfoHandler,
                                     isVideo: Bool = true) {}
-
     @objc public func connectRoom(liveURL: String, token: String) {}
-
     @objc public func dismiss() {}
+    
+    public func isConnected() -> Bool { false }
 }
 
 class SizeBox: UIView {

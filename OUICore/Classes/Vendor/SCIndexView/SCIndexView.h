@@ -32,25 +32,18 @@
 
 @property (nonatomic, weak) id<SCIndexViewDelegate> delegate;
 
-// 索引视图数据源
 @property (nonatomic, copy) NSArray<NSString *> *dataSource;
 
-// 当前索引位置
 @property (nonatomic, assign) NSInteger currentSection;
 
-// tableView在NavigationBar上是否半透明
 @property (nonatomic, assign) BOOL translucentForTableViewInNavigationBar;
 
-// tableView从第几个section开始使用索引 Default = 0
 @property (nonatomic, assign) NSUInteger startSection;
 
-// 索引视图的配置
 @property (nonatomic, strong, readonly) SCIndexViewConfiguration *configuration;
 
-// SCIndexView 对 tableView 进行 weak 引用
 - (instancetype)initWithTableView:(UITableView *)tableView configuration:(SCIndexViewConfiguration *)configuration;
 
-// 手动更新IndexView的CurrentSection
 - (void)refreshCurrentSection;
 
 @end

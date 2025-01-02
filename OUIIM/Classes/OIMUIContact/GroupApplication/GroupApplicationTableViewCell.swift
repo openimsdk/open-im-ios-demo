@@ -30,7 +30,7 @@ class GroupApplicationTableViewCell: UITableViewCell {
     }()
 
     let agreeBtn: UIButton = {
-        let v = UIButton(type: .system)
+        let v = UIButton(type: .custom)
         v.titleLabel?.font = .f14
         v.layer.cornerRadius = 5
         v.contentEdgeInsets = UIEdgeInsets(top: .margin8, left: .margin8, bottom: .margin8, right: .margin8)
@@ -43,37 +43,19 @@ class GroupApplicationTableViewCell: UITableViewCell {
         
         selectionStyle = .none
         
-        contentView.addSubview(avatarView)
-        avatarView.snp.makeConstraints { make in
-            make.size.equalTo(StandardUI.avatar_42)
-            make.top.equalToSuperview().offset(15)
-            make.left.equalToSuperview().offset(22)
-        }
-
-        contentView.addSubview(nameLabel)
-        nameLabel.snp.makeConstraints { make in
-            make.top.equalTo(avatarView)
-            make.left.equalTo(avatarView.snp.right).offset(18)
-        }
-
-        contentView.addSubview(applyInfoLabel)
-        applyInfoLabel.snp.makeConstraints { make in
-            make.top.equalTo(nameLabel.snp.bottom).offset(4)
-            make.leading.equalTo(nameLabel)
-        }
-
-        contentView.addSubview(applyReasonLabel)
-        applyReasonLabel.snp.makeConstraints { make in
-            make.top.equalTo(avatarView.snp.bottom).offset(12)
-            make.leading.equalTo(nameLabel)
-            make.bottom.equalToSuperview().offset(-12)
-            make.right.equalToSuperview().offset(-18)
-        }
-
-        contentView.addSubview(agreeBtn)
-        agreeBtn.snp.makeConstraints { make in
-            make.right.equalToSuperview().offset(-18)
-            make.centerY.equalTo(avatarView)
+        let vStack = UIStackView(arrangedSubviews: [nameLabel, applyInfoLabel, applyReasonLabel])
+        vStack.axis = .vertical
+        vStack.spacing = 4
+        vStack.alignment = .leading
+        
+        let hStack = UIStackView(arrangedSubviews: [avatarView, vStack, agreeBtn])
+        hStack.spacing = 10
+        hStack.alignment = .top
+        
+        contentView.addSubview(hStack)
+        hStack.snp.makeConstraints { make in
+            make.leading.trailing.equalToSuperview().inset(16)
+            make.top.bottom.equalToSuperview().inset(12)
         }
     }
 
@@ -87,24 +69,45 @@ class GroupApplicationTableViewCell: UITableViewCell {
         disposeBag = DisposeBag()
     }
 
-    func setApplyState(_ state: ApplyState) {
+    func setApplyState(_ state: ApplyState, isSendOut: Bool) {
         switch state {
         case .uncertain:
-            agreeBtn.setTitle("接受".innerLocalized(), for: .normal)
-            agreeBtn.backgroundColor = .c0089FF
-            agreeBtn.tintColor = .white
-            agreeBtn.isEnabled = true
+            let title = configButtonTitle(icon: isSendOut, text: isSendOut ? "等待验证".innerLocalized() : "查看".innerLocalized())
+            title.addAttributes([.foregroundColor: isSendOut ? UIColor.c8E9AB0 : UIColor.white], range: NSMakeRange(0, title.length))
+            agreeBtn.setAttributedTitle(title, for: .normal)
+            
+            agreeBtn.backgroundColor = isSendOut ? .clear : .c0089FF
+            agreeBtn.isEnabled = !isSendOut
         case .agreed:
-            agreeBtn.setTitle("已同意".innerLocalized(), for: .normal)
+            let title = configButtonTitle(icon: isSendOut, text: "已同意".innerLocalized())
+            title.addAttributes([.foregroundColor: UIColor.c8E9AB0], range: NSMakeRange(0, title.length))
+            
+            agreeBtn.setAttributedTitle(title, for: .normal)
             agreeBtn.backgroundColor = .clear
-            agreeBtn.tintColor = .c8E9AB0
             agreeBtn.isEnabled = false
         case .rejected:
-            agreeBtn.setTitle("已拒绝".innerLocalized(), for: .normal)
+            let title = configButtonTitle(icon: isSendOut, text: "已拒绝".innerLocalized())
+            title.addAttributes([.foregroundColor: UIColor.c8E9AB0], range: NSMakeRange(0, title.length))
+            
+            agreeBtn.setAttributedTitle(title, for: .normal)
             agreeBtn.backgroundColor = .clear
-            agreeBtn.tintColor = .c8E9AB0
             agreeBtn.isEnabled = false
         }
+    }
+    
+    private func configButtonTitle(icon: Bool = false, text: String) -> NSMutableAttributedString {
+        
+        let attr = NSMutableAttributedString(string: text)
+        
+        if icon {
+            let attach = NSTextAttachment(image: UIImage(nameInBundle: "application_request_icon")!)
+            attach.bounds = CGRect(x: 0, y: -4, width: 20, height: 20)
+            let attachStr = NSAttributedString(attachment: attach)
+            
+            attr.insert(attachStr, at: 0)
+        }
+        
+        return attr
     }
 
     func setCompanyName(_ name: String) {
@@ -115,7 +118,7 @@ class GroupApplicationTableViewCell: UITableViewCell {
     }
 
     func setApply(reason: String) {
-        applyReasonLabel.text = "申请理由".innerLocalized() + ":\n \(reason)"
+        applyReasonLabel.text = !reason.isEmpty ? "申请理由".innerLocalized() + ": \(reason)" : nil
     }
     
     enum ApplyState: Int {

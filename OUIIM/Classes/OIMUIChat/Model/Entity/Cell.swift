@@ -21,14 +21,13 @@ enum Cell: Hashable {
 
     case date(DateGroup)
 
-//    case deliveryStatus
 
     var alignment: ChatItemAlignment {
         switch self {
         case let .message(message, _):
             return message.type == .incoming ? .leading : .trailing
-//        case .deliveryStatus:
-//            return .trailing
+
+
         case .typingIndicator:
             return .leading
         case let .messageGroup(group):
@@ -48,8 +47,8 @@ extension Cell: Differentiable {
         switch self {
         case let .message(message, _):
             return message.differenceIdentifier
-//        case .deliveryStatus:
-//            return hashValue
+
+
         case .typingIndicator:
             return hashValue
         case let .messageGroup(group):
@@ -62,7 +61,11 @@ extension Cell: Differentiable {
     }
 
     public func isContentEqual(to source: Cell) -> Bool {
-        self == source
+        if case .message(let msg, _) = self, case .message(let sourceMsg, _) = source {
+            return msg.isContentEqual(to: sourceMsg)
+        }
+        
+        return self == source
     }
 
 }

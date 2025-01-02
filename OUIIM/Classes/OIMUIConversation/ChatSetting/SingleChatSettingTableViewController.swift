@@ -16,10 +16,12 @@ class SingleChatSettingTableViewController: UITableViewController {
     required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.title = "聊天设置".innerLocalized()
+        navigationController?.navigationBar.topItem?.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
+
         configureTableView()
         bindData()
         initView()
@@ -28,10 +30,12 @@ class SingleChatSettingTableViewController: UITableViewController {
     
     private var sectionItems: [[RowType]] = [
         [.members],
+        [.setTopOn, .setDisturbOn],
         [.clearRecord],
     ]
     
     private let _disposeBag = DisposeBag()
+    
     
     private func configureTableView() {
         if #available(iOS 15.0, *) {
@@ -39,10 +43,10 @@ class SingleChatSettingTableViewController: UITableViewController {
         }
         
         tableView.register(SingleChatMemberTableViewCell.self, forCellReuseIdentifier: SingleChatMemberTableViewCell.className)
-        tableView.register(SingleChatRecordTableViewCell.self, forCellReuseIdentifier: SingleChatRecordTableViewCell.className)
         tableView.register(SwitchTableViewCell.self, forCellReuseIdentifier: SwitchTableViewCell.className)
         tableView.register(OptionTableViewCell.self, forCellReuseIdentifier: OptionTableViewCell.className)
     }
+
     
     private func bindData() {
     }
@@ -55,7 +59,7 @@ class SingleChatSettingTableViewController: UITableViewController {
     
     func newGroup() {
         let vc = SelectContactsViewController()
-        vc.selectedContact() { [weak self] r in
+        vc.selectedContact(hasSelected: _viewModel.membesRelay.value.compactMap({ $0.userID })) { [weak self] _, r in
             guard let self else { return }
             let users = r.map {UserInfo(userID: $0.ID!, nickname: $0.name, faceURL: $0.faceURL)}
             let vc = NewGroupViewController(users: users, groupType: .working)
@@ -64,15 +68,21 @@ class SingleChatSettingTableViewController: UITableViewController {
         vc.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(vc, animated: true)
     }
-    
+
     enum RowType: CaseIterable {
         case members
+        case setTopOn
+        case setDisturbOn
         case clearRecord
         
         var title: String {
             switch self {
             case .members:
                 return ""
+            case .setTopOn:
+                return "置顶联系人".innerLocalized()
+            case .setDisturbOn:
+                return "消息免打扰".innerLocalized()
             case .clearRecord:
                 return "清空聊天记录".innerLocalized()
             }
@@ -80,6 +90,8 @@ class SingleChatSettingTableViewController: UITableViewController {
         
         var subTitle: String {
             switch self {
+            case .setDisturbOn:
+                return "messageNotDisturbHint".innerLocalized()
             default:
                 return ""
             }
@@ -134,7 +146,7 @@ class SingleChatSettingTableViewController: UITableViewController {
                 if item.isAddButton {
                     cell.avatarView.setAvatar(url: nil, text: nil, placeHolder: "setting_add_btn_icon")
                 } else {
-                    cell.avatarView.setAvatar(url: nil, text: nil, placeHolder: "contact_my_friend_icon")
+                    cell.avatarView.setAvatar(url: item.faceURL, text: item.nickname, placeHolder: "contact_my_friend_icon")
                 }
                 cell.nameLabel.text = item.nickname
 
@@ -146,12 +158,30 @@ class SingleChatSettingTableViewController: UITableViewController {
                 if userInfo.isAddButton {
                     sself.newGroup()
                 } else {
-                    let vc = UserDetailTableViewController(userId: userInfo.userID, groupId: sself._viewModel.conversation.groupID)
+                    let info = PublicUserInfo(userID: userInfo.userID, nickname: userInfo.nickname, faceURL: userInfo.faceURL)
+                    let vc = UserDetailTableViewController(userId: userInfo.userID, groupId: sself._viewModel.conversation.groupID, userInfo: info)
                     self?.navigationController?.pushViewController(vc, animated: true)
                 }
             }).disposed(by: cell.disposeBag)
             return cell
-       
+        case .setTopOn:
+            let cell = tableView.dequeueReusableCell(withIdentifier: SwitchTableViewCell.className) as! SwitchTableViewCell
+            _viewModel.setTopContactRelay.bind(to: cell.switcher.rx.isOn).disposed(by: cell.disposeBag)
+            cell.switcher.rx.controlEvent(.valueChanged).subscribe(onNext: { [weak self] in
+                self?._viewModel.toggleTopContacts()
+            }).disposed(by: cell.disposeBag)
+            cell.titleLabel.text = rowType.title
+            return cell
+        case .setDisturbOn:
+            let cell = tableView.dequeueReusableCell(withIdentifier: SwitchTableViewCell.className) as! SwitchTableViewCell
+            _viewModel.noDisturbRelay.bind(to: cell.switcher.rx.isOn).disposed(by: cell.disposeBag)
+            cell.switcher.rx.controlEvent(.valueChanged).subscribe(onNext: { [weak self] in
+                self?._viewModel.toggleNoDisturb()
+            }).disposed(by: cell.disposeBag)
+            cell.titleLabel.text = rowType.title
+            cell.subTitleLabel.text = rowType.subTitle
+                
+            return cell
         case .clearRecord:
             let cell = tableView.dequeueReusableCell(withIdentifier: OptionTableViewCell.className) as! OptionTableViewCell
             cell.titleLabel.text = rowType.title
@@ -166,6 +196,7 @@ class SingleChatSettingTableViewController: UITableViewController {
         switch rowType {
         case .clearRecord:
             presentAlert(title: "确认清空所有聊天记录吗？".innerLocalized()) {
+                ProgressHUD.animate(interaction: false)
                 self._viewModel.clearRecord(completion: { _ in
                     ProgressHUD.success("清空成功".innerLocalized())
                 })

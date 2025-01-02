@@ -5,13 +5,19 @@ protocol ChatControllerDelegate: AnyObject {
     func isInGroup(with isIn: Bool)
     func update(with sections: [Section], requiresIsolatedProcess: Bool)
     func updateUnreadCount(count: Int)
-    func didTapAvatar(with id: String)
     func didTapContent(with id: String, data: Message.Data)
+    func onlineStatus(status: UserStatusInfo)
+    func groupInfoChanged(info: GroupInfo)
+    func friendInfoChanged(info: FriendInfo)
+    func typingStateChanged(to state: TypingState)
 }
 
 extension ChatControllerDelegate {
     func isInGroup(with _: Bool) {}
     func updateUnreadCount(_: Int) {}
-    func didTapAvatar(with _: String) {}
     func didTapContent(with _: String, _:  Message.Data) {}
+    func onlineStatus(_: UserStatusInfo) {}
+    func groupInfoChanged(_: GroupInfo) {}
+    func friendInfoChanged(_: FriendInfo) {}
+    func typingStateChanged(to state: TypingState) {}
 }

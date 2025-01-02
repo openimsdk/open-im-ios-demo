@@ -1,6 +1,7 @@
 
 import UIKit
 import OUICore
+import RxSwift
 
 fileprivate enum CellType {
     case horizontal
@@ -57,6 +58,7 @@ fileprivate class UserCell: UICollectionViewCell {
 }
 
 class ForwardCard: UIView {
+    private let disposeBag = DisposeBag()
     
     var numberOfItems: (() -> Int)!
     var itemForIndex:((Int) -> User)!
@@ -83,43 +85,27 @@ class ForwardCard: UIView {
         let v = UILabel()
         v.font = UIFont.f17
         v.textColor = UIColor.c8E9AB0
-        v.text = "聊天记录".innerLocalized()
-        
-        return v
-    }()
-    
-    private lazy var textFiled: UITextField = {
-        let v = UITextField()
-        v.placeholder = "留言".innerLocalized()
-        v.font = UIFont.f17
-        v.borderStyle = .none
-        v.backgroundColor = UIColor.cE8EAEF
-        v.layer.cornerRadius = StandardUI.cornerRadius
-        v.leftViewMode = .always
-        v.leftView = UIView(frame: CGRect(origin: .zero, size: CGSize(width: 10, height: 10)))
+        v.text = "chatRecord".innerLocalized()
         
         return v
     }()
     
     private lazy var cancelButton: UIButton = {
         let v = UIButton(type: .system)
-        v.setTitle("取消".innerLocalized(), for: .normal)
+        v.setTitle("cancel".innerLocalized(), for: .normal)
         v.setTitleColor(.black, for: .normal)
         
         v.rx.tap.subscribe { [weak self] _ in
             self?.cancelHandler?()
-        }
+        }.disposed(by: disposeBag)
         return v
     }()
     
     private lazy var confirmButton: UIButton = {
         let v = UIButton(type: .system)
-        v.setTitle("确定".innerLocalized(), for: .normal)
+        v.setTitle("determine".innerLocalized(), for: .normal)
         v.setTitleColor(UIColor.c0089FF, for: .normal)
-        
-        v.rx.tap.subscribe { [weak self] _ in
-            self?.confirmHandler?(self?.textFiled.text?.trimmingCharacters(in: .whitespacesAndNewlines))
-        }
+   
         return v
     }()
     
@@ -132,6 +118,16 @@ class ForwardCard: UIView {
         v.register(UserCell.self, forCellWithReuseIdentifier: NSStringFromClass(UserCell.self))
         v.delegate = self
         v.dataSource = self
+        
+        return v
+    }()
+    
+    lazy var contentView: UIView = {
+        let v = UIView()
+        v.backgroundColor = .tertiarySystemBackground
+        v.layer.masksToBounds = true
+        v.layer.cornerRadius = StandardUI.cornerRadius
+        v.translatesAutoresizingMaskIntoConstraints = false
         
         return v
     }()
@@ -161,7 +157,7 @@ class ForwardCard: UIView {
         buttonStack.alignment = .center
         buttonStack.spacing = 24
         
-        let HStack = UIStackView(arrangedSubviews: [titleLable, collectionView, contentLabel, textFiled, buttonStack])
+        let HStack = UIStackView(arrangedSubviews: [titleLable, collectionView, contentLabel, buttonStack])
         HStack.axis = .vertical
         HStack.spacing = 8
         HStack.translatesAutoresizingMaskIntoConstraints = false
@@ -170,21 +166,28 @@ class ForwardCard: UIView {
         NSLayoutConstraint.activate([
             contentView.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor, constant: 38),
             contentView.centerXAnchor.constraint(equalTo: centerXAnchor),
-            contentView.centerYAnchor.constraint(equalTo: centerYAnchor),
+            contentView.centerYAnchor.constraint(equalTo: centerYAnchor, constant: -80),
             
             cancelButton.heightAnchor.constraint(equalToConstant: 44),
             confirmButton.heightAnchor.constraint(equalToConstant: 44),
             
             HStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            HStack.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
+            HStack.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 16),
             HStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
             HStack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
-            
-            textFiled.heightAnchor.constraint(equalToConstant: 40)
         ])
         
         collectionViewHeight = collectionView.heightAnchor.constraint(equalToConstant: 150)
         collectionViewHeight!.priority = .defaultHigh
+        
+        isUserInteractionEnabled = true
+        let tap = UITapGestureRecognizer(target: self, action: #selector(handleTap(_:)))
+        addGestureRecognizer(tap)
+    }
+    
+    @objc
+    private func handleTap(_ sender: UITapGestureRecognizer) {
+        removeFromSuperview()
     }
 }
 

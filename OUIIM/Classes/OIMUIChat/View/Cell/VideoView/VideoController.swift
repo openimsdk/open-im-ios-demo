@@ -1,63 +1,54 @@
 import Foundation
 import UIKit
+import Kingfisher
 
-final class VideoController {
-
+final class VideoController: CellBaseController {
+    
     weak var view: VideoView? {
         didSet {
             view?.reloadData()
         }
     }
-
-    weak var delegate: ReloadDelegate?
     
-    var state: VideoViewState {
-        guard let image else {
-            return .loading
-        }
-        return .image(image)
-    }
-
-    private var image: UIImage?
-
-    private let messageId: String
-    
+    var size: CGSize = CGSize(width: 120, height: 120)
+    var image: UIImage?
     var duration: String?
-
-    private let source: MediaMessageSource
-
-    private let bubbleController: BubbleController
-
-    init(source: MediaMessageSource, messageId: String, bubbleController: BubbleController) {
+    var source: MediaMessageSource!
+    
+    init(source: MediaMessageSource, messageID: String, bubbleController: BubbleController) {
+        super.init(messageID: messageID, bubbleController: bubbleController)
+        
         self.source = source
-        self.messageId = messageId
-        self.bubbleController = bubbleController
-        self.duration = #"\#(source.duration!)""#
+        self.duration = formatTime(seconds: TimeInterval(source.duration ?? 0))
+        
+        if let size = source.thumb?.size {
+            self.size = size
+        }
+        
         loadImage()
+    }
+    
+    private func formatTime(seconds: TimeInterval) -> String {
+        let formatter = DateComponentsFormatter()
+        formatter.unitsStyle = .positional
+        formatter.allowedUnits = [.hour, .minute, .second]
+        formatter.zeroFormattingBehavior = .pad
+        
+        if let formattedString = formatter.string(from: seconds) {
+            return formattedString
+        } else {
+            return "00:00:00"
+        }
     }
     
     private func loadImage() {
         if let image = source.image {
             self.image = image
             view?.reloadData()
-        } else {
-            guard let url = source.thumb?.url else { return }
-            if let image = try? imageCache.getEntity(for: .init(url: url)) {
-                self.image = image
-                view?.reloadData()
-            } else {
-                loader.loadImage(from: url) { [weak self] _ in
-                    guard let self else {
-                        return
-                    }
-                    
-                    self.delegate?.reloadMessage(with: self.messageId)
-                }
-            }
         }
     }
-
+    
     func action() {
-        delegate?.didTapContent(with: messageId, data: .video(source, isLocallyStored: true))
+        onTap?(.video(source, isLocallyStored: true))
     }
 }

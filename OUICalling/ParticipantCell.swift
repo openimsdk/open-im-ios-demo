@@ -7,7 +7,7 @@ import Lottie
 
 public class ParticipantCellUserView: UIView {
     let disposeBag = DisposeBag()
-    
+
     lazy var avatarView: AvatarView = {
         let v = AvatarView()
         v.layer.masksToBounds = true
@@ -15,11 +15,18 @@ public class ParticipantCellUserView: UIView {
         return v
     }()
     
-    private let linkingView: AnimationView = {
+    lazy var linkingView: AnimationView = {
         let bundle = Bundle.callingBundle()
         let v = AnimationView(name: "linking", bundle: bundle)
         v.loopMode = .loop
         v.play()
+        
+        return v
+    }()
+    
+    lazy var overlayView: UIView = {
+        let v = UIView()
+        v.backgroundColor = .c0C1C33.withAlphaComponent(0.7)
         
         return v
     }()
@@ -40,10 +47,8 @@ public class ParticipantCellUserView: UIView {
             make.edges.equalToSuperview()
         }
         
-        let overlay = UIView()
-        overlay.backgroundColor = .c0C1C33.withAlphaComponent(0.7)
-        addSubview(overlay)
-        overlay.snp.makeConstraints { make in
+        addSubview(overlayView)
+        overlayView.snp.makeConstraints { make in
             make.edges.equalToSuperview()
         }
         
@@ -58,15 +63,14 @@ public class ParticipantCellUserView: UIView {
 open class ParticipantCellDefaultView: UIView {
     
     let disposeBag = DisposeBag()
-    
-    // 关闭视频后，展示的头像
+
     lazy var avatarView: AvatarView = {
         let v = AvatarView()
         
         return v
     }()
     
-    lazy var hosterImageView: UIImageView = {
+    public lazy var hosterImageView: UIImageView = {
         let v = UIImageView(image: UIImage(nameInBundle: "hoster_icon"))
         v.isHidden = true
         
@@ -162,8 +166,7 @@ open class ParticipantCell: UICollectionViewCell {
     }()
     
     public var videoView: VideoView!
-    
-    // 开启视频后，常态展示
+
     public lazy var infoView: ParticipantCellDefaultView = {
         let v = ParticipantCellDefaultView()
         
@@ -189,14 +192,14 @@ open class ParticipantCell: UICollectionViewCell {
     
     let speakingView: UIView = {
         let t = UIView()
+        t.backgroundColor = .clear
         t.layer.borderColor = UIColor.systemBlue.cgColor
         t.layer.borderWidth = 2.0
         t.isHidden = true
         
         return t
     }()
-    
-    // weak reference to the Participant
+
     public weak var participant: Participant? {
         didSet {
             if participant != nil, participant!.identity == oldValue?.identity {
@@ -204,8 +207,8 @@ open class ParticipantCell: UICollectionViewCell {
             }
             
             if let oldValue {
-                // un-listen previous participant's events
-                // in case this cell gets reused.
+
+
                 oldValue.remove(delegate: self)
                 videoView.track = nil
             }
@@ -213,14 +216,11 @@ open class ParticipantCell: UICollectionViewCell {
             if let participant {
                 resetFrame()
                 scrollView.setZoomScale(1.0, animated: false)
-                
-                // listen to events
+
                 participant.add(delegate: self)
                 setFirstVideoTrack()
                 infoView.nameLabel.text = participant.showName
                 infoView.avatarView.setAvatar(url: participant.faceURL, text: participant.showName)
-                let isHoster = participant.isHoster
-                infoView.hosterImageView.isHidden = !isHoster
 
                 if videoForceEnable {
                     isVideoEnable = true
@@ -230,7 +230,7 @@ open class ParticipantCell: UICollectionViewCell {
                 
                 isMicEnable = participant.isMicrophoneEnabled()
                 print("member's info:\(participant.identityString)")
-                // make sure the cell will call layoutSubviews()
+
                 setNeedsLayout()
             }
         }
@@ -267,8 +267,12 @@ open class ParticipantCell: UICollectionViewCell {
         }
         
         contentView.addSubview(speakingView)
+        speakingView.snp.makeConstraints { make in
+            make.edges.equalToSuperview()
+        }
         
         contentView.isUserInteractionEnabled = true
+
         let singleTapGesture = UITapGestureRecognizer(target: self, action: #selector(handleSingleTap(_:)))
         singleTapGesture.numberOfTapsRequired = 1
         contentView.addGestureRecognizer(singleTapGesture)
@@ -276,7 +280,7 @@ open class ParticipantCell: UICollectionViewCell {
         let doubleTapGesture = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTap(_:)))
         doubleTapGesture.numberOfTapsRequired = 2
         contentView.addGestureRecognizer(doubleTapGesture)
-        
+
         singleTapGesture.require(toFail: doubleTapGesture)
     }
     
@@ -311,11 +315,13 @@ open class ParticipantCell: UICollectionViewCell {
                 onDoubleTap()
             } else {
                 if !zoomIn {
+
                     let zoomRect = zoomRectForScale(scale: scrollView.maximumZoomScale, center: gesture.location(in: videoView))
                     scrollView.zoom(to: zoomRect, animated: true)
                     
                     zoomIn = true
                 } else {
+
                     scrollView.zoom(to: videoView.bounds, animated: true)
                     resetFrame()
                     videoView.center = computeContentLayoutCenter(in: scrollView)
@@ -362,6 +368,8 @@ open class ParticipantCell: UICollectionViewCell {
         infoView.hosterImageView.isHidden = true
         participant = nil
         loadingView.isHidden = true
+        loadingView.linkingView.isHidden = false
+        loadingView.overlayView.isHidden = false
         zoomIn = false
     }
     
@@ -510,25 +518,6 @@ extension Participant {
         }
         
         return nil
-    }
-    
-    public var roomMetadataMap: [String: Any]? {
-        if let roomMetadata = metadata {
-            let data = try? (JSONSerialization.jsonObject(with: (roomMetadata.data(using: .utf8))!, options: .mutableContainers) as! [String: Any])
-            return data
-        }
-        
-        return nil
-    }
-    
-    public var isHoster: Bool {
-        if roomMetadataMap != nil {
-            if let hostID = roomMetadataMap!["hostUserID"] as? String, hostID == identityString {
-                return true
-            }
-        }
-        
-        return false
     }
     
     public var identityString: String? {

@@ -1,40 +1,73 @@
 
-import RxSwift
 import OUICore
+import ProgressHUD
 
 class GroupBasicInfoCell: UITableViewCell {
-    
+        
     let avatarView = AvatarView()
     
     var enableInput: Bool = false {
         didSet {
-            textFiled.rightViewMode = enableInput ? .always : .never
+            editButton.isHidden = !enableInput
+            titleLabel.isUserInteractionEnabled = enableInput
         }
     }
     
-    var inputHandler: (() -> Void)!
+    var inputHandler: (() -> Void)?
     var QRCodeTapHandler: (() -> Void)?
     
-    lazy var textFiled: UITextField = {
-        let v = UITextField()
+    lazy var titleLabel: UILabel = {
+        let v = UILabel()
         v.font = UIFont.f17
         v.textColor = UIColor.c0C1C33
-        v.rightViewMode = .always
-        v.rightView = UIImageView(image: UIImage(systemName: "square.and.pencil"))
-        v.delegate = self
+        v.numberOfLines = 0
+        v.isUserInteractionEnabled = true
+        
+        let tap = UITapGestureRecognizer(target: self, action: #selector(titleLabelAction(_: )))
+        v.addGestureRecognizer(tap)
         
         return v
     }()
     
-    let subLabel: UILabel = {
+    @objc
+    private func titleLabelAction(_ sender: UILabel) {
+        self.inputHandler?()
+    }
+    
+    lazy var editButton: UIButton = {
+        let v = UIButton(type: .system)
+        v.setImage(UIImage(systemName: "square.and.pencil"), for: .normal)
+        v.addTarget(self, action: #selector(editButtonAction(_:)), for: .touchUpInside)
+        v.isHidden = true
+        v.tintColor = .systemBlue
+        v.translatesAutoresizingMaskIntoConstraints = false
+        v.setContentCompressionResistancePriority(UILayoutPriority(999), for: .horizontal)
+        
+        return v
+    }()
+    
+    @objc
+    private func editButtonAction(_ sender: UIButton) {
+        self.inputHandler?()
+    }
+    
+    lazy var subLabel: UILabel = {
         let v = UILabel()
         v.font = UIFont.f14
         v.textColor = UIColor.c8E9AB0
+        v.isUserInteractionEnabled = true
+        
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleCopyGesture(_:)))
+        v.addGestureRecognizer(tapGesture)
         
         return v
     }()
-
-    private var _disposeBag = DisposeBag()
+    
+    @objc
+    private func handleCopyGesture(_ sender: UITapGestureRecognizer) {
+        UIPasteboard.general.string = subLabel.text
+        ProgressHUD.success("复制成功".innerLocalized())
+    }
     
     lazy var QRCodeButton: UIButton = {
         let v = UIButton(type: .system)
@@ -56,7 +89,11 @@ class GroupBasicInfoCell: UITableViewCell {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         selectionStyle = .none
        
-        let infoStack = UIStackView(arrangedSubviews: [textFiled, subLabel])
+        let titleStack = UIStackView(arrangedSubviews: [titleLabel, editButton])
+        titleStack.alignment = .center
+        titleStack.spacing = 8
+        
+        let infoStack = UIStackView(arrangedSubviews: [titleStack, subLabel])
         infoStack.axis = .vertical
         infoStack.spacing = 4
         
@@ -77,19 +114,6 @@ class GroupBasicInfoCell: UITableViewCell {
     @available(*, unavailable)
     required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-
-    override func prepareForReuse() {
-        super.prepareForReuse()
-        _disposeBag = DisposeBag()
-    }
-}
-
-extension GroupBasicInfoCell: UITextFieldDelegate {
-    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
-        inputHandler()
-        
-        return false
     }
 }
 

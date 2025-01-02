@@ -19,6 +19,10 @@
 "通话邀请被其它客户端接受" = "Accepted by other clients";
 "通话邀请被其它客户端拒绝" = "Rejected by other clients";
 "等待对方接听" = "Waiting for the other party to answer";
-"链接失败" = "Link failed";
+"connectionFailed" = "Link failed";
 "网络不好或对方正忙" = "The network is bad or the other party is busy";
 "callFail" = "You cannot call this user";
+"callingBusy" = "You are already on a call or in a meeting and cannot perform this operation!";
+"networkNotStable" = "Network not stable";
+"otherNetworkNotStableHint" = "The other party\'s network is unstable";
+"callingInterruption" = "Calling interruption";

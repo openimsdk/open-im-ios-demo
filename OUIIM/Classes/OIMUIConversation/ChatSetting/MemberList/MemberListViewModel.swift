@@ -1,10 +1,11 @@
 
 import OUICore
 import RxRelay
+import RxSwift
 
 class MemberListViewModel {
     let lettersRelay: BehaviorRelay<[String]> = .init(value: [])
-    var members: [GroupMemberInfo] = []
+    var membersRelay: BehaviorRelay<[GroupMemberInfo]> = .init(value: [])
     var contactSections: [[GroupMemberInfo]] = []
     var targetUserId: String?
     let targetIndexRelay: BehaviorRelay<IndexPath?> = .init(value: nil)
@@ -12,14 +13,64 @@ class MemberListViewModel {
     
     let groupInfo: GroupInfo
     private var offset = 0
-    private let limit = 1000
+    private var limit = 500
+    private let _disposeBag = DisposeBag()
+    
     init(groupInfo: GroupInfo) {
         self.groupInfo = groupInfo
+        
+        IMController.shared.groupMemberInfoChange.subscribe(onNext: { [weak self] info in
+            guard let self, let info else { return }
+            
+            if info.isOwnerOrAdmin {
+                var temp = ownerAndAdminRelay.value
+                if let index = temp.firstIndex(where: { $0.userID == info.userID }) {
+                    temp[index] = info
+                    ownerAndAdminRelay.accept(temp)
+                }
+            } else {
+                var temp = membersRelay.value
+                if let index = temp.firstIndex(where: { $0.userID == info.userID }) {
+                    temp[index] = info
+                    membersRelay.accept(temp)
+                }
+            }
+        }).disposed(by: _disposeBag)
+        
+        IMController.shared.groupMemberAdded.subscribe(onNext: { [weak self] info in
+
+            guard let self, let info, groupInfo.groupID == info.groupID else { return }
+            
+            if info.isOwnerOrAdmin {
+                var temp = ownerAndAdminRelay.value
+                temp.append(info)
+                ownerAndAdminRelay.accept(temp)
+            } else {
+                var temp = membersRelay.value
+                temp.append(info)
+                membersRelay.accept(temp)
+            }
+        }).disposed(by: _disposeBag)
+        
+        IMController.shared.groupMemberDeleted.subscribe(onNext: { [weak self] info in
+
+            guard let self, let info, groupInfo.groupID == info.groupID else { return }
+            
+            if info.isOwnerOrAdmin {
+                var temp = ownerAndAdminRelay.value
+                temp = temp.filter { $0.userID != info.userID }
+                ownerAndAdminRelay.accept(temp)
+            } else {
+                var temp = membersRelay.value
+                temp = temp.filter { $0.userID != info.userID }
+                membersRelay.accept(temp)
+            }
+        }).disposed(by: _disposeBag)
     }
     
     func resetMembersArray() {
         self.offset = 0
-        self.members.removeAll()
+        self.membersRelay.accept([])
     }
     
     func getOwnerAndAdmin() {
@@ -28,18 +79,29 @@ class MemberListViewModel {
         }
     }
 
-    func getMoreMembers(completion: ((Bool) -> Void)?) {
-        IMController.shared.getGroupMemberList(groupId: groupInfo.groupID, filter: .member, offset: offset, count: limit) { [weak self] (members: [GroupMemberInfo]) in
-            guard let sself = self else { return }
-            if !members.isEmpty {
-                sself.offset += sself.limit
+    func getMoreMembers(completion: ((Bool) -> Void)? = nil) {
+        IMController.shared.getGroupMemberList(groupId: groupInfo.groupID, filter: .member, offset: offset, count: limit) { [weak self] (ms: [GroupMemberInfo]) in
+            guard let self else { return }
+
+            if !ms.isEmpty {
+                offset += min(limit, ms.count)
             }
-            self?.members.append(contentsOf: members)
-            if members.isEmpty {
+            
+            var temp = membersRelay.value
+            temp.append(contentsOf: ms)
+
+            temp.reduce([], { (partialResult: [GroupMemberInfo], m) in
+                partialResult.contains(where: { $0.userID == m.userID }) ? partialResult : partialResult + [m]
+            })
+            
+            if ms.isEmpty, completion != nil {
                 completion?(true)
                 return
             }
-            self?.divideUsersInSection(users: sself.members, completion: completion)
+            membersRelay.accept(temp)
+            completion?(ms.count < limit ? true : false)
+            limit = 100
+
         }
     }
 
@@ -98,5 +160,19 @@ class MemberListViewModel {
                 self?.targetIndexRelay.accept(indexPath)
             }
         }
+    }
+    
+    func searchGroupMembers(keywords: [String]) async -> [GroupMemberInfo] {
+        let param = SearchGroupMemberParam(groupID: groupInfo.groupID, keywordList: keywords)
+        
+        do {
+            let r = try await IMController.shared.searchGroupMembers(param: param)
+            
+            return r
+        } catch (let e) {
+            return []
+        }
+        
+        return []
     }
 }

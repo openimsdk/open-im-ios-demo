@@ -13,11 +13,36 @@ public struct FileDownloadRequest {
 public class FileDownloadManager {
     static let manager = FileDownloadManager()
     
+    public func pauseAllDownloadRequest() {
+        downloadRequests.values.forEach({ if $0.task?.state == .running { $0.suspend() } })
+    }
+    
+    public func downloadRequest(messageID: String) -> FileDownloadRequest? {
+        downloadRequests[messageID] != nil ? FileDownloadRequest(request: downloadRequests[messageID]!) : nil
+    }
+    
+    func setExistsTaskHandler(messageID: String,
+                              progress: @escaping DownloadCallBack.DownloadProgressReturnVoid,
+                              completion: @escaping DownloadCallBack.CompletionReturnVoid) {
+        if let taskIdentifier = messageIDForTaskIdentifier[messageID] {
+            
+            var taskHandler = tasksHandlers[taskIdentifier]
+            taskHandler?[progressKey] = progress
+            taskHandler?[completionKey] = completion
+            
+            tasksHandlers[taskIdentifier] = taskHandler
+        }
+    }
+    
     private let progressKey = "progressKey"
     private let completionKey = "completionKey"
     private let messageIDKey = "messageIDKey"
+    private let desURLKey = "desURLKey"
     private let downloader = FileDownloader()
+    private var messageIDForTaskIdentifier: [String: Int] = [:]
     private var tasksHandlers: [Int: [String: Any]] = [:]
+    
+    private var downloadRequests = [String: DownloadRequest]()
         
     func downloadMessageFile(messageID: String,
                              url: URL,
@@ -27,12 +52,6 @@ public class FileDownloadManager {
         
         guard let url = try? url.asURL() else { return nil }
         
-        let request = downloader.download(url, name: name)
-        guard let taskIdentifier = request.task?.taskIdentifier else { return nil }
-        
-        tasksHandlers[taskIdentifier] = [progressKey: progress,
-                                       completionKey: completion,
-                                        messageIDKey: messageID]
         downloader.manager.delegate.taskDidComplete = { [weak self] (session, task, error) in
             if let error {
                 if let resumeData = (error as NSError).userInfo[NSURLSessionDownloadTaskResumeData] as? Data {
@@ -45,12 +64,17 @@ public class FileDownloadManager {
         
         downloader.manager.delegate.downloadTaskDidFinishDownloadingToURL = { [weak self] (session, downloadTask, location) in
             guard let self,
-                  let completion = self.tasksHandlers[downloadTask.taskIdentifier]?[self.completionKey] as? DownloadCallBack.CompletionReturnVoid,
-                  let messageID = self.tasksHandlers[downloadTask.taskIdentifier]?[self.messageIDKey] as? String else { return }
+                  let completion = Self.manager.tasksHandlers[downloadTask.taskIdentifier]?[self.completionKey] as? DownloadCallBack.CompletionReturnVoid,
+                  let messageID = Self.manager.tasksHandlers[downloadTask.taskIdentifier]?[self.messageIDKey] as? String,
+                    let desURL = Self.manager.tasksHandlers[downloadTask.taskIdentifier]?[self.desURLKey] as? URL else { return }
             do {
+                downloadRequests.removeValue(forKey: messageID)
+                messageIDForTaskIdentifier.removeValue(forKey: messageID)
+                
                 let des = URL.init(fileURLWithPath: downloader.filePath)
-                try FileManager.default.moveItem(at: location, to: des)
+                try? FileManager.default.moveItem(at: location, to: des)
                 completion(messageID, des)
+                try? FileManager.default.removeItem(at: desURL)
             } catch let error {
                 print("downloadTaskDidFinishDownloadingToURL - error: \(error.localizedDescription)")
             }
@@ -58,12 +82,35 @@ public class FileDownloadManager {
         
         downloader.manager.delegate.downloadTaskDidWriteData = { [weak self] (session, downloadTask, bytesWritten, totalBytesWritten, totalBytesExpectedToWrite) in
             guard let self,
-                  let progress = self.tasksHandlers[downloadTask.taskIdentifier]?[self.progressKey] as? DownloadCallBack.DownloadProgressReturnVoid,
-                  let messageID = self.tasksHandlers[downloadTask.taskIdentifier]?[self.messageIDKey] as? String else { return }
+                  let progress = Self.manager.tasksHandlers[downloadTask.taskIdentifier]?[progressKey] as? DownloadCallBack.DownloadProgressReturnVoid,
+                  let messageID = Self.manager.tasksHandlers[downloadTask.taskIdentifier]?[messageIDKey] as? String else { return }
+            
             progress(messageID, Int(totalBytesWritten), Int(totalBytesExpectedToWrite))
         }
         
-        return FileDownloadRequest(request: request)
+        if let taskIdentifier = messageIDForTaskIdentifier[messageID] {
+            var taskHandler = tasksHandlers[taskIdentifier]
+            taskHandler?[progressKey] = progress
+            taskHandler?[completionKey] = completion
+            
+            tasksHandlers[taskIdentifier] = taskHandler
+        }
+        
+        if let req = downloadRequests[messageID] {
+            return FileDownloadRequest(request: req)
+        }
+        
+        let request = downloader.download(url, name: name)
+        guard let taskIdentifier = request.request.task?.taskIdentifier else { return nil }
+        
+        tasksHandlers[taskIdentifier] = [progressKey: progress,
+                                       completionKey: completion,
+                                        messageIDKey: messageID,
+                                           desURLKey: request.desURL]
+        messageIDForTaskIdentifier[messageID] = taskIdentifier
+        downloadRequests[messageID] = request.request
+        
+        return FileDownloadRequest(request: request.request)
     }
 }
 
@@ -83,7 +130,7 @@ class FileDownloader: NSObject {
         return manager
     }()
     
-    func download(_ url: URLConvertible, name: String? = nil) -> DownloadRequest {
+    func download(_ url: URLConvertible, name: String? = nil) -> (request: DownloadRequest, desURL: URL) {
         let ext = try! url.asURL().absoluteString.split(separator: ".").last!
         var r = name
         
@@ -92,10 +139,10 @@ class FileDownloader: NSObject {
         }
 
         filePath = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0] + "/\(r!)"
-        print("下载地址:\(filePath)")
+        print("download file to des path:\(filePath)")
         
         let destination: DownloadRequest.DownloadFileDestination = { [weak self] _, _ in
-            return (URL(string: self!.filePath)!, [.removePreviousFile, .createIntermediateDirectories])
+            return (URL(fileURLWithPath: self!.filePath), [.removePreviousFile, .createIntermediateDirectories])
         }
         
         if self.resumeData != nil {
@@ -107,6 +154,6 @@ class FileDownloader: NSObject {
                 request = manager.download(url, to: destination)
             }
         }
-        return request!
+        return (request: request!, desURL: (URL(fileURLWithPath: filePath)))
     }
 }

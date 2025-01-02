@@ -135,7 +135,7 @@ static unichar numericValues[] = {
 +(NSInteger)getNumericValue:(unichar)c
 {
     if (c < 128) {
-        // Optimized for ASCII
+
         if (c >= '0' && c <= '9') {
             return c - '0';
         }
@@ -153,7 +153,7 @@ static unichar numericValues[] = {
         if (difference == 0) {
             return -2;
         }
-        // Value is always positive, must be negative value
+
         if (difference > c) {
             return c - (short) difference;
         }

@@ -10,4 +10,22 @@ extension URL {
         
         return md5Hex
     }
+    
+    public var defaultThumbnailURL: URL? {
+        absoluteString.defaultThumbnailURL
+    }
+    
+    public func customThumbnailURL(size: CGSize = CGSize(width: 960, height: 960)) -> URL? {
+        let r = absoluteString.customThumbnailURLString(size: size)
+            
+        return URL(string: r)
+    }
+    
+    var parameters: [String: String]? {
+        guard let components = URLComponents(url: self, resolvingAgainstBaseURL: true),
+        let queryItems = components.queryItems else { return nil }
+        return queryItems.reduce(into: [String: String]()) { (result, item) in
+            result[item.name] = item.value
+        }
+    }
 }

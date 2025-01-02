@@ -2,6 +2,7 @@
 import OUICore
 import OUICoreView
 import RxSwift
+import ProgressHUD
 
 class NewFriendListViewController: UIViewController {
     override func viewDidLoad() {
@@ -21,10 +22,11 @@ class NewFriendListViewController: UIViewController {
     private lazy var tableView: UITableView = {
         let v = UITableView()
         v.register(NewFriendTableViewCell.self, forCellReuseIdentifier: NewFriendTableViewCell.className)
-        v.rowHeight = 68
+        v.rowHeight = 68.h
         v.tableFooterView = UIView()
         v.backgroundColor = .clear
-        
+        v.separatorColor = .cE8EAEF
+
         if #available(iOS 15.0, *) {
             v.sectionHeaderTopPadding = 0
         }
@@ -40,12 +42,23 @@ class NewFriendListViewController: UIViewController {
     }
 
     private func bindData() {
-        _viewModel.applications.asDriver(onErrorJustReturn: []).drive(tableView.rx.items) { tableView, _, item in
+        _viewModel.loading.asDriver().drive(onNext: { isLoading in
+            if isLoading {
+                ProgressHUD.animate()
+            } else {
+                ProgressHUD.dismiss()
+            }
+        }).disposed(by: _disposeBag)
+        
+        _viewModel.applications.asDriver(onErrorJustReturn: []).drive(tableView.rx.items) { [weak self] tableView, _, item in
             let cell = tableView.dequeueReusableCell(withIdentifier: NewFriendTableViewCell.className) as! NewFriendTableViewCell
+            
+            guard let self else { return cell }
+            
             cell.titleLabel.text = item.fromNickname
-            cell.subtitleLabel.text = item.reqMsg
+            cell.subtitleLabel.text = item.reqMsg ?? ""
             if let state = NewFriendTableViewCell.ApplyState(rawValue: item.handleResult.rawValue) {
-                cell.setApplyState(state)
+                cell.setApplyState(state, isSendOut: _viewModel.isSendOut(userID: item.fromUserID))
             }
 
             cell.avatarView.setAvatar(url: item.fromFaceURL, text: item.fromNickname)
@@ -60,10 +73,10 @@ class NewFriendListViewController: UIViewController {
         }.disposed(by: _disposeBag)
 
         tableView.rx.modelSelected(FriendApplication.self).subscribe(onNext: { [weak self] (application: FriendApplication) in
-            if let state = NewFriendTableViewCell.ApplyState(rawValue: application.handleResult.rawValue), state == .agreed {
-                let vc = UserDetailTableViewController(userId: application.fromUserID, groupId: nil)
-                self?.navigationController?.pushViewController(vc, animated: true)
-            }
+
+
+
+
         }).disposed(by: _disposeBag)
     }
 

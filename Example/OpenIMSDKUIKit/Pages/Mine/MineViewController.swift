@@ -29,6 +29,7 @@ public class MineViewController: UIViewController {
 
     override public func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+        _tableView.reloadData()
         _viewModel.queryUserInfo()
         navigationController?.setNavigationBarHidden(true, animated: false)
     }
@@ -55,24 +56,23 @@ public class MineViewController: UIViewController {
         view.addSubview(bgImageView)
         bgImageView.snp.makeConstraints { make in
             make.leading.top.trailing.equalToSuperview()
-            make.height.equalTo(138 + kStatusBarHeight)
+            make.height.equalTo(138.h + UIApplication.statusBarHeight)
         }
         
         view.addSubview(_tableView)
         _tableView.snp.makeConstraints { make in
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(70)
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(70.h)
             make.leading.bottom.trailing.equalToSuperview()
         }
     }
 
     private func bindData() {
         _viewModel.currentUserRelay.subscribe(onNext: { [weak self] (user: QueryUserInfo?) in
-            guard let self else { return }
+            guard let self, user != nil else { return }
             
-            self._tableView.performBatchUpdates {
-                self._tableView.reloadSections([0], with: .none)
+            _tableView.performBatchUpdates { [self] in
+                self._tableView.reloadSections(IndexSet(integer: 0), with: .none)
             }
-            
         }).disposed(by: _disposeBag)
     }
 
@@ -80,6 +80,7 @@ public class MineViewController: UIViewController {
         case header
         case myInfo
         case setting
+        case invitationCode
         case aboutUs
         case logout
 
@@ -92,12 +93,11 @@ public class MineViewController: UIViewController {
             case .setting:
                 return "账号设置".localized()
             case .aboutUs:
-                let infoDictionary = Bundle.main.infoDictionary
-                let majorVersion = infoDictionary!["CFBundleShortVersionString"] as! String
-                let minorVersion = infoDictionary!["CFBundleVersion"] as! String
-                return "关于我们".localized() + "app:\(majorVersion) / build:\(minorVersion)"
+                return "关于我们".localized()
             case .logout:
                 return "退出登录".localized()
+            case .invitationCode:
+                return "invitationCode".localized()
             }
         }
 
@@ -107,6 +107,8 @@ public class MineViewController: UIViewController {
                 return UIImage(named: "mine_background_image")
             case .myInfo:
                 return UIImage(named: "mine_info_icon")
+            case .invitationCode:
+                return UIImage(named: "mine_invitation_code")
             case .setting:
                 return UIImage(named: "mine_setting_icon")
             case .aboutUs:
@@ -141,7 +143,7 @@ extension MineViewController: UITableViewDataSource, UITableViewDelegate {
                 let vc = QRCodeViewController(idString: IMController.addFriendPrefix.append(string: user.userID!))
                 vc.avatarView.setAvatar(url: user.faceURL, text: user.nickname)
                 vc.nameLabel.text = user.nickname
-                vc.tipLabel.text = "扫一扫下面的二维码，添加我为好友".innerLocalized()
+                vc.tipLabel.text = "qrcodeHint".innerLocalized()
                 vc.hidesBottomBarWhenPushed = true
                 self?.navigationController?.pushViewController(vc, animated: true)
             }
@@ -161,10 +163,10 @@ extension MineViewController: UITableViewDataSource, UITableViewDelegate {
         let item = items[indexPath.section][indexPath.row]
         
         if item == .header {
-            return 100
+            return 100.h
         }
         
-        return 56
+        return 56.h
     }
     
     public func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
@@ -184,6 +186,8 @@ extension MineViewController: UITableViewDataSource, UITableViewDelegate {
     }
 
     public func tableView(_: UITableView, didSelectRowAt indexPath: IndexPath) {
+        navigationItem.backBarButtonItem = UIBarButtonItem(title: nil, style: .plain, target: nil, action: nil)
+        
         let row: RowType = items[indexPath.section][indexPath.row]
         switch row {
         case .myInfo:
@@ -195,13 +199,20 @@ extension MineViewController: UITableViewDataSource, UITableViewDelegate {
             vc.hidesBottomBarWhenPushed = true
             navigationController?.pushViewController(vc, animated: true)
         case .logout:
-            let alertController = UIAlertController(title: nil, message: "您确定要退出登录吗？", preferredStyle: .alert)
-            alertController.addAction(.init(title: "确定".localized(), style: .default, handler: { [weak self] a in
+            presentAlert(title: "logoutHint".localized()) { [weak self] in
                 self?._viewModel.logout()
-            }))
-            alertController.addAction(.init(title: "取消".localized(), style: .cancel))
-            
-            present(alertController, animated: true)
+            }
+        case .invitationCode:
+//            if let urlString = AccountViewModel.clientConfig?.config?.adminURL, let url = URL(string: urlString) {
+//                if UIApplication.shared.canOpenURL(url) {
+//                    UIApplication.shared.openURL(url)
+//                }
+//            }
+            print("disable invitation code")
+        case .aboutUs:
+            let vc = AboutUsViewController()
+            vc.hidesBottomBarWhenPushed = true
+            navigationController?.pushViewController(vc, animated: true)
         default:
             print("跳转\(row.title)")
         }
@@ -287,7 +298,7 @@ extension MineViewController {
         
         func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
             UIPasteboard.general.string = textField.text
-            ProgressHUD.animate("复制成功".innerLocalized())
+            ProgressHUD.success("复制成功".innerLocalized())
             return false
         }
     }

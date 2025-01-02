@@ -3,8 +3,9 @@
 import ChatLayout
 import Foundation
 import UIKit
-    
-//typealias TextMessageCollectionCell = ContainerCollectionViewCell<MessageContainerView<EditingAccessoryView, MainContainerView<ChatAvatarView, TextMessageView, StatusView>>>
+import RxSwift
+
+
 typealias TextMessageCollectionCell = ContainerCollectionViewCell<MessageContainerView<EditingAccessoryView, MainContainerView<ChatAvatarView, TextMessageView, ChatAvatarView>>>
 
 @available(iOS 13, *)
@@ -12,29 +13,41 @@ typealias URLCollectionCell = ContainerCollectionViewCell<MessageContainerView<E
 
 typealias ImageCollectionCell = ContainerCollectionViewCell<MessageContainerView<EditingAccessoryView, MainContainerView<ChatAvatarView, ImageView, ChatAvatarView>>>
 typealias VideoCollectionCell = ContainerCollectionViewCell<MessageContainerView<EditingAccessoryView, MainContainerView<ChatAvatarView, VideoView, ChatAvatarView>>>
+typealias AudioCollectionCell = ContainerCollectionViewCell<MessageContainerView<EditingAccessoryView, MainContainerView<ChatAvatarView, AudioView, ChatAvatarView>>>
+typealias FileCollectionCell = ContainerCollectionViewCell<MessageContainerView<EditingAccessoryView, MainContainerView<ChatAvatarView, FileView, ChatAvatarView>>>
+typealias CardCollectionCell = ContainerCollectionViewCell<MessageContainerView<EditingAccessoryView, MainContainerView<ChatAvatarView, CardView, ChatAvatarView>>>
+typealias LocationCollectionCell = ContainerCollectionViewCell<MessageContainerView<EditingAccessoryView, MainContainerView<ChatAvatarView, LocationView, ChatAvatarView>>>
+typealias NoticeCollectionCell = ContainerCollectionViewCell<MessageContainerView<EditingAccessoryView, MainContainerView<ChatAvatarView, NoticeView, ChatAvatarView>>>
+typealias OANoticeCollectionCell = ContainerCollectionViewCell<MessageContainerView<EditingAccessoryView, MainContainerView<ChatAvatarView, OANoticeView, ChatAvatarView>>>
+typealias CustomViewCollectionCell = ContainerCollectionViewCell<MessageContainerView<EditingAccessoryView, MainContainerView<ChatAvatarView, CustomView, ChatAvatarView>>>
+typealias BlankCustomViewCollectionCell = ContainerCollectionViewCell<MessageContainerView<EditingAccessoryView, MainContainerView<ChatAvatarView, BlankCustomView, ChatAvatarView>>>
 
 
 typealias UserTitleCollectionCell = ContainerCollectionViewCell<SwappingContainerView<EdgeAligningView<UILabel>, UIImageView>>
-typealias TitleCollectionCell = ContainerCollectionViewCell<UILabel>
+typealias TitleCollectionCell = ContainerCollectionViewCell<SystemTipsView>
 typealias TypingIndicatorCollectionCell = ContainerCollectionViewCell<MessageContainerView<EditingAccessoryView, MainContainerView<VoidViewFactory, TypingIndicator, VoidViewFactory>>>
 
 typealias TextTitleView = ContainerCollectionReusableView<UILabel>
 
 final class DefaultChatCollectionDataSource: NSObject, ChatCollectionDataSource {
     
-    private unowned var reloadDelegate: ReloadDelegate
+    private var reloadDelegate: ReloadDelegate
+    
+    public unowned var gestureDelegate: GestureDelegate?
     
     private unowned var editingDelegate: EditingAccessoryControllerDelegate
     
     private let editNotifier: EditNotifier
     
     private let swipeNotifier: SwipeNotifier
-        
+            
     var sections: [Section] = [] {
         didSet {
             oldSections = oldValue
         }
     }
+    
+    var mediaImageViews: [String: Int] = [:]
     
     private var oldSections: [Section] = []
     
@@ -48,10 +61,22 @@ final class DefaultChatCollectionDataSource: NSObject, ChatCollectionDataSource 
         self.swipeNotifier = swipeNotifier
     }
     
+    deinit {
+        print("====\(self) deinit")
+    }
+    
     func prepare(with collectionView: UICollectionView) {
         collectionView.register(TextMessageCollectionCell.self, forCellWithReuseIdentifier: TextMessageCollectionCell.reuseIdentifier)
         collectionView.register(ImageCollectionCell.self, forCellWithReuseIdentifier: ImageCollectionCell.reuseIdentifier)
         collectionView.register(VideoCollectionCell.self, forCellWithReuseIdentifier: VideoCollectionCell.reuseIdentifier)
+        collectionView.register(AudioCollectionCell.self, forCellWithReuseIdentifier: AudioCollectionCell.reuseIdentifier)
+        collectionView.register(FileCollectionCell.self, forCellWithReuseIdentifier: FileCollectionCell.reuseIdentifier)
+        collectionView.register(CardCollectionCell.self, forCellWithReuseIdentifier: CardCollectionCell.reuseIdentifier)
+        collectionView.register(LocationCollectionCell.self, forCellWithReuseIdentifier: LocationCollectionCell.reuseIdentifier)
+        collectionView.register(NoticeCollectionCell.self, forCellWithReuseIdentifier: NoticeCollectionCell.reuseIdentifier)
+        collectionView.register(OANoticeCollectionCell.self, forCellWithReuseIdentifier: OANoticeCollectionCell.reuseIdentifier)
+        collectionView.register(CustomViewCollectionCell.self, forCellWithReuseIdentifier: CustomViewCollectionCell.reuseIdentifier)
+        collectionView.register(BlankCustomViewCollectionCell.self, forCellWithReuseIdentifier: BlankCustomViewCollectionCell.reuseIdentifier)
         
         collectionView.register(UserTitleCollectionCell.self, forCellWithReuseIdentifier: UserTitleCollectionCell.reuseIdentifier)
         collectionView.register(TitleCollectionCell.self, forCellWithReuseIdentifier: TitleCollectionCell.reuseIdentifier)
@@ -63,50 +88,152 @@ final class DefaultChatCollectionDataSource: NSObject, ChatCollectionDataSource 
         }
     }
     
+    func didSelectItemAt(_ collectionView: UICollectionView, indexPath: IndexPath) {
+        if let cell = collectionView.cellForItem(at: indexPath) as? TextMessageCollectionCell {
+            
+            let containerView = cell.customView
+            
+            if editNotifier.isEditing, let messageId = cell.customView.customView.contentContainer.contentView.customView.controller?.messageID {
+                editingDelegate.selecteMessage(with: messageId)
+                containerView.accessoryView?.toggleState()
+            }
+        } else if let cell = collectionView.cellForItem(at: indexPath) as? ImageCollectionCell {
+            
+            let containerView = cell.customView
+            
+            if editNotifier.isEditing, let messageId = cell.customView.customView.contentContainer.contentView.customView.controller?.messageID {
+                editingDelegate.selecteMessage(with: messageId)
+                containerView.accessoryView?.toggleState()
+            }
+        } else if let cell = collectionView.cellForItem(at: indexPath) as? VideoCollectionCell {
+            
+            let containerView = cell.customView
+            
+            if editNotifier.isEditing, let messageId = cell.customView.customView.contentContainer.contentView.customView.controller?.messageID {
+                editingDelegate.selecteMessage(with: messageId)
+                containerView.accessoryView?.toggleState()
+            }
+        } else if let cell = collectionView.cellForItem(at: indexPath) as? AudioCollectionCell {
+            
+            let containerView = cell.customView
+            
+            if editNotifier.isEditing, let messageId = cell.customView.customView.contentContainer.contentView.customView.controller?.messageID {
+                editingDelegate.selecteMessage(with: messageId)
+                containerView.accessoryView?.toggleState()
+            }
+        } else if let cell = collectionView.cellForItem(at: indexPath) as? FileCollectionCell {
+            
+            let containerView = cell.customView
+            
+            if editNotifier.isEditing, let messageId = cell.customView.customView.contentContainer.contentView.customView.controller?.messageID {
+                editingDelegate.selecteMessage(with: messageId)
+                containerView.accessoryView?.toggleState()
+            }
+        } else if let cell = collectionView.cellForItem(at: indexPath) as? CardCollectionCell {
+            
+            let containerView = cell.customView
+            
+            if editNotifier.isEditing, let messageId = cell.customView.customView.contentContainer.contentView.customView.controller?.messageID {
+                editingDelegate.selecteMessage(with: messageId)
+                containerView.accessoryView?.toggleState()
+            }
+        } else if let cell = collectionView.cellForItem(at: indexPath) as? LocationCollectionCell {
+            
+            let containerView = cell.customView
+            
+            if editNotifier.isEditing, let messageId = cell.customView.customView.contentContainer.contentView.customView.controller?.messageID {
+                editingDelegate.selecteMessage(with: messageId)
+                containerView.accessoryView?.toggleState()
+            }
+        } else if let cell = collectionView.cellForItem(at: indexPath) as? NoticeCollectionCell {
+            
+
+        } else if let cell = collectionView.cellForItem(at: indexPath) as? OANoticeCollectionCell {
+            
+
+        } else if let cell = collectionView.cellForItem(at: indexPath) as? CustomViewCollectionCell {
+            
+            let containerView = cell.customView
+            
+            if editNotifier.isEditing, let messageId = cell.customView.customView.contentContainer.contentView.customView.controller?.messageID {
+                editingDelegate.selecteMessage(with: messageId)
+                containerView.accessoryView?.toggleState()
+            }
+        }
+    }
+    
+    private func onTapMessage(_ collectionView: UICollectionView, indexPath: IndexPath? = nil, messageID: String, data: Message.Data, useIndexPath: Bool = false) -> Bool {
+        if editNotifier.isEditing, let indexPath {
+            didSelectItemAt(collectionView, indexPath: indexPath)
+            
+            return false
+        } else {
+            if case .none = data, let indexPath {
+                didSelectItemAt(collectionView, indexPath: indexPath)
+            } else {
+                if useIndexPath, let indexPath {
+                } else {
+                    gestureDelegate?.didTapContent(with: messageID, data: data)
+                }
+            }
+        }
+        
+        return true
+    }
+    
     private func createTextCell(collectionView: UICollectionView,
-                                messageId: String,
-                                isSelected: Bool,
+                                message: Message,
                                 indexPath: IndexPath,
                                 text: String? = nil,
                                 attributedString: NSAttributedString? = nil,
-                                anchor: Bool = false,
-                                date: Date,
                                 alignment: ChatItemAlignment,
-                                user: User,
-                                bubbleType: Cell.BubbleType,
-                                status: MessageStatus,
-                                messageType: MessageType) -> UICollectionViewCell {
+                                bubbleType: Cell.BubbleType) -> UICollectionViewCell {
         
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TextMessageCollectionCell.reuseIdentifier, for: indexPath) as! TextMessageCollectionCell
         
-        setupMessageContainerView(cell.customView, messageId: messageId, isSelected: isSelected, alignment: alignment)
-        setupMainMessageView(cell.customView.customView, user: user, messageID: messageId, alignment: alignment, bubble: bubbleType, status: status)
-        setupSwipeHandlingAccessory(cell.customView.customView, date: date, accessoryConnectingView: cell.customView)
+        let container = cell.customView
+        let mainMessageView = container.customView
+        let bubbleView = mainMessageView.maskedView
         
-        let bubbleView = cell.customView.customView.customView
-        let controller = TextMessageController(text: text,
+        setupMessageContainerView(container, messageId: message.id, isSelected: message.isSelected, alignment: alignment)
+        setupMainMessageView(mainMessageView, user: message.owner, date: message.date, messageID: message.id, alignment: alignment, bubble: bubbleType, status: message.status, sessionType: message.sessionType)
+        setupSwipeHandlingAccessory(mainMessageView, date: message.date, accessoryConnectingView: cell.customView)
+        
+        let controller = TextMessageController(messageID: message.id,
+                                               text: text,
                                                attributedString: attributedString,
-                                               highlight: anchor,
-                                               type: messageType,
+                                               highlight: message.isAnchor,
+                                               type: message.type,
                                                bubbleController: buildTextBubbleController(bubbleView: bubbleView,
-                                                                                           messageType: messageType,
+                                                                                           messageType: message.type,
                                                                                            bubbleType: bubbleType))
+        controller.longPress = { [weak self] sourceView, point in
+            self?.gestureDelegate?.longPress(with: message, sourceView: sourceView, point: point)
+        }
+        controller.onTap = { [weak self] data in
+            self?.onTapMessage(collectionView, indexPath: indexPath, messageID: message.id, data: data)
+            
+            return nil;
+        }
+        controller.delegate = reloadDelegate
         bubbleView.customView.setup(with: controller)
-        controller.view = bubbleView.customView
         cell.delegate = bubbleView.customView
-        
+    
         return cell
     }
     
     @available(iOS 13, *)
-    private func createURLCell(collectionView: UICollectionView, messageId: String, isSelected: Bool, indexPath: IndexPath, url: URL, date: Date, alignment: ChatItemAlignment, user: User, bubbleType: Cell.BubbleType, status: MessageStatus, messageType: MessageType) -> UICollectionViewCell {
+    private func createURLCell(collectionView: UICollectionView, messageId: String, isSelected: Bool, indexPath: IndexPath, url: URL, date: Date, alignment: ChatItemAlignment, user: User, bubbleType: Cell.BubbleType, status: MessageStatus, messageType: MessageType,
+                               sessionType: MessageSessionRawType) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: URLCollectionCell.reuseIdentifier, for: indexPath) as! URLCollectionCell
         setupMessageContainerView(cell.customView, messageId: messageId, isSelected: isSelected, alignment: alignment)
-        setupMainMessageView(cell.customView.customView, user: user, messageID: messageId, alignment: alignment, bubble: bubbleType, status: status)
+        setupMainMessageView(cell.customView.customView, user: user, date: date, messageID: messageId, alignment: alignment, bubble: bubbleType, status: status, sessionType: sessionType) { [weak self] in
+            self?.didSelectItemAt(collectionView, indexPath: indexPath)
+        }
         
         setupSwipeHandlingAccessory(cell.customView.customView, date: date, accessoryConnectingView: cell.customView)
         
-        let bubbleView = cell.customView.customView.customView
+        let bubbleView = cell.customView.customView.maskedView
         let controller = URLController(url: url,
                                        messageId: messageId,
                                        bubbleController: buildBezierBubbleController(for: bubbleView, messageType: messageType, bubbleType: bubbleType))
@@ -120,30 +247,109 @@ final class DefaultChatCollectionDataSource: NSObject, ChatCollectionDataSource 
     }
     
     private func createImageCell(collectionView: UICollectionView,
-                                 messageId: String,
-                                 isSelected: Bool,
+                                 message: Message,
                                  indexPath: IndexPath,
                                  alignment: ChatItemAlignment,
-                                 user: User,
                                  source: MediaMessageSource,
                                  forVideo: Bool = false,
-                                 date: Date,
-                                 bubbleType: Cell.BubbleType,
-                                 status: MessageStatus,
-                                 messageType: MessageType) -> ImageCollectionCell {
+                                 bubbleType: Cell.BubbleType) -> ImageCollectionCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ImageCollectionCell.reuseIdentifier, for: indexPath) as! ImageCollectionCell
         
-        setupMessageContainerView(cell.customView, messageId: messageId, isSelected: isSelected, alignment: alignment)
-        setupMainMessageView(cell.customView.customView, user: user, messageID: messageId, alignment: alignment, bubble: bubbleType, status: status)
+        setupMessageContainerView(cell.customView, messageId: message.id, isSelected: message.isSelected, alignment: alignment)
+        setupMainMessageView(cell.customView.customView, user: message.owner, date: message.date, messageID: message.id, alignment: alignment, bubble: bubbleType, status: message.status, sessionType: message.sessionType) { [weak self] in
+            self?.didSelectItemAt(collectionView, indexPath: indexPath)
+        }
         
-        setupSwipeHandlingAccessory(cell.customView.customView, date: date, accessoryConnectingView: cell.customView)
+        setupSwipeHandlingAccessory(cell.customView.customView, date: message.date, accessoryConnectingView: cell.customView)
         
-        let bubbleView = cell.customView.customView.customView
+        let bubbleView = cell.customView.customView.maskedView
         let controller = ImageController(source: source,
-                                         messageId: messageId,
-                                         bubbleController: buildBezierBubbleController(for: bubbleView, messageType: messageType, bubbleType: bubbleType))
+                                         messageID: message.id,
+                                         bubbleController: buildBezierBubbleController(for: bubbleView, messageType: message.type, bubbleType: bubbleType))
         
+        controller.longPress = { [weak self] sourceView, point in
+            self?.gestureDelegate?.longPress(with: message, sourceView: sourceView, point: point)
+        }
+        controller.onTap = { [weak self] data in
+            self?.onTapMessage(collectionView, indexPath: indexPath, messageID: message.id, data: data)
+        }
         controller.delegate = reloadDelegate
+        bubbleView.customView.setup(with: controller)
+        controller.view = bubbleView.customView
+        cell.delegate = bubbleView.customView
+        mediaImageViews[message.id] = message.id.hash
+        
+        return cell
+    }
+    
+    private func createVideoCell(collectionView: UICollectionView,
+                                 message: Message,
+                                 indexPath: IndexPath,
+                                 alignment: ChatItemAlignment,
+                                 source: MediaMessageSource,
+                                 forVideo: Bool = false,
+                                 bubbleType: Cell.BubbleType) -> VideoCollectionCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: VideoCollectionCell.reuseIdentifier, for: indexPath) as! VideoCollectionCell
+        
+        setupMessageContainerView(cell.customView, messageId: message.id, isSelected: message.isSelected, alignment: alignment)
+        setupMainMessageView(cell.customView.customView, user: message.owner, date: message.date, messageID: message.id, alignment: alignment, bubble: bubbleType, status: message.status, sessionType: message.sessionType) { [weak self] in
+            self?.didSelectItemAt(collectionView, indexPath: indexPath)
+        }
+        
+        setupSwipeHandlingAccessory(cell.customView.customView, date: message.date, accessoryConnectingView: cell.customView)
+        
+        let bubbleView = cell.customView.customView.maskedView
+        let controller = VideoController(source: source,
+                                         messageID: message.id,
+                                         bubbleController: buildBezierBubbleController(for: bubbleView, messageType: message.type, bubbleType: bubbleType))
+        
+        controller.longPress = { [weak self] sourceView, point in
+            self?.gestureDelegate?.longPress(with: message, sourceView: sourceView, point: point)
+        }
+        controller.onTap = { [weak self] data in
+            self?.onTapMessage(collectionView, indexPath: indexPath, messageID: message.id, data: data)
+        }
+        controller.delegate = reloadDelegate
+        bubbleView.customView.setup(with: controller)
+        controller.view = bubbleView.customView
+        cell.delegate = bubbleView.customView
+        mediaImageViews[message.id] = message.id.hash
+
+        return cell
+    }
+    
+    private func createAudioCell(collectionView: UICollectionView,
+                                 message: Message,
+                                 indexPath: IndexPath,
+                                 alignment: ChatItemAlignment,
+                                 source: MediaMessageSource,
+                                 forVideo: Bool = false,
+                                 bubbleType: Cell.BubbleType) -> AudioCollectionCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: AudioCollectionCell.reuseIdentifier, for: indexPath) as! AudioCollectionCell
+        
+        setupMessageContainerView(cell.customView, messageId: message.id, isSelected: message.isSelected, alignment: alignment)
+        setupMainMessageView(cell.customView.customView, user: message.owner, date: message.date, messageID: message.id, alignment: alignment, bubble: bubbleType, status: message.status, sessionType: message.sessionType) { [weak self] in
+            self?.didSelectItemAt(collectionView, indexPath: indexPath)
+        }
+        
+        setupSwipeHandlingAccessory(cell.customView.customView, date: message.date, accessoryConnectingView: cell.customView)
+        
+        let bubbleView = cell.customView.customView.maskedView
+        let controller = AudioController(source: source,
+                                         messageID: message.id,
+                                         messageType: message.type,
+                                         bubbleController: buildTextBubbleController(bubbleView: bubbleView,
+                                                                                     messageType: message.type,
+                                                                                     bubbleType: bubbleType))
+        
+        controller.longPress = { [weak self] sourceView, point in
+            self?.gestureDelegate?.longPress(with: message, sourceView: sourceView, point: point)
+        }
+        
+        controller.onTap = { [weak self] data in
+            return self?.onTapMessage(collectionView, indexPath: indexPath, messageID: message.id, data: data, useIndexPath: true)
+        }
+        
         bubbleView.customView.setup(with: controller)
         controller.view = bubbleView.customView
         cell.delegate = bubbleView.customView
@@ -151,34 +357,287 @@ final class DefaultChatCollectionDataSource: NSObject, ChatCollectionDataSource 
         return cell
     }
     
-    private func createVideoCell(collectionView: UICollectionView,
-                                 messageId: String,
-                                 isSelected: Bool,
+    private func createFileCell(collectionView: UICollectionView,
+                                message: Message,
                                  indexPath: IndexPath,
                                  alignment: ChatItemAlignment,
-                                 user: User,
-                                 source: MediaMessageSource,
-                                 forVideo: Bool = false,
-                                 date: Date,
-                                 bubbleType: Cell.BubbleType,
-                                 status: MessageStatus,
-                                 messageType: MessageType) -> VideoCollectionCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: VideoCollectionCell.reuseIdentifier, for: indexPath) as! VideoCollectionCell
+                                 source: FileMessageSource,
+                                isLocallyStored: Bool = false,
+                                 bubbleType: Cell.BubbleType) -> FileCollectionCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: FileCollectionCell.reuseIdentifier, for: indexPath) as! FileCollectionCell
         
-        setupMessageContainerView(cell.customView, messageId: messageId, isSelected: isSelected, alignment: alignment)
-        setupMainMessageView(cell.customView.customView, user: user, messageID: messageId, alignment: alignment, bubble: bubbleType, status: status)
+        setupMessageContainerView(cell.customView, messageId: message.id, isSelected: message.isSelected, alignment: alignment)
+        setupMainMessageView(cell.customView.customView, user: message.owner, date: message.date, messageID: message.id, alignment: alignment, bubble: bubbleType, status: message.status, sessionType: message.sessionType) { [weak self] in
+            self?.didSelectItemAt(collectionView, indexPath: indexPath)
+        }
+        setupSwipeHandlingAccessory(cell.customView.customView, date: message.date, accessoryConnectingView: cell.customView)
         
-        setupSwipeHandlingAccessory(cell.customView.customView, date: date, accessoryConnectingView: cell.customView)
+        let bubbleView = cell.customView.customView.maskedView
+        let controller = FileController(source: source,
+                                        isLocallyStored: isLocallyStored,
+                                        messageID: message.id,
+                                         bubbleController: buildBlankBubbleController(bubbleView: bubbleView,
+                                                                                      messageType: message.type,
+                                                                                     bubbleType: bubbleType))
         
-        let bubbleView = cell.customView.customView.customView
-        let controller = VideoController(source: source,
-                                         messageId: messageId,
-                                         bubbleController: buildBezierBubbleController(for: bubbleView, messageType: messageType, bubbleType: bubbleType))
-        
+        controller.longPress = { [weak self] sourceView, point in
+            self?.gestureDelegate?.longPress(with: message, sourceView: sourceView, point: point)
+        }
+        controller.onTap = { [weak self] data in
+            self?.onTapMessage(collectionView, indexPath: indexPath, messageID: message.id, data: data)
+        }
         controller.delegate = reloadDelegate
         bubbleView.customView.setup(with: controller)
         controller.view = bubbleView.customView
         cell.delegate = bubbleView.customView
+        
+        return cell
+    }
+    
+    private func createCardCell(collectionView: UICollectionView,
+                                message: Message,
+                                indexPath: IndexPath,
+                                source: CardMessageSource,
+                                alignment: ChatItemAlignment,
+                                bubbleType: Cell.BubbleType) -> UICollectionViewCell {
+        
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CardCollectionCell.reuseIdentifier, for: indexPath) as! CardCollectionCell
+        
+        setupMessageContainerView(cell.customView, messageId: message.id, isSelected: message.isSelected, alignment: alignment)
+        setupMainMessageView(cell.customView.customView, user: message.owner, date: message.date, messageID: message.id, alignment: alignment, bubble: bubbleType, status: message.status, sessionType: message.sessionType) { [weak self] in
+            self?.didSelectItemAt(collectionView, indexPath: indexPath)
+        }
+        setupSwipeHandlingAccessory(cell.customView.customView, date: message.date, accessoryConnectingView: cell.customView)
+        
+        let bubbleView = cell.customView.customView.maskedView
+        let controller = CardController(source: source,
+                                        messageID: message.id,
+                                             bubbleController: buildBlankBubbleController(bubbleView: bubbleView,
+                                                                                          messageType: message.type,
+                                                                                         bubbleType: bubbleType))
+        
+        controller.longPress = { [weak self] sourceView, point in
+            self?.gestureDelegate?.longPress(with: message, sourceView: sourceView, point: point)
+        }
+        controller.onTap = { [weak self] data in
+            self?.onTapMessage(collectionView, indexPath: indexPath, messageID: message.id, data: data)
+        }
+        controller.delegate = reloadDelegate
+        bubbleView.customView.setup(with: controller)
+        controller.view = bubbleView.customView
+        cell.delegate = bubbleView.customView
+        
+        return cell
+    }
+    
+    private func createLocationCell(collectionView: UICollectionView,
+                                    message: Message,
+                                    indexPath: IndexPath,
+                                    source: LocationMessageSource,
+                                    alignment: ChatItemAlignment,
+                                    bubbleType: Cell.BubbleType) -> UICollectionViewCell {
+        
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: LocationCollectionCell.reuseIdentifier, for: indexPath) as! LocationCollectionCell
+        
+        setupMessageContainerView(cell.customView, messageId: message.id, isSelected: message.isSelected, alignment: alignment)
+        setupMainMessageView(cell.customView.customView, user: message.owner, date: message.date, messageID: message.id, alignment: alignment, bubble: bubbleType, status: message.status, sessionType: message.sessionType) { [weak self] in
+            self?.didSelectItemAt(collectionView, indexPath: indexPath)
+        }
+        setupSwipeHandlingAccessory(cell.customView.customView, date: message.date, accessoryConnectingView: cell.customView)
+        
+        let bubbleView = cell.customView.customView.maskedView
+        let controller = LocationController(source: source,
+                                            messageID: message.id,
+                                             bubbleController: buildBlankBubbleController(bubbleView: bubbleView,
+                                                                                          messageType: message.type,
+                                                                                         bubbleType: bubbleType))
+        
+        controller.longPress = { [weak self] sourceView, point in
+            self?.gestureDelegate?.longPress(with: message, sourceView: sourceView, point: point)
+        }
+        controller.onTap = { [weak self] data in
+            self?.onTapMessage(collectionView, indexPath: indexPath, messageID: message.id, data: data)
+        }
+        controller.delegate = reloadDelegate
+        bubbleView.customView.setup(with: controller)
+        controller.view = bubbleView.customView
+        cell.delegate = bubbleView.customView
+        
+        return cell
+    }
+    
+    private func createGroupNoticeCell(collectionView: UICollectionView,
+                                       message: Message,
+                                       indexPath: IndexPath,
+                                       source: TextMessageSource,
+                                       alignment: ChatItemAlignment,
+                                       bubbleType: Cell.BubbleType) -> UICollectionViewCell {
+        
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: NoticeCollectionCell.reuseIdentifier, for: indexPath) as! NoticeCollectionCell
+        
+        setupMessageContainerView(cell.customView, messageId: message.id, isSelected: false, enableSelected: false, alignment: alignment)
+        setupMainMessageView(cell.customView.customView, user: message.owner, date: message.date, messageID: message.id, alignment: alignment, bubble: bubbleType, status: message.status, sessionType: message.sessionType) { [weak self] in
+            self?.didSelectItemAt(collectionView, indexPath: indexPath)
+        }
+        setupSwipeHandlingAccessory(cell.customView.customView, date: message.date, accessoryConnectingView: cell.customView)
+        
+        let bubbleView = cell.customView.customView.maskedView
+        let controller = NoticeViewController(text: source.text,
+                                             bubbleController: buildBlankBubbleController(bubbleView: bubbleView,
+                                                                                          messageType: message.type,
+                                                                                         bubbleType: bubbleType))
+        
+        controller.longPress = { [weak self] sourceView, point in
+            self?.gestureDelegate?.longPress(with: message, sourceView: sourceView, point: point)
+        }
+        controller.onTap = { [weak self] data in
+            self?.onTapMessage(collectionView, indexPath: indexPath, messageID: message.id, data: data)
+        }
+        controller.delegate = reloadDelegate
+        bubbleView.customView.setup(with: controller)
+        controller.view = bubbleView.customView
+        cell.delegate = bubbleView.customView
+        
+        return cell
+    }
+    
+    private func createNoticeCell(collectionView: UICollectionView,
+                                  message: Message,
+                                indexPath: IndexPath,
+                                source: NoticeMessageSource,
+                                alignment: ChatItemAlignment,
+                                bubbleType: Cell.BubbleType) -> UICollectionViewCell {
+        
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: OANoticeCollectionCell.reuseIdentifier, for: indexPath) as! OANoticeCollectionCell
+        
+        setupMessageContainerView(cell.customView, messageId: message.id, isSelected: message.isSelected, alignment: alignment)
+        setupMainMessageView(cell.customView.customView, user: message.owner, date: message.date, messageID: message.id, alignment: alignment, bubble: bubbleType, status: message.status, sessionType: message.sessionType) { [weak self] in
+            self?.didSelectItemAt(collectionView, indexPath: indexPath)
+        }
+        
+        let bubbleView = cell.customView.customView.maskedView
+        let controller = OANoticeViewController(messageID: message.id,
+                                                source: source,
+                                             bubbleController: buildBlankBubbleController(bubbleView: bubbleView,
+                                                                                          messageType: message.type,
+                                                                                         bubbleType: bubbleType))
+        
+        controller.delegate = reloadDelegate
+        
+        controller.onTap = { [weak self] data in
+            self?.onTapMessage(collectionView, indexPath: indexPath, messageID: message.id, data: data)
+        }
+        
+        bubbleView.customView.setup(with: controller)
+        controller.view = bubbleView.customView
+        cell.delegate = bubbleView.customView
+        
+        return cell
+    }
+    
+    private func createCustomCell(collectionView: UICollectionView,
+                                  message: Message,
+                                  indexPath: IndexPath,
+                                  source: CustomMessageSource,
+                                  alignment: ChatItemAlignment,
+                                  bubbleType: Cell.BubbleType) -> UICollectionViewCell {
+        
+        if source.type == .meeting {
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: BlankCustomViewCollectionCell.reuseIdentifier, for: indexPath) as! BlankCustomViewCollectionCell
+            
+            setupMessageContainerView(cell.customView, messageId: message.id, isSelected: message.isSelected, alignment: alignment)
+            setupMainMessageView(cell.customView.customView, user: message.owner, date: message.date, messageID: message.id, alignment: alignment, bubble: bubbleType, status: message.status, sessionType: message.sessionType) { [weak self] in
+                self?.didSelectItemAt(collectionView, indexPath: indexPath)
+            }
+            setupSwipeHandlingAccessory(cell.customView.customView, date: message.date, accessoryConnectingView: cell.customView)
+            
+            let bubbleView = cell.customView.customView.maskedView
+            
+            let bubbleController = buildBlankBubbleController(bubbleView: bubbleView, messageType: message.type, bubbleType: bubbleType)
+            
+            let controller = CustomViewController(source: source,
+                                                  messageID: message.id,
+                                                  highlight: message.isAnchor,
+                                                  type: message.type,
+                                                  bubbleController: bubbleController)
+            
+            controller.longPress = { [weak self] sourceView, point in
+                self?.gestureDelegate?.longPress(with: message, sourceView: sourceView, point: point)
+            }
+            controller.onTap = { [weak self] data in
+                self?.onTapMessage(collectionView, indexPath: indexPath, messageID: message.id, data: data)
+            }
+            bubbleView.customView.setup(with: controller)
+            controller.delegate = reloadDelegate
+            cell.delegate = bubbleView.customView
+            
+            return cell
+        } else {
+            let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CustomViewCollectionCell.reuseIdentifier, for: indexPath) as! CustomViewCollectionCell
+            
+            setupMessageContainerView(cell.customView, messageId: message.id, isSelected: message.isSelected, alignment: alignment)
+            setupMainMessageView(cell.customView.customView, user: message.owner, date: message.date, messageID: message.id, alignment: alignment, bubble: bubbleType, status: message.status, sessionType: message.sessionType) { [weak self] in
+                self?.didSelectItemAt(collectionView, indexPath: indexPath)
+            }
+            setupSwipeHandlingAccessory(cell.customView.customView, date: message.date, accessoryConnectingView: cell.customView)
+            
+            let bubbleView = cell.customView.customView.maskedView
+            
+            let bubbleController = buildTextBubbleController(bubbleView: bubbleView, messageType: message.type, bubbleType: bubbleType)
+            
+            let controller = CustomViewController(source: source,
+                                                  messageID: message.id,
+                                                  highlight: message.isAnchor,
+                                                  type: message.type,
+                                                  bubbleController: bubbleController)
+            
+            controller.longPress = { [weak self] sourceView, point in
+                self?.gestureDelegate?.longPress(with: message, sourceView: sourceView, point: point)
+            }
+            controller.onTap = { [weak self] data in
+                self?.onTapMessage(collectionView, indexPath: indexPath, messageID: message.id, data: data)
+            }
+            bubbleView.customView.setup(with: controller)
+            controller.delegate = reloadDelegate
+            cell.delegate = bubbleView.customView
+            
+            return cell
+        }
+    }
+    
+    private func createFaceCell(collectionView: UICollectionView,
+                                message: Message,
+                                 indexPath: IndexPath,
+                                 alignment: ChatItemAlignment,
+                                 source: FaceMessageSource,
+                                 forVideo: Bool = false,
+                                 bubbleType: Cell.BubbleType) -> ImageCollectionCell {
+        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ImageCollectionCell.reuseIdentifier, for: indexPath) as! ImageCollectionCell
+        
+        setupMessageContainerView(cell.customView, messageId: message.id, isSelected: message.isSelected, alignment: alignment)
+        setupMainMessageView(cell.customView.customView, user: message.owner, date: message.date, messageID: message.id, alignment: alignment, bubble: bubbleType, status: message.status, sessionType: message.sessionType) { [weak self] in
+            self?.didSelectItemAt(collectionView, indexPath: indexPath)
+        }
+        
+        setupSwipeHandlingAccessory(cell.customView.customView, date: message.date, accessoryConnectingView: cell.customView)
+        
+        let imageSrouce = MediaMessageSource(source: MediaMessageSource.Info(url: source.url), thumb: MediaMessageSource.Info(url: source.url), ex: MessageEx(isFace: true))
+        let bubbleView = cell.customView.customView.maskedView
+        let controller = ImageController(source: imageSrouce,
+                                         messageID: message.id,
+                                         bubbleController: buildBezierBubbleController(for: bubbleView, messageType: message.type, bubbleType: bubbleType))
+        
+        controller.longPress = { [weak self] sourceView, point in
+            self?.gestureDelegate?.longPress(with: message, sourceView: sourceView, point: point)
+        }
+        controller.onTap = { [weak self] data in
+            self?.onTapMessage(collectionView, indexPath: indexPath, messageID: message.id, data: data, useIndexPath: true)
+        }
+        controller.delegate = reloadDelegate
+        bubbleView.customView.setup(with: controller)
+        controller.view = bubbleView.customView
+        cell.delegate = bubbleView.customView
+        mediaImageViews[message.id] = message.id.hash
 
         return cell
     }
@@ -187,7 +646,7 @@ final class DefaultChatCollectionDataSource: NSObject, ChatCollectionDataSource 
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TypingIndicatorCollectionCell.reuseIdentifier, for: indexPath) as! TypingIndicatorCollectionCell
         let alignment = ChatItemAlignment.leading
         cell.customView.alignment = alignment
-        let bubbleView = cell.customView.customView.customView
+        let bubbleView = cell.customView.customView.maskedView
         
         let controller = TypingIndicatorController(bubbleController: buildBlankBubbleController(bubbleView: bubbleView,
                                                                                                 messageType: .incoming,
@@ -198,42 +657,49 @@ final class DefaultChatCollectionDataSource: NSObject, ChatCollectionDataSource 
         
         return cell
     }
-        
+
     private func createGroupTitle(collectionView: UICollectionView, indexPath: IndexPath, alignment: ChatItemAlignment, title: String) -> UserTitleCollectionCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: UserTitleCollectionCell.reuseIdentifier, for: indexPath) as! UserTitleCollectionCell
         cell.customView.spacing = 2
         
         cell.customView.customView.customView.text = title
         cell.customView.customView.customView.preferredMaxLayoutWidth = (collectionView.collectionViewLayout as? CollectionViewChatLayout)?.layoutFrame.width ?? collectionView.frame.width
-        cell.customView.customView.customView.font = .preferredFont(forTextStyle: .caption2)
+        cell.customView.customView.customView.font = .f10
         cell.customView.customView.flexibleEdges = [.top]
         cell.customView.accessoryView.isHidden = true
-        cell.contentView.layoutMargins = .zero
+        cell.contentView.layoutMargins = UIEdgeInsets(top: 0, left: 52, bottom: 0, right: 52)
         
         return cell
     }
-    
+
     private func createTipsTitle(collectionView: UICollectionView,
                                  indexPath: IndexPath,
                                  alignment: ChatItemAlignment,
                                  title: String? = nil,
-                                 attributeTitle: NSAttributedString? = nil) -> TitleCollectionCell {
+                                 attributeTitle: NSAttributedString? = nil, 
+                                 enableBackgroundColor: Bool = false) -> TitleCollectionCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TitleCollectionCell.reuseIdentifier, for: indexPath) as! TitleCollectionCell
-        cell.customView.preferredMaxLayoutWidth = (collectionView.collectionViewLayout as? CollectionViewChatLayout)?.layoutFrame.width ?? collectionView.frame.width
-        if title != nil {
-            cell.customView.text = title
-            cell.customView.textColor = .gray
-        } else {
-            cell.customView.attributedText = attributeTitle
-        }
         
-        cell.customView.numberOfLines = 0
-        cell.customView.font = .preferredFont(forTextStyle: .caption2)
-        cell.contentView.layoutMargins = UIEdgeInsets(top: 2, left: 0, bottom: 2, right: 0)
+        let bubbleView = cell.customView
+        let controller = SystemTipsViewController(text: title,
+                                               attributedString: attributeTitle,
+                                                  enableBackgroundColor: enableBackgroundColor)
+        controller.onTap = { [weak self] data in
+            self?.gestureDelegate?.didTapContent(with: "", data: data)
+            
+            return true
+        }
+        bubbleView.setup(with: controller)
+        controller.delegate = reloadDelegate
+        cell.delegate = bubbleView
+        
         return cell
     }
-        
-    private func setupMessageContainerView(_ messageContainerView: MessageContainerView<EditingAccessoryView, some Any>, messageId: String, isSelected: Bool, alignment: ChatItemAlignment) {
+    
+    private let disposeBag = DisposeBag()
+
+    private func setupMessageContainerView(_ messageContainerView: MessageContainerView<EditingAccessoryView, some Any>, messageId: String, isSelected: Bool, enableSelected: Bool = true, alignment: ChatItemAlignment) {
+
         messageContainerView.alignment = alignment
         if let accessoryView = messageContainerView.accessoryView {
             editNotifier.add(delegate: accessoryView)
@@ -242,87 +708,65 @@ final class DefaultChatCollectionDataSource: NSObject, ChatCollectionDataSource 
             let controller = EditingAccessoryController(messageId: messageId)
             controller.view = accessoryView
             controller.delegate = editingDelegate
-            accessoryView.setup(with: controller, isSelected: isSelected)
+            accessoryView.setup(with: controller, isSelected: isSelected, enableSelected: enableSelected)
         }
     }
     
-    /*private func setupCellLayoutView(_ cellView: CellLayoutContainerView<ChatAvatarView, some Any, StatusView>,
-     user: User,
-     alignment: ChatItemAlignment,
-     bubble: Cell.BubbleType,
-     status: MessageStatus) {
-     cellView.alignment = .bottom
-     cellView.leadingView?.isHiddenSafe = !alignment.isIncoming
-     cellView.leadingView?.alpha = alignment.isIncoming ? 1 : 0
-     cellView.trailingView?.isHiddenSafe = alignment.isIncoming
-     cellView.trailingView?.alpha = alignment.isIncoming ? 0 : 1
-     cellView.trailingView?.setup(with: status)
-     
-     if let avatarView = cellView.leadingView {
-     let avatarViewController = AvatarViewController(user: user, bubble: bubble)
-     avatarView.setup(with: avatarViewController)
-     avatarViewController.view = avatarView
-     }
-     }*/
-
-    /*private func setupMainMessageView(_ cellView: MainContainerView<ChatAvatarView, some Any, StatusView>,
-     user: User,
-     alignment: ChatItemAlignment,
-     bubble: Cell.BubbleType,
-     status: MessageStatus) {
-     cellView.containerView.alignment = .bottom
-     cellView.containerView.leadingView?.isHiddenSafe = !alignment.isIncoming
-     cellView.containerView.leadingView?.alpha = alignment.isIncoming ? 1 : 0
-     cellView.containerView.trailingView?.isHiddenSafe = alignment.isIncoming
-     cellView.containerView.trailingView?.alpha = alignment.isIncoming ? 0 : 1
-     cellView.containerView.trailingView?.setup(with: status)
-     if let avatarView = cellView.containerView.leadingView {
-     let avatarViewController = AvatarViewController(user: user, bubble: bubble)
-     avatarView.setup(with: avatarViewController)
-     avatarViewController.view = avatarView
-     }
-     }
-     */
-        
     private func setupMainMessageView(_ cellView: MainContainerView<ChatAvatarView, some Any, ChatAvatarView>,
                                       user: User,
+                                      date: Date,
                                       messageID: String,
                                       alignment: ChatItemAlignment,
                                       bubble: Cell.BubbleType,
-                                      status: MessageStatus) {
+                                      status: MessageStatus,
+                                      sessionType: MessageSessionRawType,
+                                      onTap: (() -> Void)? = nil) {
+        cellView.containerView.customView.onTap = onTap
         cellView.containerView.alignment = .top
         cellView.containerView.leadingView?.isHiddenSafe = !alignment.isIncoming
         cellView.containerView.leadingView?.alpha = alignment.isIncoming ? 1 : 0
         cellView.containerView.trailingView?.isHiddenSafe = alignment.isIncoming
         cellView.containerView.trailingView?.alpha = alignment.isIncoming ? 0 : 1
-        cellView.leadingCountdownLabel.isHiddenSafe = alignment.isIncoming
-        cellView.trailingCountdownLabel.isHiddenSafe = !alignment.isIncoming
+    
+        cellView.contentContainer.setTitle(title: sessionType == .oaNotice ? user.name : "\(sessionType == .single ? "" : user.name) \(Date.timeString(date: date))", messageType: alignment.isIncoming ? .incoming : .outgoing)
+        cellView.contentContainer.showStutusIndicator(false)
+        cellView.contentContainer.showErrorButton(false)
+        
+        switch status {
+        case .sentFailure:
+            cellView.contentContainer.showStutusIndicator(false)
+            cellView.contentContainer.showErrorButton(true) { [weak self] in
+                self?.reloadDelegate.resendMessage(messageID: messageID)
+            }
+        case .sending:
+                cellView.contentContainer.showStutusIndicator()
+        case .received:
+            cellView.contentContainer.showStutusIndicator(false)
+        case .sent(let info):
+            cellView.contentContainer.showStutusIndicator(false)
+        }
         
         if let avatarView = cellView.containerView.leadingView {
             let avatarViewController = AvatarViewController(user: user, bubble: bubble)
-            avatarViewController.delegate = reloadDelegate
             avatarView.setup(with: avatarViewController)
             avatarViewController.view = avatarView
+            
+            avatarViewController.onTap = { [weak self] userID in
+                self?.gestureDelegate?.didTapAvatar(with: user)
+            }
         }
         
         if let avatarView = cellView.containerView.trailingView {
             let avatarViewController = AvatarViewController(user: user, bubble: bubble)
             avatarView.setup(with: avatarViewController)
             avatarViewController.view = avatarView
+            
+            avatarViewController.onTap = { [weak self] userID in
+                self?.gestureDelegate?.didTapAvatar(with: user)
+            }
         }
     }
-    /*
-     private func setupSwipeHandlingAccessory(_ cellView: MainContainerView<ChatAvatarView, some Any, StatusView>,
-     date: Date,
-     accessoryConnectingView: UIView) {
-     cellView.accessoryConnectingView = accessoryConnectingView
-     cellView.accessoryView.setup(with: DateAccessoryController(date: date))
-     cellView.accessorySafeAreaInsets = swipeNotifier.accessorySafeAreaInsets
-     cellView.swipeCompletionRate = swipeNotifier.swipeCompletionRate
-     swipeNotifier.add(delegate: cellView)
-     }
-     */
-        
+
     private func setupSwipeHandlingAccessory(_ cellView: MainContainerView<ChatAvatarView, some Any, ChatAvatarView>,
                                              date: Date,
                                              accessoryConnectingView: UIView) {
@@ -331,6 +775,22 @@ final class DefaultChatCollectionDataSource: NSObject, ChatCollectionDataSource 
         cellView.accessorySafeAreaInsets = swipeNotifier.accessorySafeAreaInsets
         cellView.swipeCompletionRate = swipeNotifier.swipeCompletionRate
         swipeNotifier.add(delegate: cellView)
+    }
+    
+    private func buildFileBubbleController(bubbleView: BezierMaskedView<some Any>,
+                                           messageType: MessageType,
+                                           bubbleType: Cell.BubbleType) -> BubbleController {
+        let textBubbleController = FileBubbleController(bubbleView: bubbleView, type: messageType, bubbleType: bubbleType)
+        let bubbleController = BezierBubbleController(bubbleView: bubbleView, controllerProxy: textBubbleController, type: messageType, bubbleType: bubbleType)
+        return bubbleController
+    }
+    
+    private func buildReplyBubbleController(bubbleView: BezierMaskedView<some Any>,
+                                           messageType: MessageType,
+                                           bubbleType: Cell.BubbleType) -> BubbleController {
+        let textBubbleController = ReplyBubbleController(bubbleView: bubbleView, type: messageType, bubbleType: bubbleType)
+        let bubbleController = BezierBubbleController(bubbleView: bubbleView, controllerProxy: textBubbleController, type: messageType, bubbleType: bubbleType)
+        return bubbleController
     }
     
     private func buildBlankBubbleController(bubbleView: BezierMaskedView<some Any>,
@@ -373,7 +833,7 @@ extension DefaultChatCollectionDataSource: UICollectionViewDataSource {
         switch cell {
             
         case let .date(group):
-            let cell = createTipsTitle(collectionView: collectionView, indexPath: indexPath, alignment: cell.alignment, title: group.value)
+            let cell = createTipsTitle(collectionView: collectionView, indexPath: indexPath, alignment: cell.alignment, title: group.value, enableBackgroundColor: true)
             
             return cell
         case let .systemMessage(group):
@@ -387,33 +847,62 @@ extension DefaultChatCollectionDataSource: UICollectionViewDataSource {
         case let .message(message, bubbleType: bubbleType):
             switch message.data {
             case let .text(source):
-                let cell = createTextCell(collectionView: collectionView, messageId: message.id, isSelected: message.isSelected, indexPath: indexPath, text: source.text, anchor: message.isAnchor, date: message.date, alignment: cell.alignment, user: message.owner, bubbleType: bubbleType, status: message.status, messageType: message.type)
-                
-                return cell
-                
+                if source.type == .text {
+                    let cell = createTextCell(collectionView: collectionView, message: message, indexPath: indexPath, text: source.text, attributedString: source.attributedText, alignment: cell.alignment, bubbleType: bubbleType)
+                    
+                    return cell
+                } else {
+                    let cell = createGroupNoticeCell(collectionView: collectionView, message: message, indexPath: indexPath, source: source, alignment: cell.alignment, bubbleType: bubbleType)
+                    return cell
+                }
             case let .attributeText(text):
-                let cell = createTextCell(collectionView: collectionView, messageId: message.id, isSelected: message.isSelected, indexPath: indexPath, attributedString: text, date: message.date, alignment: cell.alignment, user: message.owner, bubbleType: bubbleType, status: message.status, messageType: message.type)
+                let cell = createTextCell(collectionView: collectionView, message: message, indexPath: indexPath, attributedString: text, alignment: cell.alignment, bubbleType: bubbleType)
                 
                 return cell
             case let .custom(source):
-                let cell = createTextCell(collectionView: collectionView, messageId: message.id, isSelected: message.isSelected, indexPath: indexPath, attributedString: source.attributedString, date: message.date, alignment: cell.alignment, user: message.owner, bubbleType: bubbleType, status: message.status, messageType: message.type)
+                let cell = createCustomCell(collectionView: collectionView, message: message, indexPath: indexPath, source: source, alignment: cell.alignment, bubbleType: bubbleType)
                 
                 return cell
                 
             case let .url(url, isLocallyStored: _):
                 if #available(iOS 13.0, *) {
-                    return createURLCell(collectionView: collectionView, messageId: message.id, isSelected: message.isSelected, indexPath: indexPath, url: url, date: message.date, alignment: cell.alignment, user: message.owner, bubbleType: bubbleType, status: message.status, messageType: message.type)
+                    return createURLCell(collectionView: collectionView, messageId: message.id, isSelected: message.isSelected, indexPath: indexPath, url: url, date: message.date, alignment: cell.alignment, user: message.owner, bubbleType: bubbleType, status: message.status, messageType: message.type, sessionType: message.sessionType)
                 } else {
-                    return createTextCell(collectionView: collectionView, messageId: message.id, isSelected: message.isSelected, indexPath: indexPath, text: url.absoluteString, date: message.date, alignment: cell.alignment, user: message.owner, bubbleType: bubbleType, status: message.status, messageType: message.type)
+                    return createTextCell(collectionView: collectionView, message: message, indexPath: indexPath, text: url.absoluteString, alignment: cell.alignment, bubbleType: bubbleType)
                 }
             case let .image(source, isLocallyStored: _):
-                let cell = createImageCell(collectionView: collectionView, messageId: message.id, isSelected: message.isSelected, indexPath: indexPath, alignment: cell.alignment, user: message.owner, source: source, date: message.date, bubbleType: bubbleType, status: message.status, messageType: message.type)
+                let cell = createImageCell(collectionView: collectionView, message: message, indexPath: indexPath, alignment: cell.alignment, source: source, bubbleType: bubbleType)
                 
                 return cell
             case let .video(source, isLocallyStored: _):
-                let cell = createVideoCell(collectionView: collectionView, messageId: message.id, isSelected: message.isSelected, indexPath: indexPath, alignment: cell.alignment, user: message.owner, source: source, date: message.date, bubbleType: bubbleType, status: message.status, messageType: message.type)
+                let cell = createVideoCell(collectionView: collectionView, message: message, indexPath: indexPath, alignment: cell.alignment, source: source, bubbleType: bubbleType)
                 
                 return cell
+            case let .audio(source, isLocallyStored: _):
+                let cell = createAudioCell(collectionView: collectionView, message: message, indexPath: indexPath, alignment: cell.alignment, source: source, bubbleType: bubbleType)
+                return cell
+                
+            case let .file(source, isLocallyStored: isLocallyStored):
+                let cell = createFileCell(collectionView: collectionView, message: message, indexPath: indexPath, alignment: cell.alignment, source: source, isLocallyStored: isLocallyStored, bubbleType: bubbleType)
+                
+                return cell
+            case let .card(source):
+                let cell = createCardCell(collectionView: collectionView, message: message, indexPath: indexPath, source: source, alignment: cell.alignment, bubbleType: bubbleType)
+                
+                return cell
+            case let .location(source):
+                let cell = createLocationCell(collectionView: collectionView, message: message, indexPath: indexPath, source: source, alignment: cell.alignment, bubbleType: bubbleType)
+                
+                return cell
+            case let .notice(source):
+                let cell = createNoticeCell(collectionView: collectionView, message: message, indexPath: indexPath, source: source, alignment: cell.alignment, bubbleType: bubbleType)
+                return cell
+            case let .face(source, isLocallyStored: _):
+                let cell = createFaceCell(collectionView: collectionView, message: message, indexPath: indexPath, alignment: cell.alignment, source: source, bubbleType: bubbleType)
+                
+                return cell
+            default:
+                fatalError()
             }
             
         case .typingIndicator:
@@ -439,7 +928,7 @@ extension DefaultChatCollectionDataSource: UICollectionViewDataSource {
             let view = collectionView.dequeueReusableSupplementaryView(ofKind: kind,
                                                                        withReuseIdentifier: TextTitleView.reuseIdentifier,
                                                                        for: indexPath) as! TextTitleView
-            view.customView.text = nil
+            view.customView.text = " "
             return view
         default:
             fatalError()
@@ -464,14 +953,20 @@ extension DefaultChatCollectionDataSource: ChatLayoutDelegate {
             switch item {
             case let .message(message, bubbleType: _):
                 switch message.data {
-                case .text, .attributeText, .custom(_):
-                    return .estimated(CGSize(width: chatLayout.layoutFrame.width, height: 36))
+                case .text, .attributeText, .custom(_), .audio(_):
+                    return .estimated(CGSize(width: chatLayout.layoutFrame.width, height: 50))
                 case let .image(_, isLocallyStored: isDownloaded):
-                    return .estimated(CGSize(width: chatLayout.layoutFrame.width, height: isDownloaded ? 180 : 80))
+                    return .estimated(CGSize(width: chatLayout.layoutFrame.width, height: isDownloaded ? 120 : 80))
                 case let .url(_, isLocallyStored: isDownloaded):
                     return .estimated(CGSize(width: chatLayout.layoutFrame.width, height: isDownloaded ? 60 : 36))
                 case let .video(_, isLocallyStored: isDownloaded):
                     return .estimated(CGSize(width: chatLayout.layoutFrame.width, height: isDownloaded ? 120 : 80))
+                case .file(_, _):
+                    return .estimated(CGSize(width: chatLayout.layoutFrame.width, height: 60))
+                case .card(_), .location(_), .notice(_), .face(_):
+                    return .estimated(CGSize(width: chatLayout.layoutFrame.width, height: 72))
+                default:
+                    fatalError()
                 }
             case .date, .systemMessage:
                 return .estimated(CGSize(width: chatLayout.layoutFrame.width, height: 18))
@@ -496,7 +991,9 @@ extension DefaultChatCollectionDataSource: ChatLayoutDelegate {
                 return .center
             case .message:
                 return .fullWidth
-            case .messageGroup, .typingIndicator:
+            case .messageGroup(let msg):
+                return msg.type == .incoming ? .leading : .trailing
+            case .typingIndicator:
                 return .leading
             }
         case .footer:
@@ -511,13 +1008,6 @@ extension DefaultChatCollectionDataSource: ChatLayoutDelegate {
             return
         }
         switch sections[indexPath.section].cells[indexPath.item] {
-            // Uncomment to see the effect
-            //        case .messageGroup:
-            //            originalAttributes.center.x -= originalAttributes.frame.width
-            //        case let .message(message, bubbleType: _):
-            //            originalAttributes.transform = .init(scaleX: 0.9, y: 0.9)
-            //            originalAttributes.transform = originalAttributes.transform.concatenating(.init(rotationAngle: message.type == .incoming ? -0.05 : 0.05))
-            //            originalAttributes.center.x += (message.type == .incoming ? -20 : 20)
         case .typingIndicator:
             originalAttributes.transform = .init(scaleX: 0.1, y: 0.1)
             originalAttributes.center.x -= originalAttributes.bounds.width / 5
@@ -532,13 +1022,6 @@ extension DefaultChatCollectionDataSource: ChatLayoutDelegate {
             return
         }
         switch oldSections[indexPath.section].cells[indexPath.item] {
-            // Uncomment to see the effect
-//                    case .messageGroup:
-//                        originalAttributes.center.x -= originalAttributes.frame.width
-//                    case let .message(message, bubbleType: _):
-//                        originalAttributes.transform = .init(scaleX: 0.9, y: 0.9)
-//                        originalAttributes.transform = originalAttributes.transform.concatenating(.init(rotationAngle: message.type == .incoming ? -0.05 : 0.05))
-//                        originalAttributes.center.x += (message.type == .incoming ? -20 : 20)
         case .typingIndicator:
             originalAttributes.transform = .init(scaleX: 0.1, y: 0.1)
             originalAttributes.center.x -= originalAttributes.bounds.width / 5
@@ -546,19 +1029,4 @@ extension DefaultChatCollectionDataSource: ChatLayoutDelegate {
             break
         }
     }
-    
-//    public func interItemSpacing(_ chatLayout: CollectionViewChatLayout, of kind: ItemKind, after indexPath: IndexPath) -> CGFloat? {
-//        let item = sections[indexPath.section].cells[indexPath.item]
-//        switch item {
-//        case .messageGroup:
-//            return 3
-//        default:
-//            return nil
-//        }
-//    }
-//
-//    public func interSectionSpacing(_ chatLayout: CollectionViewChatLayout, after sectionIndex: Int) -> CGFloat? {
-//        100
-//    }
-
 }

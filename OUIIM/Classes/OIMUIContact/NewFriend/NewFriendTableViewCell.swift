@@ -73,24 +73,45 @@ class NewFriendTableViewCell: UITableViewCell {
         disposeBag = DisposeBag()
     }
 
-    func setApplyState(_ state: ApplyState) {
+    func setApplyState(_ state: ApplyState, isSendOut: Bool) {
         switch state {
         case .uncertain:
-            agreeBtn.setTitle("接受".innerLocalized(), for: .normal)
-            agreeBtn.backgroundColor = .c0089FF
-            agreeBtn.tintColor = .white
-            agreeBtn.isEnabled = true
+            let title = configButtonTitle(icon: isSendOut, text: isSendOut ? "等待验证".innerLocalized() : "去处理".innerLocalized())
+            title.addAttributes([.foregroundColor: isSendOut ? UIColor.c8E9AB0 : UIColor.white], range: NSMakeRange(0, title.length))
+            agreeBtn.setAttributedTitle(title, for: .normal)
+            
+            agreeBtn.backgroundColor = isSendOut ? .clear : .c0089FF
+            agreeBtn.isEnabled = !isSendOut
         case .agreed:
-            agreeBtn.setTitle("已同意".innerLocalized(), for: .normal)
+            let title = configButtonTitle(icon: isSendOut, text: "已同意".innerLocalized())
+            title.addAttributes([.foregroundColor: UIColor.c8E9AB0], range: NSMakeRange(0, title.length))
+            
+            agreeBtn.setAttributedTitle(title, for: .normal)
             agreeBtn.backgroundColor = .clear
-            agreeBtn.tintColor = .c8E9AB0
             agreeBtn.isEnabled = false
         case .rejected:
-            agreeBtn.setTitle("已拒绝".innerLocalized(), for: .normal)
+            let title = configButtonTitle(icon: isSendOut, text: "已拒绝".innerLocalized())
+            title.addAttributes([.foregroundColor: UIColor.c8E9AB0], range: NSMakeRange(0, title.length))
+            
+            agreeBtn.setAttributedTitle(title, for: .normal)
             agreeBtn.backgroundColor = .clear
-            agreeBtn.tintColor = .c8E9AB0
             agreeBtn.isEnabled = false
         }
+    }
+    
+    private func configButtonTitle(icon: Bool = false, text: String) -> NSMutableAttributedString {
+        
+        let attr = NSMutableAttributedString(string: text)
+        
+        if icon {
+            let attach = NSTextAttachment(image: UIImage(nameInBundle: "application_request_icon")!)
+            attach.bounds = CGRect(x: 0, y: -4, width: 20, height: 20)
+            let attachStr = NSAttributedString(attachment: attach)
+            
+            attr.insert(attachStr, at: 0)
+        }
+        
+        return attr
     }
 
     enum ApplyState: Int {

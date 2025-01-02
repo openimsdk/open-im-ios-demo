@@ -4,6 +4,7 @@ import OUICore
 class ChatTableViewCell: UITableViewCell {
     let avatarImageView: AvatarView = {
         let v = AvatarView()
+        v.size = 48.h
         
         return v
     }()
@@ -49,20 +50,20 @@ class ChatTableViewCell: UITableViewCell {
     let muteImageView: UIImageView = {
         let v = UIImageView(image: UIImage(nameInBundle: "chat_status_muted_icon"))
         v.isHidden = true
+        
+        return v
+    }()
+    
+    lazy var pinImageView: UIImageView = {
+        let v = UIImageView(image: UIImage(nameInBundle: "live_room_pined_icon"))
+        v.isHidden = true
+        
         return v
     }()
 
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         selectionStyle = .none
-        contentView.backgroundColor = .quaternarySystemFill
-        
-        contentView.addSubview(avatarImageView)
-        avatarImageView.snp.makeConstraints { make in
-            make.left.equalToSuperview().offset(16)
-            make.top.equalToSuperview().inset(8)
-            make.bottom.equalToSuperview().offset(-8).priority(.low)
-        }
 
         let vStack: UIStackView = {
             let v = UIStackView(arrangedSubviews: [titleLabel, subtitleLabel])
@@ -71,17 +72,22 @@ class ChatTableViewCell: UITableViewCell {
             v.spacing = 4
             return v
         }()
-
-        contentView.addSubview(vStack)
-        vStack.snp.makeConstraints { make in
-            make.left.equalTo(avatarImageView.snp.right).offset(12)
-            make.centerY.equalTo(avatarImageView)
+        
+        let hStack = UIStackView(arrangedSubviews: [avatarImageView, vStack])
+        hStack.alignment = .center
+        hStack.spacing = 12.w
+        
+        contentView.addSubview(hStack)
+        hStack.snp.makeConstraints { make in
+            make.leading.equalToSuperview().offset(16)
+            make.centerY.equalToSuperview()
+            make.top.bottom.equalToSuperview()
         }
 
         contentView.addSubview(timeLabel)
         timeLabel.snp.makeConstraints { make in
             make.right.equalToSuperview().offset(-StandardUI.margin_22)
-            make.top.equalTo(avatarImageView).offset(5)
+            make.top.equalTo(hStack).offset(5)
             make.left.greaterThanOrEqualTo(vStack.snp.right).offset(8)
         }
 
@@ -97,10 +103,21 @@ class ChatTableViewCell: UITableViewCell {
             make.right.equalToSuperview().offset(-StandardUI.margin_22)
             make.centerY.equalTo(unreadLabel)
         }
+        
+        contentView.addSubview(pinImageView)
+        pinImageView.snp.makeConstraints { make in
+            make.right.equalToSuperview().inset(16)
+            make.top.equalToSuperview()
+        }
     }
 
     @available(*, unavailable)
     required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        avatarImageView.reset()
     }
 }

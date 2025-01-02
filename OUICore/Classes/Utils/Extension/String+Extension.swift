@@ -4,7 +4,7 @@ import Localize_Swift
 import CryptoKit
 
 extension String {
-    /// 根据下标获取某个下标字符
+
     subscript(of index: Int) -> String {
         if index < 0 || index >= count {
             return ""
@@ -17,42 +17,36 @@ extension String {
         return ""
     }
 
-    /// 根据range获取字符串 a[1...3]
     subscript(r: ClosedRange<Int>) -> String {
         let start = index(startIndex, offsetBy: max(r.lowerBound, 0))
         let end = index(startIndex, offsetBy: min(r.upperBound, count - 1))
         return String(self[start ... end])
     }
 
-    /// 根据range获取字符串 a[0..<2]
     subscript(r: Range<Int>) -> String {
         let start = index(startIndex, offsetBy: max(r.lowerBound, 0))
         let end = index(startIndex, offsetBy: min(r.upperBound, count))
         return String(self[start ..< end])
     }
 
-    /// 根据range获取字符串 a[...2]
     subscript(r: PartialRangeThrough<Int>) -> String {
         let end = index(startIndex, offsetBy: min(r.upperBound, count - 1))
         return String(self[startIndex ... end])
     }
 
-    /// 根据range获取字符串 a[0...]
     subscript(r: PartialRangeFrom<Int>) -> String {
         let start = index(startIndex, offsetBy: max(r.lowerBound, 0))
         let end = index(startIndex, offsetBy: count - 1)
         return String(self[start ... end])
     }
 
-    /// 根据range获取字符串 a[..<3]
     subscript(r: PartialRangeUpTo<Int>) -> String {
         let end = index(startIndex, offsetBy: min(r.upperBound, count))
         return String(self[startIndex ..< end])
     }
 
-    /// 截取字符串: index 开始到结尾
-    /// - Parameter index: 开始截取的index
-    /// - Returns: string
+
+
     func subString(_ index: Int) -> String {
         guard index < count else {
             return ""
@@ -61,11 +55,10 @@ extension String {
         return String(self[start ..< endIndex])
     }
 
-    /// 截取字符串
-    /// - Parameters:
-    ///   - begin: 开始截取的索引
-    ///   - count: 需要截取的个数
-    /// - Returns: 字符串
+
+
+
+
     func substring(start: Int, _ count: Int) -> String {
         let begin = index(startIndex, offsetBy: max(0, start))
         let end = index(startIndex, offsetBy: min(count, start + count))
@@ -75,6 +68,13 @@ extension String {
     public func innerLocalized() -> String {
         let bundle = ViewControllerFactory.getBundle()
         let str = localized(using: nil, in: bundle)
+        return str
+    }
+    
+    public func innerLocalizedFormat(arguments: CVarArg...) -> String {
+        let bundle = ViewControllerFactory.getBundle()
+        let str = localizedFormat(arguments: arguments, using: nil, in: bundle)
+        
         return str
     }
     
@@ -109,13 +109,12 @@ extension String {
             return nil
         }
     }
-    
-    /// 获取文字的每一行字符串 空字符串为空数组
-    ///
-    /// - Parameters:
-    ///   - maxWidth: 空间的最大宽度
-    ///   - font: 文字字体
-    /// - Returns: 返回计算好的行字符串
+
+
+
+
+
+
     public func textLines(_ maxWidth: CGFloat, font: UIFont) -> [String] {
         let myFont = CTFontCreateWithName(font.fontName as CFString, font.pointSize, nil)
         
@@ -152,4 +151,91 @@ extension String {
         
         return md5Hex
     }
+    
+    public func customThumbnailURLString(size: CGSize = CGSize(width: 120, height: 120)) -> String {
+        let c = self.components(separatedBy: "?")
+        if let host  = c.first {
+            let ajustHost = host.lowercased().hasSuffix(".gif") ? host : host + "?height=\(size.height)&type=image&width=\(size.width)"
+            let temp = ajustHost.removingPercentEncoding
+            
+            return temp?.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ajustHost
+        }
+        
+        return self
+    }
+    
+    public var defaultThumbnailURLString: String {
+        customThumbnailURLString(size: CGSize(width: 960, height: 960))
+    }
+    
+    public var defaultThumbnailURL: URL? {
+        URL(string: defaultThumbnailURLString)
+    }
+    
+    public func toURL() -> URL? {
+        let ajustURL = self.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? self
+
+        return URL(string: ajustURL)
+    }
+    
+    public func toFileURL() -> URL {
+        let ajustURL = self.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? self
+        
+        return URL(fileURLWithPath: ajustURL)
+    }
+    
+    public mutating func replace(_ target: String, withString: String) {
+        var tempText = self
+        
+        let mentionPattern = "\(target)\\b"
+        let regex = try! NSRegularExpression(pattern: mentionPattern)
+            
+        tempText = regex.stringByReplacingMatches(in: tempText,
+                                                  options: [],
+                                                  range: NSRange(location: 0, length: tempText.utf16.count),
+                                                  withTemplate: "\(withString)")
+        
+        self = tempText
+    }
 }
+
+extension String {
+    public func isValidEmail() -> Bool {
+        let emailRegex = #"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"#
+        
+        if let regex = try? NSRegularExpression(pattern: emailRegex, options: .caseInsensitive) {
+            let matches = regex.matches(in: self, options: [], range: NSRange(location: 0, length: self.utf16.count))
+            
+            if let firstMatch = matches.first, NSRange(location: 0, length: self.utf16.count) == firstMatch.range {
+                return true
+            }
+        }
+        
+        return false
+    }
+}
+
+extension String {
+    public func addHyberLink() -> NSAttributedString? {
+        let attr = NSMutableAttributedString(string: self)
+        attr.addAttributes([.font: UIFont.f17, .foregroundColor: UIColor.c0C1C33], range: NSMakeRange(0, attr.length))
+        let regex = try! NSRegularExpression(pattern: "((http[s]{0,1}|ftp)://[a-zA-Z0-9\\.\\-]+\\.([a-zA-Z]{2,4})(:\\d+)?(/[a-zA-Z0-9\\.\\-~!@#$%^&*+?:_/=<>]*)?)|(www.[a-zA-Z0-9\\.\\-]+\\.([a-zA-Z]{2,4})(:\\d+)?(/[a-zA-Z0-9\\.\\-~!@#$%^&*+?:_/=<>]*)?)", options: [])
+
+        let matches = regex.matches(in: attr.string, options: [], range: NSRange(location: 0, length: attr.length))
+        
+        if matches.isEmpty {
+            return nil
+        }
+        
+        for match in matches {
+            let matchRange = match.range
+            let urlString = (attr.string as NSString).substring(with: matchRange)
+            attr.addAttribute(.link, value: urlString, range: matchRange)
+            attr.addAttribute(.foregroundColor, value: UIColor.c0089FF, range: matchRange)
+            attr.addAttribute(.underlineStyle, value: 0, range: matchRange)
+        }
+        
+        return attr
+    }
+}
+

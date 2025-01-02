@@ -4,14 +4,10 @@ import OUICore
 
 public struct ChatViewControllerBuilder {
 
-    // anchorMessageID 搜索消息，跳转到聊天记录，使用。
-    public func build(_ conversation: ConversationInfo, anchorID: String? = nil) -> UIViewController {
-        let dataProvider = DefaultDataProvider(conversation: conversation, anchorID: anchorID)
+    public func build(_ conversation: ConversationInfo, anchorMessage: MessageInfo? = nil, hiddenInputBar: Bool = false) -> UIViewController {
+        let dataProvider = DefaultDataProvider(conversation: conversation, anchorMessage: anchorMessage)
         let messageController = DefaultChatController(dataProvider: dataProvider,
                                                       senderID: IMController.shared.uid,
-                                                      receiverId: conversation.conversationType == .c2c ?
-                                                      conversation.userID! : conversation.groupID!,
-                                                      conversationType: conversation.conversationType,
                                                       conversation: conversation)
         dataProvider.delegate = messageController
         
@@ -27,11 +23,15 @@ public struct ChatViewControllerBuilder {
         let messageViewController = ChatViewController(chatController: messageController,
                                                        dataSource: dataSource,
                                                        editNotifier: editNotifier,
-                                                       swipeNotifier: swipeNotifier)
+                                                       swipeNotifier: swipeNotifier,
+                                                       hiddenInputBar: hiddenInputBar,
+                                                       scrollToTop: anchorMessage != nil)
         messageController.delegate = messageViewController
+        dataSource.gestureDelegate = messageViewController
         
         return messageViewController
     }
     
-    public init() {}
+    public init() {
+    }
 }

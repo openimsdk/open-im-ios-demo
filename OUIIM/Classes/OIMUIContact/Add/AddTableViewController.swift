@@ -10,7 +10,7 @@ open class AddTableViewController: UITableViewController {
         configureTableView()
         navigationItem.title = "添加".innerLocalized()
     }
-
+    
     private func configureTableView() {
         tableView.rowHeight = 74
         if #available(iOS 15.0, *) {
@@ -23,15 +23,41 @@ open class AddTableViewController: UITableViewController {
     
     func newGroup(groupType: GroupType = .normal) {
         
-        let vc = SelectContactsViewController()
-        vc.selectedContact() { [weak self] r in 
-            guard let sself = self else { return }
-            let users = r.map{UserInfo(userID: $0.ID!, nickname: $0.name, faceURL: $0.faceURL)}
-            let vc = NewGroupViewController(users: users, groupType: groupType)
-            sself.navigationController?.pushViewController(vc, animated: true)
+#if ENABLE_ORGANIZATION
+        let vc = MyContactsViewController(types: [.friends, .staff], multipleSelected: true)
+#else
+        let vc = MyContactsViewController(types: [.friends], multipleSelected: true, enableChangeSelectedModel: true)
+#endif
+        vc.selectedContact(blocked: [IMController.shared.uid]) { [weak self] (r: [ContactInfo]) in
+            guard let self else { return }
+            
+            let users = r.map {UserInfo(userID: $0.ID!, nickname: $0.name, faceURL: $0.faceURL)}
+            
+            if users.count > 1 {
+                let vc = NewGroupViewController(users: users, groupType: .working)
+                navigationController?.pushViewController(vc, animated: true)
+            } else {
+                guard let userID = users.first?.userID else { return }
+                ProgressHUD.animate()
+                createSingleChat(userID: userID) { [self] c in
+                    ProgressHUD.dismiss()
+                    let vc = ChatViewControllerBuilder().build(c, hiddenInputBar: c.conversationType == .notification)
+                    vc.hidesBottomBarWhenPushed = true
+                    self.navigationController?.pushViewController(vc, animated: true)
+                }
+            }
         }
         vc.hidesBottomBarWhenPushed = true
         navigationController?.pushViewController(vc, animated: true)
+    }
+    
+    private func createSingleChat(userID: String, onComplete: @escaping (ConversationInfo) -> Void) {
+        
+        IMController.shared.getConversation(sessionType: .c2c, sourceId: userID) { [weak self] (conversation: ConversationInfo?) in
+            guard let conversation else { return }
+            
+            onComplete(conversation)
+        }
     }
     
     private let rowTypes: [EntranceType] = [
@@ -40,11 +66,11 @@ open class AddTableViewController: UITableViewController {
         .createGroup,
         .joinGroup
     ]
-
+    
     override open func tableView(_: UITableView, numberOfRowsInSection section: Int) -> Int {
         rowTypes.count
     }
-
+    
     override open func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: AddEntranceTableViewCell.className) as! AddEntranceTableViewCell
         let item = rowTypes[indexPath.row]
@@ -53,7 +79,7 @@ open class AddTableViewController: UITableViewController {
         cell.subtitleLabel.text = item.subtitle
         return cell
     }
-
+    
     override open func tableView(_: UITableView, didSelectRowAt indexPath: IndexPath) {
         let item = rowTypes[indexPath.row]
         switch item {
@@ -77,37 +103,40 @@ open class AddTableViewController: UITableViewController {
             let vc = ScanViewController()
             vc.scanDidComplete = { [weak self] (result: String) in
                 if result.contains(IMController.addFriendPrefix) {
+                    self?.navigationController?.popViewController(animated: false)
+                    
                     let uid = result.replacingOccurrences(of: IMController.addFriendPrefix, with: "")
                     let vc = UserDetailTableViewController(userId: uid, groupId: nil)
                     vc.hidesBottomBarWhenPushed = true
                     self?.navigationController?.pushViewController(vc, animated: true)
-                    self?.dismiss(animated: true)
                 } else if result.contains(IMController.joinGroupPrefix) {
+                    self?.navigationController?.popViewController(animated: false)
+                    
                     let groupID = result.replacingOccurrences(of: IMController.joinGroupPrefix, with: "")
                     let vc = GroupDetailViewController(groupId: groupID)
                     vc.hidesBottomBarWhenPushed = true
                     self?.navigationController?.pushViewController(vc, animated: true)
-                    self?.dismiss(animated: true)
                 } else {
-                    ProgressHUD.error(result)
+                    ProgressHUD.error("unrecognized".innerLocalized())
+                    self?.navigationController?.popViewController(animated: true)
                 }
             }
-            vc.modalPresentationStyle = .fullScreen
-            present(vc, animated: true)
+            vc.hidesBottomBarWhenPushed = true
+            navigationController?.pushViewController(vc, animated: true)
         }
     }
-
+    
     struct SectionModel {
         let name: String
         let items: [EntranceType]
     }
-
+    
     enum EntranceType {
         case createGroup
         case joinGroup
         case searchUser
         case scanQrcode
-
+        
         var iconImage: UIImage? {
             switch self {
             case .createGroup:
@@ -120,30 +149,30 @@ open class AddTableViewController: UITableViewController {
                 return UIImage(nameInBundle: "add_scan_icon")
             }
         }
-
+        
         var title: String {
             switch self {
             case .createGroup:
                 return "创建群聊".innerLocalized()
             case .joinGroup:
-                return "添加群聊".innerLocalized()
+                return "addGroup".innerLocalized()
             case .searchUser:
-                return "添加好友".innerLocalized()
+                return "addFriend".innerLocalized()
             case .scanQrcode:
-                return "扫一扫".innerLocalized()
+                return "scanQrcode".innerLocalized()
             }
         }
-
+        
         var subtitle: String {
             switch self {
             case .createGroup:
-                return "创建群聊，全面使用OpenIM".innerLocalized()
+                return "createGroupHint".innerLocalized()
             case .joinGroup:
-                return "向管理员或团队成员询问ID".innerLocalized()
+                return "addGroupHint".innerLocalized()
             case .searchUser:
-                return "通过手机号/ID号/搜索添加".innerLocalized()
+                return "addFriendHint".innerLocalized()
             case .scanQrcode:
-                return "扫描二维码名片".innerLocalized()
+                return "scanHint".innerLocalized()
             }
         }
     }

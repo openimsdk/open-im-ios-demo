@@ -7,13 +7,11 @@
 
 static NSTimeInterval kAnimationDuration = 0.25;
 
-// 根据section值获取TextLayer的中心点y值
 static inline CGFloat SCGetTextLayerCenterY(NSUInteger position, CGFloat margin, CGFloat space)
 {
     return margin + (position + 1.0 / 2) * space;
 }
 
-// 根据y值获取TextLayer的section值
 static inline NSInteger SCPositionOfTextLayerInY(CGFloat y, CGFloat margin, CGFloat space)
 {
     CGFloat position = (y - margin) / space - 1.0 / 2;
@@ -63,10 +61,8 @@ static inline NSInteger SCPositionOfTextLayerInY(CGFloat y, CGFloat margin, CGFl
 @property (nonatomic, strong) UILabel *indicator;
 @property (nonatomic, weak) UITableView *tableView;
 
-// 触摸索引视图
 @property (nonatomic, assign, getter=isTouchingIndexView) BOOL touchingIndexView;
 
-// 触感反馈
 @property (nonatomic, strong) UIImpactFeedbackGenerator *generator NS_AVAILABLE_IOS(10_0);
 
 @end
@@ -260,7 +256,7 @@ static inline NSInteger SCPositionOfTextLayerInY(CGFloat y, CGFloat margin, CGFl
 - (void)onActionWithScroll
 {
     if (self.isTouchingIndexView) {
-        // 当滑动tableView视图时，另一手指滑动索引视图，让tableView滑动失效
+
         self.tableView.panGestureRecognizer.enabled = NO;
         self.tableView.panGestureRecognizer.enabled = YES;
         
@@ -391,7 +387,7 @@ static inline NSInteger SCPositionOfTextLayerInY(CGFloat y, CGFloat margin, CGFl
 
 - (BOOL)pointInside:(CGPoint)point withEvent:(UIEvent *)event
 {
-    // 当滑动索引视图时，防止其他手指去触发事件
+
     if (self.touchingIndexView) return YES;
     
     CALayer *firstLayer = self.searchLayer ?: self.subTextLayers.firstObject;

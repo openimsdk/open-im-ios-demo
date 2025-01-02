@@ -34,11 +34,11 @@
 }
 
 - (NSInteger)indexOf:(int)ch {
-    //    unichar c = (unichar) ch;
-    //    for(int i=0;i<self.length;i++)
-    //        if(c == [self characterAtIndex:i])
-    //            return i;
-    //    return -1;
+
+
+
+
+
     return [self indexOf:ch fromIndex:0];
 }
 
@@ -99,7 +99,7 @@
     
     __block NSMutableArray *retVal = [NSMutableArray array];
     [pattern enumerateMatchesInString:self options:0 range:NSMakeRange(0, [self length]) usingBlock:^(NSTextCheckingResult *result, NSMatchingFlags flags, BOOL *stop) {
-        //Note, we only want to return the things in parens, so we're skipping index 0 intentionally
+
         for (int i=1; i<[result numberOfRanges]; i++) {
             NSString *matchedString=[self substringWithRange:[result rangeAtIndex:i]];
             [retVal addObject:matchedString];

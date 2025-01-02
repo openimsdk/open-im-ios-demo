@@ -10,12 +10,15 @@ class ApplyViewController: UIViewController {
     
     private let viewModel = GroupApplicationViewModel()
     
-    private var groupID: String
+    private var groupID: String?
+    
+    private var userID: String?
     
     private var maxCount = 20
     
-    init(groupID: String) {
+    init(groupID: String? = nil, userID: String? = nil) {
         self.groupID = groupID
+        self.userID = userID
         super.init(nibName: nil, bundle: nil)
     }
     
@@ -28,7 +31,7 @@ class ApplyViewController: UIViewController {
         view.backgroundColor = .viewBackgroundColor
         
         let label = UILabel()
-        label.text = "发送入群申请".innerLocalized()
+        label.text = groupID != nil ? "sendEnterGroupApplication".innerLocalized() : "sendToBeFriendApplication".innerLocalized()
         label.textColor = .c8E9AB0
         label.font = .f14
         
@@ -64,16 +67,15 @@ class ApplyViewController: UIViewController {
         
         let rightButton = UIBarButtonItem(title: "发送".innerLocalized(), image: UIImage()) { [weak self] in
             guard let self else { return }
-            self.viewModel.apply(grouID: self.groupID, reqMsg: inputTextView.text.trimmingCharacters(in: .whitespacesAndNewlines), onSuccess: { [weak self] r in
-                ProgressHUD.success("加群申请已发送".innerLocalized())
+            self.viewModel.apply(grouID: self.groupID, userID: userID, reqMsg: inputTextView.text.trimmingCharacters(in: .whitespacesAndNewlines), onSuccess: { [weak self] r in
+                ProgressHUD.success(self?.groupID != nil ? "加群申请已发送".innerLocalized() : "添加好友申请已发送".innerLocalized())
                 self?.navigationController?.popViewController(animated: true)
             })
         }
         
         navigationItem.rightBarButtonItem = rightButton
-        
-        inputTextView.rx.text.orEmpty.asDriver().map({ $0.count > 0}).drive(rightButton.rx.isEnabled).disposed(by: disposeBag)
-            
+
+
         inputTextView.rx.text.map({ [weak self] text in
             guard let self, let text else { return nil }
             return String(text.prefix(self.maxCount))

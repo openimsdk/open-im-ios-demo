@@ -10,71 +10,102 @@ class UserProfileViewModel {
     let userInfoRelay: BehaviorRelay<UserInfo?> = .init(value: nil)
     let memberInfoRelay: PublishSubject<GroupMemberInfo?> = .init()
     let isInBlackListRelay: PublishSubject<Bool> = .init()
+    let isFriendRelay: BehaviorSubject<Bool?> = .init(value: nil)
     
-    init(userId: String, groupId: String?) {
+    init(userId: String, groupId: String?, isFriend: Bool? = nil) {
         self.userId = userId
         self.groupId = groupId
+        isFriendRelay.onNext(isFriend)
+    }
+    
+    var isMine: Bool {
+        userId == IMController.shared.uid
     }
     
     func getUserOrMemberInfo() {
         if let groupId = groupId, groupId.isEmpty == false {
+            let u = UserCacheManager.shared.getUserInfo(userID: userId)
+            
+            let cacheInfo = GroupMemberInfo()
+            cacheInfo.userID = u?.userID
+            cacheInfo.nickname = u?.nickname
+            cacheInfo.faceURL = u?.faceURL
+            
+            memberInfoRelay.onNext(cacheInfo)
+            
             IMController.shared.getGroupMembersInfo(groupId: groupId, uids: [userId]) { [weak self] (members: [GroupMemberInfo]) in
-                self?.memberInfoRelay.onNext(members.first)
-            }
-        }
-        
-        if let handler = OIMApi.queryUsersInfoWithCompletionHandler {
-            handler([userId], { [weak self] users in
-                if let u = users.first {
-                    self?.userInfoRelay.accept(u)
-                }
-            })
-        } else {
-            IMController.shared.getUserInfo(uids: [userId]) { [weak self] users in
-                var user: UserInfo!
+                guard let member = members.first else { return }
                 
-                if let u = users.first {
-                    user = UserInfo(userID: u.userID!,
-                                    nickname: u.nickname,
-                                    faceURL: u.faceURL)
-                    self?.userInfoRelay.accept(user)
-                }
+                let cacheInfo = UserInfo(userID: member.userID!, nickname: member.nickname, faceURL: member.faceURL)
+                UserCacheManager.shared.addOrUpdateUserInfo(userID: cacheInfo.userID, userInfo: cacheInfo)
+                
+                self?.memberInfoRelay.onNext(member)
             }
         }
         
-        IMController.shared.getBlackList {[weak self] blackUsers in
-            if blackUsers.contains(where: { info in
-                info.userID == self?.userId
-            }) {
-                self?.isInBlackListRelay.onNext(true)
+        var u = UserCacheManager.shared.getUserInfo(userID: userId)
+        userInfoRelay.accept(u)
+        
+        IMController.shared.getBlackList { [self] blacks in
+            isInBlackListRelay.onNext(blacks.contains(where: { $0.userID == userId }))
+        }
+        
+        IMController.shared.getFriendsInfo(userIDs: [userId]) { [self] friendInfo in
+            let isFriend = friendInfo.first != nil
+            
+            isFriendRelay.onNext(isFriend)
+
+            if let friendInfo = friendInfo.first {
+                if let u {
+                    u.nickname = friendInfo.nickname
+                    u.remark = friendInfo.remark
+                    u.faceURL = friendInfo.faceURL
+                } else {
+                    u = UserInfo(userID: friendInfo.userID!, nickname: friendInfo.nickname, remark: friendInfo.remark, faceURL: friendInfo.faceURL)
+                }
+                
+                userInfoRelay.accept(u)
+            }
+            IMController.shared.getUserInfo(uids: [userId]) { [weak self] users in
+                guard let self, let sdkUser = users.first else { return }
+                
+                if let handler = OIMApi.queryUsersInfoWithCompletionHandler {
+                    handler([userId], { [self] users in
+                        if let chatUser = users.first {
+                            chatUser.remark = friendInfo.first?.remark
+                            self.userInfoRelay.accept(chatUser)
+                            UserCacheManager.shared.addOrUpdateUserInfo(userID: sdkUser.userID!, userInfo: chatUser)
+                        }
+                    })
+                }
             }
         }
     }
     
-    func addFriend(onSuccess: @escaping CallBack.StringOptionalReturnVoid) {
-        let reqMsg = "\(IMController.shared.currentUserRelay.value!.nickname)请求添加你为好友"
-        IMController.shared.addFriend(uid: userId, reqMsg: reqMsg, onSuccess: onSuccess)
+    func addFriend(onSuccess: @escaping CallBack.StringOptionalReturnVoid, onFailure: @escaping CallBack.ErrorOptionalReturnVoid) {
+        let reqMsg = "\(IMController.shared.currentUserRelay.value!.nickname!)请求添加你为好友"
+        IMController.shared.addFriend(uid: userId, reqMsg: reqMsg, onSuccess: onSuccess, onFailure: onFailure)
     }
     
     func saveRemark(remark: String, onSuccess: @escaping CallBack.StringOptionalReturnVoid)  {
         IMController.shared.setFriend(uid: userId, remark: remark, onSuccess: onSuccess)
     }
     
-    func sendCard(cardUser: UserInfo, to recvID: String, conversationType: ConversationType = .c2c) {
-        let card = CardElem(userID: cardUser.userID, nickname: cardUser.nickname!, faceURL: cardUser.faceURL)
-        
+    func sendCard(card: CardElem, to recvID: String, conversationType: ConversationType = .c2c) {        
         IMController.shared.sendCardMessage(card: card,
                                             to: recvID,
                                             conversationType: conversationType,
                                             sending: { [weak self] (model: MessageInfo) in
-            //            self?.addMessage(model)
+
         }, onComplete: { [weak self] (model: MessageInfo) in
-            //            self?.updateMessage(model)
+
         })
     }
     
     func blockUser(blocked: Bool, onSuccess: @escaping CallBack.StringOptionalReturnVoid){
-        IMController.shared.blockUser(uid: userId, blocked: blocked, onSuccess: onSuccess)
+        IMController.shared.blockUser(uid: userId, blocked: blocked) { [weak self] r in
+            self?.isInBlackListRelay.onNext(blocked)
+        }
     }
     
     func deleteFriend(onSuccess: @escaping CallBack.StringOptionalReturnVoid) {

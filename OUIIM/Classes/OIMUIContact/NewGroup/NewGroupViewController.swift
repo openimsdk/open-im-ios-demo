@@ -2,13 +2,72 @@
 import OUICore
 import OUICoreView
 import RxSwift
+import RxCocoa
 import RxRelay
 import ProgressHUD
+import Photos
 
 class NewGroupViewController: UITableViewController {
     private let _viewModel: NewGroupViewModel
     private let _disposeBag = DisposeBag()
     
+    private lazy var _photoHelper: PhotoHelper = {
+        let v = PhotoHelper()
+        v.setConfigToPickAvatar()
+        v.didPhotoSelected = { [weak self] (images: [UIImage], _: [PHAsset]) in
+            guard var first = images.first else { return }
+            ProgressHUD.animate()
+            first = first.compress(expectSize: 20 * 1024)
+            let result = FileHelper.shared.saveImage(image: first)
+            
+            if result.isSuccess {
+                self?._viewModel.uploadFile(fullPath: result.fullPath, onComplete: { [weak self] url in
+                    self?._viewModel.groupAvatar = url
+                    self?.tableView.reloadData()
+                    ProgressHUD.dismiss()
+                })
+            } else {
+                ProgressHUD.dismiss()
+            }
+        }
+        
+        v.didCameraFinished = { [weak self] (photo: UIImage?, _: URL?) in
+            guard let sself = self else { return }
+            if var photo {
+                ProgressHUD.animate()
+                photo = photo.compress(expectSize: 20 * 1024)
+                let result = FileHelper.shared.saveImage(image: photo)
+                if result.isSuccess {
+                    self?._viewModel.uploadFile(fullPath: result.fullPath, onComplete: { [weak self] url in
+                        self?._viewModel.groupAvatar = url
+                        self?.tableView.reloadData()
+                        ProgressHUD.dismiss()
+                    })
+                }
+            }
+        }
+        return v
+    }()
+    
+    let contentView = UIView()
+    
+    private lazy var createButton: UIButton = {
+        let v = UIButton(type: .system)
+        v.setTitle("completeCreation".innerLocalized(), for: .normal)
+        v.setTitleColor(.white, for: .normal)
+        v.isEnabled = false
+        v.layer.masksToBounds = true
+        v.layer.cornerRadius = 6
+        v.setBackgroundColor(.c0089FF, for: .normal)
+        v.setBackgroundColor(.c0089FF.withAlphaComponent(0.5), for: .disabled)
+        
+        v.rx.tap.subscribe(onNext: { [weak self] _ in
+            
+            self?.createGroup()
+        }).disposed(by: _disposeBag)
+        
+        return v
+    }()
     
     init(users: [UserInfo], groupType: GroupType = .normal, style: UITableView.Style = .insetGrouped) {
         _viewModel = NewGroupViewModel(users: users, groupType: groupType)
@@ -24,7 +83,6 @@ class NewGroupViewController: UITableViewController {
     private var sectionItems: [[RowType]] = [
         [.header],
         [.members],
-        [.create],
     ]
     
     override func viewDidLoad() {
@@ -33,6 +91,25 @@ class NewGroupViewController: UITableViewController {
         navigationController?.navigationBar.isOpaque = false
         configureTableView()
         _viewModel.getMembers()
+        
+        let tap = UITapGestureRecognizer()
+        tap.cancelsTouchesInView = false
+        tap.rx.event.subscribe(onNext: { [weak self] _ in
+            self?.view.endEditing(true)
+        }).disposed(by: _disposeBag)
+        
+        view.isUserInteractionEnabled = true
+        view.addGestureRecognizer(tap)
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        setupCreateButton()
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        contentView.removeFromSuperview()
     }
     
     private func configureTableView() {
@@ -47,9 +124,39 @@ class NewGroupViewController: UITableViewController {
         tableView.rowHeight = UITableView.automaticDimension
         tableView.separatorInset = .zero
         tableView.register(GroupChatNameTableViewCell.self, forCellReuseIdentifier: GroupChatNameTableViewCell.className)
-        tableView.register(GroupChatMemberTableViewCell.self, forCellReuseIdentifier: GroupChatMemberTableViewCell.className)
+        tableView.register(NewGroupMemberCell.self, forCellReuseIdentifier: NewGroupMemberCell.className)
         tableView.register(QuitTableViewCell.self, forCellReuseIdentifier: QuitTableViewCell.className)
         tableView.tableFooterView = UIView()
+    }
+    
+    private func setupCreateButton() {
+        guard let view = navigationController?.view, !view.subviews.contains(contentView) else { return }
+        
+        contentView.backgroundColor = .cellBackgroundColor
+        
+        navigationController?.view.addSubview(contentView)
+        contentView.snp.makeConstraints { make in
+            make.leading.bottom.trailing.equalToSuperview()
+            make.height.equalTo(UIApplication.safeAreaInsets.bottom + 80.h)
+        }
+        
+        contentView.addSubview(createButton)
+        createButton.snp.makeConstraints { make in
+            make.leading.top.trailing.equalToSuperview().inset(16)
+            make.height.equalTo(44.h)
+        }
+    }
+    
+    private func createGroup() {
+        ProgressHUD.animate(interaction: false)
+        _viewModel.createGroup { [weak self] conversation in
+            ProgressHUD.dismiss()
+            if let conversation {
+                self?.toChat(conversation: conversation)
+            } else {
+                self?.presentAlert(title: "创建失败".innerLocalized())
+            }
+        }
     }
     
     private func toChat(conversation: ConversationInfo) {
@@ -77,21 +184,35 @@ class NewGroupViewController: UITableViewController {
         switch rowType {
         case .header:
             let cell = tableView.dequeueReusableCell(withIdentifier: GroupChatNameTableViewCell.className) as! GroupChatNameTableViewCell
-            cell.avatarImageView.setImage(with: nil, placeHolder: "contact_my_group_icon")
+            cell.avatarImageView.setAvatar(url: _viewModel.groupAvatar, placeHolder: "common_camera_button_icon", onTap: { [weak self] in
+                self?.presentSelectedPictureActionSheet(albumHandler: { [self] in
+                    guard let self else { return }
+                    
+                    self._photoHelper.presentPhotoLibrary(byController: self)
+                }, cameraHandler: { [self] in
+                    
+                    guard let self else { return }
+                    self._photoHelper.presentCamera(byController: self)
+                })
+            })
+
             cell.enableInput = true
             
             cell.nameTextFiled.rx
                 .controlEvent([.editingChanged, .editingDidEnd])
                 .asObservable().subscribe(onNext: {[weak self, weak cell] t in
-                    self?._viewModel.groupName = cell?.nameTextFiled.text?.trimmingCharacters(in: .whitespacesAndNewlines)
+                    let text = cell?.nameTextFiled.text?.trimmingCharacters(in: .whitespacesAndNewlines)
+                    self?._viewModel.groupName = text
+                    
+                    self?.createButton.isEnabled = text != nil && !text!.isEmpty
                 })
                 .disposed(by: _disposeBag)
             return cell
         case .members:
-            let cell = tableView.dequeueReusableCell(withIdentifier: GroupChatMemberTableViewCell.className) as! GroupChatMemberTableViewCell
-            cell.memberCollectionView.dataSource = nil
-            _viewModel.membersRelay.asDriver(onErrorJustReturn: []).drive(cell.memberCollectionView.rx.items) { (collectionView: UICollectionView, row, item: UserInfo) in
-                let cell = collectionView.dequeueReusableCell(withReuseIdentifier: GroupChatMemberTableViewCell.ImageCollectionViewCell.className, for: IndexPath(row: row, section: 0)) as! GroupChatMemberTableViewCell.ImageCollectionViewCell
+            let cell = tableView.dequeueReusableCell(withIdentifier: NewGroupMemberCell.className) as! NewGroupMemberCell
+
+            _viewModel.membersRelay.asDriver().drive(cell.memberCollectionView.rx.items(cellIdentifier: NewGroupMemberCell.ImageCollectionViewCell.className, cellType: NewGroupMemberCell.ImageCollectionViewCell.self)) { row, item, cell in
+                
                 if item.isAddButton {
                     cell.avatarView.setAvatar(url: nil, text: nil, placeHolder: "setting_add_btn_icon")
                 } else if item.isRemoveButton {
@@ -102,24 +223,45 @@ class NewGroupViewController: UITableViewController {
                 
                 cell.nameLabel.text = item.nickname
                 
-                return cell
-            }.disposed(by: _disposeBag)
+            }.disposed(by: cell.disposeBag)
             
-            _viewModel.membersCountRelay.map { "\($0)人" }.bind(to: cell.countLabel.rx.text).disposed(by: cell.disposeBag)
+            cell.reloadData()
+            
+            _viewModel.membersRelay.map { "\("nPerson".innerLocalizedFormat(arguments: $0.count))" }.bind(to: cell.countLabel.rx.text).disposed(by: cell.disposeBag)
             cell.titleLabel.text = rowType.title
 
             cell.memberCollectionView.rx.modelSelected(UserInfo.self).subscribe(onNext: { [weak self] (userInfo: UserInfo) in
                 guard let sself = self else { return }
                 if userInfo.isAddButton || userInfo.isRemoveButton {
-                    let vc = SelectContactsViewController()
-                    vc.selectedContact(blocked: sself._viewModel.users.map { $0.userID }) { [weak vc] (r: [ContactInfo]) in
-                        guard let sself = self else { return }
+#if ENABLE_ORGANIZATION
+                        let vc = MyContactsViewController(types: [.friends, .staff], multipleSelected: true)
+#else
+                        let vc = MyContactsViewController(types: [.friends], multipleSelected: true)
+#endif
+                    var temp = sself._viewModel.membersRelay.value.filter({ !$0.isAddButton && !$0.isRemoveButton})
+                    
+                    var members = temp.compactMap({ ContactInfo(ID: $0.userID, name: $0.nickname, faceURL: $0.faceURL) })
+                    
+                        vc.selectedContact(hasSelected: members) { [weak self, weak cell, weak vc] (r: [ContactInfo]) in
+                            guard let self else { return }
+                            
+                            let users = r.map{UserInfo(userID: $0.ID!, nickname: $0.name, faceURL: $0.faceURL)}
+                            sself._viewModel.updateMembers(users)
+
+                            vc?.navigationController?.popViewController(animated: true)
+                        }
                         
-                        let users = r.map{UserInfo(userID: $0.ID!, nickname: $0.name, faceURL: $0.faceURL)}
-                        sself._viewModel.updateMembers(users)
-                        sself.navigationController?.popViewController(animated: true)
-                    }
-                    sself.navigationController?.pushViewController(vc, animated: true)
+                        self?.navigationController?.pushViewController(vc, animated: true)
+
+
+
+
+
+
+
+
+
+
                 }
             }).disposed(by: cell.disposeBag)
             return cell
@@ -155,7 +297,7 @@ class NewGroupViewController: UITableViewController {
         case .create:
             
             guard let groupName = _viewModel.groupName, !groupName.isEmpty else {
-                AlertView.show(onWindowOf: view, alertTitle: "输入群名", confirmTitle: "确定") {}
+                presentAlert(title: "请输入群名".innerLocalized())
                 return
             }
             
@@ -193,7 +335,7 @@ class NewGroupViewController: UITableViewController {
     
     deinit {
 #if DEBUG
-        print("dealloc \(type(of: self))")
+        print("\(#function) - \(type(of: self))")
 #endif
     }
 }

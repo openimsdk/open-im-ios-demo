@@ -2,6 +2,7 @@
 import Foundation
 import RxRelay
 import RxSwift
+import ProgressHUD
 import OUICore
 
 class MineViewModel {
@@ -9,8 +10,22 @@ class MineViewModel {
 
     private let _disposeBag = DisposeBag()
     
+    init() {
+        IMController.shared.currentUserRelay.subscribe { [weak self] info in
+            if let r = info.element, let userID = r?.userID, let faceURL = r?.faceURL, let nickname = r?.nickname {
+                self?.currentUserRelay.accept(QueryUserInfo(userID: userID, faceURL: faceURL, nickname: nickname))
+            }
+        }.disposed(by: _disposeBag)
+    }
+    
     func queryUserInfo() {
-        AccountViewModel.queryUserInfo(userIDList: [AccountViewModel.userID!],
+        if let IMUser = IMController.shared.currentUserRelay.value {
+            let u = QueryUserInfo(userID: IMUser.userID, faceURL: IMUser.faceURL, nickname: IMUser.nickname)
+            currentUserRelay.accept(u)
+        }
+        guard let userID = AccountViewModel.userID else { return }
+        
+        AccountViewModel.queryUserInfo(userIDList: [userID],
                                        valueHandler: { [weak self] (users: [QueryUserInfo]) in
             guard let user: QueryUserInfo = users.first else { return }
             self?.currentUserRelay.accept(user)
@@ -18,42 +33,38 @@ class MineViewModel {
         })
     }
 
-    func updateGender(_ gender: Gender, completion: (() -> Void)?) {
-        AccountViewModel.updateUserInfo(userID: IMController.shared.uid, gender: gender) { (errCode, errMsg) in
-            completion?()
-        }
+    func updateGender(_ gender: Gender, completion: @escaping CallBack.ErrorOptionalReturnVoid) {
+        AccountViewModel.updateUserInfo(userID: IMController.shared.uid, gender: gender, completionHandler: completion)
     }
 
-    func updateNickname(_ name: String, completion: (() -> Void)?) {
-        AccountViewModel.updateUserInfo(userID: IMController.shared.uid, nickname: name) { (errCode, errMsg) in
-            completion?()
-        }
+    func updateNickname(_ name: String, completion: @escaping CallBack.ErrorOptionalReturnVoid) {
+        AccountViewModel.updateUserInfo(userID: IMController.shared.uid, nickname: name, completionHandler: completion)
     }
 
-    func updateBirthday(timeStampSeconds: Int, completion: (() -> Void)?) {
-        AccountViewModel.updateUserInfo(userID: IMController.shared.uid, birth: timeStampSeconds * 1000) { (errCode, errMsg) in
-            completion?()
-        }
+    func updateBirthday(timeStampSeconds: Int, completion: @escaping CallBack.ErrorOptionalReturnVoid) {
+        AccountViewModel.updateUserInfo(userID: IMController.shared.uid, birth: timeStampSeconds * 1000, completionHandler: completion)
     }
 
-    func updateFaceURL(url: String, onComplete: @escaping () -> Void) {
-        AccountViewModel.updateUserInfo(userID: IMController.shared.uid, faceURL: url) { (errCode, errMsg) in
-            onComplete()
-        }
+    func updateFaceURL(url: String, completion: @escaping CallBack.ErrorOptionalReturnVoid) {
+        AccountViewModel.updateUserInfo(userID: IMController.shared.uid, faceURL: url, completionHandler: completion)
+    }
+    
+    func updateUserInfo(email: String? = nil, completion: @escaping CallBack.ErrorOptionalReturnVoid) {
+        AccountViewModel.updateUserInfo(userID: IMController.shared.uid, email: email, completionHandler: completion)
     }
 
     func logout() {
-        IMController.shared.logout(onSuccess: { _ in
-            IMController.shared.currentUserRelay.accept(nil)
-            AccountViewModel.saveUser(uid: nil, imToken: nil, chatToken: nil)
-            NotificationCenter.default.post(name: .init("logout"), object: nil)
-        })
+        ProgressHUD.animate()
+        NotificationCenter.default.post(name: .init("logout"), object: nil)
+        IMController.shared.logout { r in
+            ProgressHUD.dismiss()
+        }
     }
 
-    func uploadFile(fullPath: String, onProgress: @escaping (CGFloat) -> Void, onComplete: @escaping () -> Void) {
+    func uploadFile(fullPath: String, onProgress: @escaping (CGFloat) -> Void, onComplete: @escaping CallBack.ErrorOptionalReturnVoid) {
         IMController.shared.uploadFile(fullPath: fullPath, onProgress: onProgress) { [weak self] url in
             if let url = url {
-                self?.updateFaceURL(url: url, onComplete: onComplete)
+                self?.updateFaceURL(url: url, completion: onComplete)
             }
         }
     }

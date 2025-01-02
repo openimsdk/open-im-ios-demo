@@ -1,29 +1,31 @@
 
 import Foundation
 
-final class TextMessageController {
-
+final class TextMessageController: CellBaseController {
+    
     weak var view: TextMessageView? {
         didSet {
             view?.reloadData()
         }
     }
-
-    let text: String?
     
-    let attributedString: NSAttributedString?
-
-    let type: MessageType
-    
+    var text: String?
+    var attributedString: NSAttributedString?
     var highlight: Bool = false
 
-    private let bubbleController: BubbleController
-
-    init(text: String? = nil, attributedString: NSAttributedString? = nil, highlight: Bool = false, type: MessageType, bubbleController: BubbleController) {
+    init(messageID: String, text: String? = nil, attributedString: NSAttributedString? = nil, highlight: Bool = false, type: MessageType, bubbleController: BubbleController) {
+        super.init(messageID: messageID, messageType: type, bubbleController: bubbleController)
+        
         self.text = text
         self.attributedString = attributedString
         self.highlight = highlight
-        self.type = type
-        self.bubbleController = bubbleController
+    }
+    
+    func action(url: URL?) {
+        if let url {
+            onTap?(.url(url, isLocallyStored: false))
+        } else {
+            onTap?(.none)
+        }
     }
 }

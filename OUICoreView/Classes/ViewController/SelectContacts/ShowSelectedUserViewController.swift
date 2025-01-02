@@ -97,12 +97,14 @@ extension ShowSelectedUserViewController: UITableViewDataSource, UITableViewDele
     }
 
     public func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: ShowSelectedTableViewCell.className) as! ShowSelectedTableViewCell
+        
+        let cell = tableView.dequeueReusableCell(withIdentifier: ShowSelectedTableViewCell.className, for: indexPath) as! ShowSelectedTableViewCell
+        
         let user = users[indexPath.row]
 
         cell.titleLabel.text = user.name
         cell.avatarView.setAvatar(url: user.faceURL, text: user.name)
-        cell.trainingButton.rx.tap.subscribe { [weak self, weak cell] _ in
+        cell.onTap = { [weak self] in
             self?.removeUsers.append(user)
             self?.users.removeAll(where: {$0.ID == user.ID})
             self?._tableView.reloadData()

@@ -12,7 +12,7 @@ final class URLView: UIView, ContainerCollectionViewCellDelegate {
 
     private var controller: URLController?
 
-    private var viewPortWidth: CGFloat = 300
+    private var viewPortWidth: CGFloat = 300.w
 
     private var linkWidthConstraint: NSLayoutConstraint?
 
@@ -88,7 +88,7 @@ final class URLView: UIView, ContainerCollectionViewCellDelegate {
             return
         }
         let contentSize = linkView.intrinsicContentSize
-        let maxWidth = min(viewPortWidth * StandardUI.maxWidth, contentSize.width)
+        let maxWidth = min(viewPortWidth * StandardUI.maxWidthRate, contentSize.width)
 
         let newContentRect = CGRect(origin: .zero, size: CGSize(width: maxWidth, height: contentSize.height * maxWidth / contentSize.width))
 
@@ -96,9 +96,9 @@ final class URLView: UIView, ContainerCollectionViewCellDelegate {
         linkHeightConstraint?.constant = newContentRect.height
 
         linkView.bounds = newContentRect
-        // It is funny that since IOS 14 it can give slightly different values depending if it was drawn before or not.
-        // Thank you Apple. Dont be surprised that the web preview may lightly jump and cause the small jumps
-        // of the whole layout.
+
+
+
         linkView.sizeToFit()
 
         setNeedsLayout()

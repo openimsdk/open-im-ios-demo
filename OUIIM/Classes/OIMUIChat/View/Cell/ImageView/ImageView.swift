@@ -3,27 +3,25 @@ import ChatLayout
 import Foundation
 import UIKit
 import OUICore
-
-enum ImageViewState {
-    case loading
-    case image(UIImage)
-}
+import Kingfisher
 
 final class ImageView: UIView, ContainerCollectionViewCellDelegate {
 
     private lazy var stackView = UIStackView(frame: bounds)
 
-    private lazy var loadingIndicator = UIActivityIndicatorView(style: .gray)
-
     private lazy var imageView = UIImageView(frame: bounds)
     
-    private var controller: ImageController!
+    var controller: ImageController!
 
     private var imageWidthConstraint: NSLayoutConstraint?
 
     private var imageHeightConstraint: NSLayoutConstraint?
 
-    private var viewPortWidth: CGFloat = 300
+    private var viewPortWidth: CGFloat = 300.w
+    
+    private var imageMaxWidth = 120.0.w
+    
+    private static var tagBase = 1
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -37,6 +35,7 @@ final class ImageView: UIView, ContainerCollectionViewCellDelegate {
 
     func prepareForReuse() {
         imageView.image = nil
+        imageView.cancelDownload()
     }
 
     func apply(_ layoutAttributes: ChatLayoutAttributes) {
@@ -46,36 +45,14 @@ final class ImageView: UIView, ContainerCollectionViewCellDelegate {
 
     func setup(with controller: ImageController) {
         self.controller = controller
+        imageView.tag = controller.messageID.hash
     }
 
     func reloadData() {
-        UIView.performWithoutAnimation {
-            switch controller.state {
-            case .loading:
-                loadingIndicator.isHidden = false
-                imageView.isHidden = true
-                imageView.image = nil
-                stackView.removeArrangedSubview(imageView)
-                stackView.addArrangedSubview(loadingIndicator)
-                if !loadingIndicator.isAnimating {
-                    loadingIndicator.startAnimating()
-                }
-                if #available(iOS 13.0, *) {
-                    backgroundColor = .systemGray5
-                } else {
-                    backgroundColor = UIColor(red: 200 / 255, green: 200 / 255, blue: 200 / 255, alpha: 1)
-                }
-                setupSize()
-            case let .image(image):
-                loadingIndicator.isHidden = true
-                loadingIndicator.stopAnimating()
-                imageView.isHidden = false
-                imageView.image = image
-                stackView.removeArrangedSubview(loadingIndicator)
-                stackView.addArrangedSubview(imageView)
-                setupSize()
-                backgroundColor = .clear
-            }
+        if controller.image != nil {
+            imageView.image = controller.image
+        } else {
+            imageView.setImage(url: controller.source.source.url, thumbURL: controller.source.thumb?.url)
         }
     }
 
@@ -84,62 +61,64 @@ final class ImageView: UIView, ContainerCollectionViewCellDelegate {
         translatesAutoresizingMaskIntoConstraints = false
         insetsLayoutMarginsFromSafeArea = false
 
-        addSubview(stackView)
         stackView.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(stackView)
+        
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.contentMode = .scaleAspectFill
+        
+        stackView.addArrangedSubview(imageView)
+        
         NSLayoutConstraint.activate([
             stackView.topAnchor.constraint(equalTo: layoutMarginsGuide.topAnchor),
             stackView.bottomAnchor.constraint(equalTo: layoutMarginsGuide.bottomAnchor),
             stackView.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
             stackView.trailingAnchor.constraint(equalTo: layoutMarginsGuide.trailingAnchor)
         ])
-
-        imageView.translatesAutoresizingMaskIntoConstraints = false
-        imageView.contentMode = .scaleAspectFill
-        imageView.isHidden = true
         
+        stackView.isUserInteractionEnabled = true
         let tap = UITapGestureRecognizer(target: self, action: #selector(tap))
-        imageView.isUserInteractionEnabled = true
-        imageView.addGestureRecognizer(tap)
+        stackView.addGestureRecognizer(tap)
 
-        loadingIndicator.translatesAutoresizingMaskIntoConstraints = false
-        loadingIndicator.isHidden = true
-
-        let loadingWidthConstraint = loadingIndicator.widthAnchor.constraint(equalToConstant: 100)
-        loadingWidthConstraint.priority = UILayoutPriority(999)
-        loadingWidthConstraint.isActive = true
-
-        let loadingHeightConstraint = loadingIndicator.heightAnchor.constraint(equalToConstant: 100)
-        loadingHeightConstraint.priority = UILayoutPriority(999)
-        loadingHeightConstraint.isActive = true
-
-        imageWidthConstraint = imageView.widthAnchor.constraint(equalToConstant: 310)
+        imageWidthConstraint = stackView.widthAnchor.constraint(equalToConstant: imageMaxWidth)
         imageWidthConstraint?.priority = UILayoutPriority(999)
 
-        imageHeightConstraint = imageView.heightAnchor.constraint(equalToConstant: 40)
+        imageHeightConstraint = stackView.heightAnchor.constraint(equalToConstant: imageMaxWidth)
         imageHeightConstraint?.priority = UILayoutPriority(999)
+        
+        let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
+        longPressGesture.minimumPressDuration = 0.3
+        stackView.addGestureRecognizer(longPressGesture)
     }
     
     @objc
     private func tap() {
         controller?.action()
     }
-
-    private func setupSize() {
-        UIView.performWithoutAnimation {
-            switch controller.state {
-            case .loading:
-                imageWidthConstraint?.isActive = false
-                imageHeightConstraint?.isActive = false
-                setNeedsLayout()
-            case let .image(image):
-                imageWidthConstraint?.isActive = true
-                imageHeightConstraint?.isActive = true
-                let maxWidth = min(viewPortWidth * StandardUI.maxWidth / 2, image.size.width)
-                imageWidthConstraint?.constant = maxWidth
-                imageHeightConstraint?.constant = image.size.height * maxWidth / image.size.width
-                setNeedsLayout()
-            }
+    
+    @objc private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
+        if gesture.state == .began {
+            controller?.longPress?(gesture.view!, gesture.location(in: gesture.view))
         }
     }
 
+    private func setupSize() {
+        var width = 0.0
+        var height = 0.0
+        
+        if (imageMaxWidth > controller.size.width) {
+            width = controller.size.width
+            height = controller.size.height
+        } else {
+            width = imageMaxWidth;
+            height = width * controller.size.height / controller.size.width;
+        }
+        
+        imageWidthConstraint?.constant = width
+        imageHeightConstraint?.constant = height
+        imageWidthConstraint?.isActive = true
+        imageHeightConstraint?.isActive = true
+
+        setNeedsLayout()
+    }
 }

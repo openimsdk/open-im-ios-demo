@@ -1,13 +1,16 @@
 PODS:
   - Alamofire (4.9.1)
-  - ChatLayout (2.0.3):
-    - ChatLayout/Ultimate (= 2.0.3)
-  - ChatLayout/Core (2.0.3)
-  - ChatLayout/Extras (2.0.3):
+  - AlamofireNetworkActivityLogger (2.4.0):
+    - Alamofire (~> 4.8)
+  - ChatLayout (2.0.10):
+    - ChatLayout/Ultimate (= 2.0.10)
+  - ChatLayout/Core (2.0.10)
+  - ChatLayout/Extras (2.0.10):
     - ChatLayout/Core
-  - ChatLayout/Ultimate (2.0.3):
+  - ChatLayout/Ultimate (2.0.10):
     - ChatLayout/Core
     - ChatLayout/Extras
+  - CocoaAsyncSocket (7.6.5)
   - DifferenceKit (1.3.0):
     - DifferenceKit/Core (= 1.3.0)
     - DifferenceKit/UIKitExtension (= 1.3.0)
@@ -15,57 +18,119 @@ PODS:
   - DifferenceKit/UIKitExtension (1.3.0):
     - DifferenceKit/Core
   - Differentiator (5.0.0)
-  - InputBarAccessoryView (5.5.0):
-    - InputBarAccessoryView/Core (= 5.5.0)
-  - InputBarAccessoryView/Core (5.5.0)
-  - IQKeyboardCore (1.0.5)
-  - IQKeyboardManagerSwift (8.0.0):
-    - IQKeyboardManagerSwift/Appearance (= 8.0.0)
-    - IQKeyboardManagerSwift/Core (= 8.0.0)
-    - IQKeyboardManagerSwift/IQKeyboardReturnManager (= 8.0.0)
-    - IQKeyboardManagerSwift/IQKeyboardToolbarManager (= 8.0.0)
-    - IQKeyboardManagerSwift/IQTextView (= 8.0.0)
-    - IQKeyboardManagerSwift/Resign (= 8.0.0)
-  - IQKeyboardManagerSwift/Appearance (8.0.0):
-    - IQKeyboardManagerSwift/Core
-  - IQKeyboardManagerSwift/Core (8.0.0):
-    - IQKeyboardNotification
-    - IQTextInputViewNotification
-  - IQKeyboardManagerSwift/IQKeyboardReturnManager (8.0.0):
-    - IQKeyboardReturnManager
-  - IQKeyboardManagerSwift/IQKeyboardToolbarManager (8.0.0):
-    - IQKeyboardManagerSwift/Core
-    - IQKeyboardToolbarManager
-  - IQKeyboardManagerSwift/IQTextView (8.0.0):
-    - IQTextView
-  - IQKeyboardManagerSwift/Resign (8.0.0):
-    - IQKeyboardManagerSwift/Core
-  - IQKeyboardNotification (1.0.3)
-  - IQKeyboardReturnManager (1.0.4):
-    - IQKeyboardCore (= 1.0.5)
-  - IQKeyboardToolbar (1.1.1):
-    - IQKeyboardCore
-    - IQKeyboardToolbar/Core (= 1.1.1)
-  - IQKeyboardToolbar/Core (1.1.1):
-    - IQKeyboardCore
-    - IQKeyboardToolbar/Placeholderable
-  - IQKeyboardToolbar/Placeholderable (1.1.1):
-    - IQKeyboardCore
-  - IQKeyboardToolbarManager (1.1.2):
-    - IQKeyboardToolbar
-    - IQTextInputViewNotification
-  - IQTextInputViewNotification (1.0.8):
-    - IQKeyboardCore
-  - IQTextView (1.0.5):
-    - IQKeyboardToolbar/Placeholderable
-  - JXSegmentedView (1.3.0)
-  - Kingfisher (7.7.0)
+  - Firebase/Core (11.6.0):
+    - Firebase/CoreOnly
+    - FirebaseAnalytics (~> 11.6.0)
+  - Firebase/CoreOnly (11.6.0):
+    - FirebaseCore (~> 11.6.0)
+  - Firebase/Messaging (11.6.0):
+    - Firebase/CoreOnly
+    - FirebaseMessaging (~> 11.6.0)
+  - FirebaseAnalytics (11.6.0):
+    - FirebaseAnalytics/AdIdSupport (= 11.6.0)
+    - FirebaseCore (~> 11.6.0)
+    - FirebaseInstallations (~> 11.0)
+    - GoogleUtilities/AppDelegateSwizzler (~> 8.0)
+    - GoogleUtilities/MethodSwizzler (~> 8.0)
+    - GoogleUtilities/Network (~> 8.0)
+    - "GoogleUtilities/NSData+zlib (~> 8.0)"
+    - nanopb (~> 3.30910.0)
+  - FirebaseAnalytics/AdIdSupport (11.6.0):
+    - FirebaseCore (~> 11.6.0)
+    - FirebaseInstallations (~> 11.0)
+    - GoogleAppMeasurement (= 11.6.0)
+    - GoogleUtilities/AppDelegateSwizzler (~> 8.0)
+    - GoogleUtilities/MethodSwizzler (~> 8.0)
+    - GoogleUtilities/Network (~> 8.0)
+    - "GoogleUtilities/NSData+zlib (~> 8.0)"
+    - nanopb (~> 3.30910.0)
+  - FirebaseCore (11.6.0):
+    - FirebaseCoreInternal (~> 11.6.0)
+    - GoogleUtilities/Environment (~> 8.0)
+    - GoogleUtilities/Logger (~> 8.0)
+  - FirebaseCoreInternal (11.6.0):
+    - "GoogleUtilities/NSData+zlib (~> 8.0)"
+  - FirebaseInstallations (11.6.0):
+    - FirebaseCore (~> 11.6.0)
+    - GoogleUtilities/Environment (~> 8.0)
+    - GoogleUtilities/UserDefaults (~> 8.0)
+    - PromisesObjC (~> 2.4)
+  - FirebaseMessaging (11.6.0):
+    - FirebaseCore (~> 11.6.0)
+    - FirebaseInstallations (~> 11.0)
+    - GoogleDataTransport (~> 10.0)
+    - GoogleUtilities/AppDelegateSwizzler (~> 8.0)
+    - GoogleUtilities/Environment (~> 8.0)
+    - GoogleUtilities/Reachability (~> 8.0)
+    - GoogleUtilities/UserDefaults (~> 8.0)
+    - nanopb (~> 3.30910.0)
+  - GoogleAppMeasurement (11.6.0):
+    - GoogleAppMeasurement/AdIdSupport (= 11.6.0)
+    - GoogleUtilities/AppDelegateSwizzler (~> 8.0)
+    - GoogleUtilities/MethodSwizzler (~> 8.0)
+    - GoogleUtilities/Network (~> 8.0)
+    - "GoogleUtilities/NSData+zlib (~> 8.0)"
+    - nanopb (~> 3.30910.0)
+  - GoogleAppMeasurement/AdIdSupport (11.6.0):
+    - GoogleAppMeasurement/WithoutAdIdSupport (= 11.6.0)
+    - GoogleUtilities/AppDelegateSwizzler (~> 8.0)
+    - GoogleUtilities/MethodSwizzler (~> 8.0)
+    - GoogleUtilities/Network (~> 8.0)
+    - "GoogleUtilities/NSData+zlib (~> 8.0)"
+    - nanopb (~> 3.30910.0)
+  - GoogleAppMeasurement/WithoutAdIdSupport (11.6.0):
+    - GoogleUtilities/AppDelegateSwizzler (~> 8.0)
+    - GoogleUtilities/MethodSwizzler (~> 8.0)
+    - GoogleUtilities/Network (~> 8.0)
+    - "GoogleUtilities/NSData+zlib (~> 8.0)"
+    - nanopb (~> 3.30910.0)
+  - GoogleDataTransport (10.1.0):
+    - nanopb (~> 3.30910.0)
+    - PromisesObjC (~> 2.4)
+  - GoogleUtilities/AppDelegateSwizzler (8.0.2):
+    - GoogleUtilities/Environment
+    - GoogleUtilities/Logger
+    - GoogleUtilities/Network
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/Environment (8.0.2):
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/Logger (8.0.2):
+    - GoogleUtilities/Environment
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/MethodSwizzler (8.0.2):
+    - GoogleUtilities/Logger
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/Network (8.0.2):
+    - GoogleUtilities/Logger
+    - "GoogleUtilities/NSData+zlib"
+    - GoogleUtilities/Privacy
+    - GoogleUtilities/Reachability
+  - "GoogleUtilities/NSData+zlib (8.0.2)":
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/Privacy (8.0.2)
+  - GoogleUtilities/Reachability (8.0.2):
+    - GoogleUtilities/Logger
+    - GoogleUtilities/Privacy
+  - GoogleUtilities/UserDefaults (8.0.2):
+    - GoogleUtilities/Logger
+    - GoogleUtilities/Privacy
+  - GTSDK (2.7.1.0-noidfa):
+    - ZXSDK-Noidfa
+  - InputBarAccessoryView (6.3.0):
+    - InputBarAccessoryView/Core (= 6.3.0)
+  - InputBarAccessoryView/Core (6.3.0)
+  - ISEmojiView (0.3.4):
+    - Kingfisher
+  - JXSegmentedView (1.4.1)
+  - Kingfisher (8.0.1)
+  - KTVHTTPCache (3.0.2):
+    - CocoaAsyncSocket
   - Lantern (1.1.5)
-  - LiveKitClient (2.0.10):
-    - LiveKitWebRTC (~> 114.5735.18)
+  - LiveKitClient (2.0.14):
+    - LiveKitWebRTC (= 125.6422.07)
     - Logging
     - SwiftProtobuf
-  - LiveKitWebRTC (114.5735.18)
+  - LiveKitWebRTC (125.6422.07)
   - Localize-Swift (3.2.0):
     - Localize-Swift/LocalizeSwiftCore (= 3.2.0)
     - Localize-Swift/UIKit (= 3.2.0)
@@ -77,34 +142,39 @@ PODS:
   - MJExtension (3.4.2)
   - MJRefresh (3.7.9)
   - MMBAlertsPickers (1.1.93)
-  - OpenIMSDK (3.8.2):
+  - nanopb (3.30910.0):
+    - nanopb/decode (= 3.30910.0)
+    - nanopb/encode (= 3.30910.0)
+  - nanopb/decode (3.30910.0)
+  - nanopb/encode (3.30910.0)
+  - "OpenIMSDK (3.8.2+1)":
     - MJExtension
-    - OpenIMSDK/Callbacker (= 3.8.2)
-    - OpenIMSDK/CallbackProxy (= 3.8.2)
-    - OpenIMSDK/Interface (= 3.8.2)
-    - OpenIMSDK/Model (= 3.8.2)
-    - OpenIMSDK/Utils (= 3.8.2)
+    - "OpenIMSDK/Callbacker (= 3.8.2+1)"
+    - "OpenIMSDK/CallbackProxy (= 3.8.2+1)"
+    - "OpenIMSDK/Interface (= 3.8.2+1)"
+    - "OpenIMSDK/Model (= 3.8.2+1)"
+    - "OpenIMSDK/Utils (= 3.8.2+1)"
     - OpenIMSDKCore (= 3.8.2)
-  - OpenIMSDK/Callbacker (3.8.2):
+  - "OpenIMSDK/Callbacker (3.8.2+1)":
     - MJExtension
     - OpenIMSDK/Model
     - OpenIMSDK/Utils
     - OpenIMSDKCore (= 3.8.2)
-  - OpenIMSDK/CallbackProxy (3.8.2):
+  - "OpenIMSDK/CallbackProxy (3.8.2+1)":
     - MJExtension
     - OpenIMSDK/Utils
     - OpenIMSDKCore (= 3.8.2)
-  - OpenIMSDK/Interface (3.8.2):
+  - "OpenIMSDK/Interface (3.8.2+1)":
     - MJExtension
     - OpenIMSDK/Callbacker
     - OpenIMSDK/CallbackProxy
     - OpenIMSDK/Model
     - OpenIMSDKCore (= 3.8.2)
-  - OpenIMSDK/Model (3.8.2):
+  - "OpenIMSDK/Model (3.8.2+1)":
     - MJExtension
     - OpenIMSDK/Utils
     - OpenIMSDKCore (= 3.8.2)
-  - OpenIMSDK/Utils (3.8.2):
+  - "OpenIMSDK/Utils (3.8.2+1)":
     - MJExtension
     - OpenIMSDKCore (= 3.8.2)
   - OpenIMSDKCore (3.8.2)
@@ -120,34 +190,44 @@ PODS:
     - SnapKit
   - OUICore (0.0.1):
     - Alamofire (= 4.9.1)
-    - IQKeyboardManagerSwift
-    - Kingfisher (= 7.7.0)
+    - Kingfisher (= 8.0.1)
+    - KTVHTTPCache (= 3.0.2)
     - Localize-Swift (~> 3.2)
     - lottie-ios (~> 3.0)
-    - OpenIMSDK (= 3.8.2)
-    - ProgressHUD (= 14.1.0)
+    - OpenIMSDK
+    - ProgressHUD
     - RxCocoa (~> 6.0)
-    - RxDataSources (= 5.0.0)
+    - RxDataSources
     - RxKeyboard (~> 2.0)
     - RxSwift (~> 6.5)
     - SnapKit (~> 4.0)
-    - ZLPhotoBrowser (= 4.3.0)
+    - YYText
+    - ZLPhotoBrowser
   - OUICoreView (0.0.1):
-    - Lantern (= 1.1.5)
+    - KTVHTTPCache
+    - Lantern
     - OUICore
+    - SnapKit
+    - ZFPlayer (~> 4.0)
+    - ZFPlayer/AVPlayer (~> 4.0)
+    - ZFPlayer/ControlView (~> 4.0)
   - OUIIM (0.0.1):
-    - ChatLayout (= 2.0.3)
-    - DifferenceKit (= 1.3.0)
-    - InputBarAccessoryView (= 5.5.0)
-    - JXSegmentedView (= 1.3.0)
+    - ChatLayout (= 2.0.10)
+    - DifferenceKit
+    - InputBarAccessoryView
+    - ISEmojiView
+    - JXSegmentedView
     - MJRefresh
     - OUICalling
     - OUICore
     - OUICoreView
+    - ProgressHUD
     - RxRelay
     - RxSwift
     - SnapKit
-  - ProgressHUD (14.1.0)
+    - YYText
+  - ProgressHUD (14.1.3)
+  - PromisesObjC (2.4.0)
   - RxCocoa (6.8.0):
     - RxRelay (= 6.8.0)
     - RxSwift (= 6.8.0)
@@ -167,40 +247,61 @@ PODS:
   - SGCodeTextField (0.1.4)
   - SnapKit (4.2.0)
   - SwiftProtobuf (1.28.2)
-  - ZLPhotoBrowser (4.3.0):
-    - ZLPhotoBrowser/Core (= 4.3.0)
-  - ZLPhotoBrowser/Core (4.3.0)
+  - YYText (1.0.7)
+  - ZFPlayer (4.1.4):
+    - ZFPlayer/Core (= 4.1.4)
+  - ZFPlayer/AVPlayer (4.1.4):
+    - ZFPlayer/Core
+  - ZFPlayer/ControlView (4.1.4):
+    - ZFPlayer/Core
+  - ZFPlayer/Core (4.1.4)
+  - ZLPhotoBrowser (4.4.8.2):
+    - ZLPhotoBrowser/Core (= 4.4.8.2)
+  - ZLPhotoBrowser/Core (4.4.8.2)
+  - ZXSDK-Noidfa (3.3.1)
 
 DEPENDENCIES:
-  - LiveKitClient (from `https://github.com/livekit/client-sdk-swift.git`, tag `2.0.10`)
+  - AlamofireNetworkActivityLogger (from `../3rd`)
+  - Firebase/Core
+  - Firebase/Messaging
+  - GTSDK (= 2.7.1.0-noidfa)
+  - InputBarAccessoryView (from `../3rd`)
+  - ISEmojiView (from `../3rd`)
+  - JXSegmentedView
+  - Lantern (from `https://github.com/std-s/Lantern.git`)
   - Localize-Swift (~> 3.2)
   - MMBAlertsPickers
   - OUICalling (from `../`)
   - OUICore (from `../`)
   - OUICoreView (from `../`)
   - OUIIM (from `../`)
-  - ProgressHUD
+  - ProgressHUD (from `https://github.com/std-s/ProgressHUD.git`)
   - RxGesture (~> 4.0.4)
   - SGCodeTextField
+  - ZFPlayer (from `../3rd`)
+  - ZLPhotoBrowser (from `../3rd`)
 
 SPEC REPOS:
   trunk:
     - Alamofire
     - ChatLayout
+    - CocoaAsyncSocket
     - DifferenceKit
     - Differentiator
-    - InputBarAccessoryView
-    - IQKeyboardCore
-    - IQKeyboardManagerSwift
-    - IQKeyboardNotification
-    - IQKeyboardReturnManager
-    - IQKeyboardToolbar
-    - IQKeyboardToolbarManager
-    - IQTextInputViewNotification
-    - IQTextView
+    - Firebase
+    - FirebaseAnalytics
+    - FirebaseCore
+    - FirebaseCoreInternal
+    - FirebaseInstallations
+    - FirebaseMessaging
+    - GoogleAppMeasurement
+    - GoogleDataTransport
+    - GoogleUtilities
+    - GTSDK
     - JXSegmentedView
     - Kingfisher
-    - Lantern
+    - KTVHTTPCache
+    - LiveKitClient
     - LiveKitWebRTC
     - Localize-Swift
     - Logging
@@ -208,9 +309,10 @@ SPEC REPOS:
     - MJExtension
     - MJRefresh
     - MMBAlertsPickers
+    - nanopb
     - OpenIMSDK
     - OpenIMSDKCore
-    - ProgressHUD
+    - PromisesObjC
     - RxCocoa
     - RxDataSources
     - RxGesture
@@ -220,12 +322,18 @@ SPEC REPOS:
     - SGCodeTextField
     - SnapKit
     - SwiftProtobuf
-    - ZLPhotoBrowser
+    - YYText
+    - ZXSDK-Noidfa
 
 EXTERNAL SOURCES:
-  LiveKitClient:
-    :git: https://github.com/livekit/client-sdk-swift.git
-    :tag: 2.0.10
+  AlamofireNetworkActivityLogger:
+    :path: "../3rd"
+  InputBarAccessoryView:
+    :path: "../3rd"
+  ISEmojiView:
+    :path: "../3rd"
+  Lantern:
+    :git: https://github.com/std-s/Lantern.git
   OUICalling:
     :path: "../"
   OUICore:
@@ -234,44 +342,61 @@ EXTERNAL SOURCES:
     :path: "../"
   OUIIM:
     :path: "../"
+  ProgressHUD:
+    :git: https://github.com/std-s/ProgressHUD.git
+  ZFPlayer:
+    :path: "../3rd"
+  ZLPhotoBrowser:
+    :path: "../3rd"
 
 CHECKOUT OPTIONS:
-  LiveKitClient:
-    :git: https://github.com/livekit/client-sdk-swift.git
-    :tag: 2.0.10
+  Lantern:
+    :commit: c8b0acdec74c42f1ac4b69449c65ade2ae8d86e7
+    :git: https://github.com/std-s/Lantern.git
+  ProgressHUD:
+    :commit: 1f6664747e675b3ff91754d490744bfb4e60699a
+    :git: https://github.com/std-s/ProgressHUD.git
 
 SPEC CHECKSUMS:
   Alamofire: 85e8a02c69d6020a0d734f6054870d7ecb75cf18
-  ChatLayout: 0e958d11b184b64116eb8b37009e4f1aa5b9385f
+  AlamofireNetworkActivityLogger: 456afe20d8593fe85a95e3a70750e2bccfeafb25
+  ChatLayout: 004369aa1d00f6490660980c1af48a546388ea2e
+  CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
   DifferenceKit: ab185c4d7f9cef8af3fcf593e5b387fb81e999ca
   Differentiator: e8497ceab83c1b10ca233716d547b9af21b9344d
-  InputBarAccessoryView: 1d7b0a672b36e370f01f264b3907ef39d03328e3
-  IQKeyboardCore: 28c8bf3bcd8ba5aa1570b318cbc4da94b861711e
-  IQKeyboardManagerSwift: 0c6fbbaa2e60739e48d7cf59f25661471a7a3a65
-  IQKeyboardNotification: d7382c4466c5a5adef92c7452ebf861b36050088
-  IQKeyboardReturnManager: 972be48528ce9e7508ab3ab15ac7efac803f17f5
-  IQKeyboardToolbar: d4bdccfb78324aec2f3920659c77bb89acd33312
-  IQKeyboardToolbarManager: 6f4072ac620c2572d4af8c09f42a801f3e4909f7
-  IQTextInputViewNotification: f5e954d8881fd9808b744e49e024cc0d4bcfe572
-  IQTextView: ae13b4922f22e6f027f62c557d9f4f236b19d5c7
-  JXSegmentedView: fec0d335355b6e019c494fe2e030bde8a36d2df6
-  Kingfisher: f043ac666dfc96c1f37604f93effb45a7ee3a3e1
+  Firebase: 374a441a91ead896215703a674d58cdb3e9d772b
+  FirebaseAnalytics: 7114c698cac995602e3b1b96663473e50d54d6e7
+  FirebaseCore: 48b0dd707581cf9c1a1220da68223fb0a562afaa
+  FirebaseCoreInternal: d98ab91e2d80a56d7b246856a8885443b302c0c2
+  FirebaseInstallations: efc0946fc756e4d22d8113f7c761948120322e8c
+  FirebaseMessaging: e1aca1fcc23e8b9eddb0e33f375ff90944623021
+  GoogleAppMeasurement: 6a9e6317b6a6d810ad03d4a66564ca6c4c5818a3
+  GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7
+  GoogleUtilities: 26a3abef001b6533cf678d3eb38fd3f614b7872d
+  GTSDK: 4ad19708180f6ff6aa7650d07f5b57698bb4445f
+  InputBarAccessoryView: 55a728753108bdba75a036ffe8db291abae5910e
+  ISEmojiView: 712c69ede3eeec4dc01728c0a580a5d48acc4a2a
+  JXSegmentedView: cd73555ce2134d1656db2cb383ba9c2f36fb5078
+  Kingfisher: f08adbfe0e6806e9f5666e69b31fc4f17342d0cc
+  KTVHTTPCache: 5711692cdf9a5ecfe829b1e16577deb3ffe3dc86
   Lantern: b192e7146c6d04e15e627f37281254a6a8593703
-  LiveKitClient: 595d94a796467c73978815e825a5c59cdcb0dc21
-  LiveKitWebRTC: 2ece32ec8de2f15053a604886a2328a7f2c0ad66
+  LiveKitClient: 5257248932a54e8290a52fb9508394a7389486c6
+  LiveKitWebRTC: 99d224d0d657e09b9463d03376194b14f308ab1e
   Localize-Swift: 6f4475136bdb0d7b2882ea3d4ea919d70142b232
   Logging: beeb016c9c80cf77042d62e83495816847ef108b
   lottie-ios: c55158d67d0629a260625cc2ded2052b829e3c3e
   MJExtension: e97d164cb411aa9795cf576093a1fa208b4a8dd8
   MJRefresh: ff9e531227924c84ce459338414550a05d2aea78
   MMBAlertsPickers: d52d288114c7dad4e4f1282fb2b1f1189ccc117a
-  OpenIMSDK: 5b3406ce1ad34ce92a3a30694a73c80572ff615a
+  nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
+  OpenIMSDK: 242d73b44c10ddcc789b7c8016c7fe135234061a
   OpenIMSDKCore: aaffd63079a874d9272b8b962598723cb8128d32
   OUICalling: 958bc625d668f44c79b5ad1264f5f2ae11a82c48
-  OUICore: 7b0cd233f136c63e22cc6a6f44de301e99446fd5
-  OUICoreView: 2bd1543051576d41cd5044f7e521a15524a5dcd1
-  OUIIM: 4780de91df9e9c1bfabde6ac832a491b035aa2e5
-  ProgressHUD: c4a55f108815c46a6bf082407d2f806840b7a869
+  OUICore: 2a7c0f4358739fa5d01644d997542c8435fc8206
+  OUICoreView: 6b0a7c78cf64dcbe5081e35d062fea503932eb06
+  OUIIM: 8b2f7aa93be5a0365e906337ff96ab7e20376955
+  ProgressHUD: b736f0c6de97f37f64e847f80689c23a14026adf
+  PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   RxCocoa: 2d33c1e1e5d66492052ad46b11024ae287572880
   RxDataSources: aa47cc1ed6c500fa0dfecac5c979b723542d79cf
   RxGesture: f3efb47ed2d26a8082f7b660d4a59970e275a7f8
@@ -281,8 +406,11 @@ SPEC CHECKSUMS:
   SGCodeTextField: 6b65291a52a092c24bd08cc32873e024223b2371
   SnapKit: fe8a619752f3f27075cc9a90244d75c6c3f27e2a
   SwiftProtobuf: 4dbaffec76a39a8dc5da23b40af1a5dc01a4c02d
-  ZLPhotoBrowser: 7c5c3ea5e42428d26dc74a52fe821aa2a9274fa3
+  YYText: 5c461d709e24d55a182d1441c41dc639a18a4849
+  ZFPlayer: 5cf39e8d9f0c2394a014b0db4767b5b5a6bffe13
+  ZLPhotoBrowser: cd023607d05a72d27a3ae57f50dbf86910713a2c
+  ZXSDK-Noidfa: f3cc8e4b6b4775df301489ae0792b727e193e7d3
 
-PODFILE CHECKSUM: bb8aeeb06698e82ea05389d7e7a8d27b1232140f
+PODFILE CHECKSUM: 6237ce52dbbf5214ea449ac6dd357a3f123865ce
 
 COCOAPODS: 1.15.2

@@ -16,4 +16,17 @@ extension String {
         result.deallocate()
         return String(format: hash as String)
     }
+    // Contains at least one number, one letter, and one special character.
+    func validatePassword() -> Bool {
+        let passwordRegex = "^(?=.*[a-zA-Z])(?=.*\\d).{6,20}$"
+        
+        do {
+            let regex = try NSRegularExpression(pattern: passwordRegex, options: [])
+            let matches = regex.matches(in: self, options: [], range: NSRange(location: 0, length: self.utf16.count))
+            return matches.count > 0
+        } catch {
+            print("Invalid regex pattern: \(error.localizedDescription)")
+            return false
+        }
+    }
 }

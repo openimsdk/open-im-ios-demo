@@ -3,7 +3,9 @@ import Alamofire
 import Foundation
 import OUICore
 import RxSwift
+import ProgressHUD
 
+// 注册/忘记密码
 public enum UsedFor: Int {
     case register = 1
     case forgotPassword = 2
@@ -14,9 +16,12 @@ typealias CompletionHandler = (_ errCode: Int, _ errMsg: String?) -> Void
 
 open class AccountViewModel {
     
-    static let API_BASE_URL = UserDefaults.standard.string(forKey: bussinessServerAddrKey)!
-    static let ADMIN_BASE_URL = UserDefaults.standard.string(forKey: adminServerAddrKey)!
+    // 业务服务器地址
+    static let API_BASE_URL = UserDefaults.standard.string(forKey: bussinessSeverAddrKey)!
+    static let ADMIN_BASE_URL = UserDefaults.standard.string(forKey: adminSeverAddrKey)!
+    // 实际开发，抽离网络部分
     static let IMPreLoginAccountKey = "IMPreLoginAccountKey"
+    static let IMPreLoginTypeKey = "IMPreLoginTypeKey"
     static let IMUidKey = "DemoIMUidKey"
     static let IMTokenKey = "DemoIMTokenKey"
     static let bussinessTokenKey = "bussinessTokenKey"
@@ -34,8 +39,13 @@ open class AccountViewModel {
     
     private let _disposeBag = DisposeBag()
     
-    //The business layer provides data to OIMUIKit
-    // Business query friend logic
+    static private func kickoff(errCode: Int) {
+        if errCode == 1501 || errCode == 1503 || errCode == 1504 || errCode == 1505 || errCode == 1506 {
+            NotificationCenter.default.post(name: .init("logout"), object: nil)
+        }
+    }
+    // 业务层提供给OIMUIKit数据
+    // 业务查询好友逻辑
     static func ifQueryFriends() {
         
         OIMApi.queryFriendsWithCompletionHandler = { (keywords, completion: @escaping ([UserInfo]) -> Void) in
@@ -45,11 +55,13 @@ open class AccountViewModel {
                 }
                 completion(result)
             }, completionHandler: {(errCode, errMsg) -> Void in
+                kickoff(errCode: errCode)
                 completion([])
             })
         }
     }
     
+    // 业务查询用户信息
     static func ifQueryUserInfo() {
         
         OIMApi.queryUsersInfoWithCompletionHandler = { (keywords, completion: @escaping ([UserInfo]) -> Void) in
@@ -63,25 +75,29 @@ open class AccountViewModel {
                              faceURL: $0.faceURL,
                              birth: $0.birth,
                              gender: Gender(rawValue: $0.gender!),
-                             landline: $0.telephone
+                             landline: $0.telephone,
+                             forbidden: $0.forbidden,
+                             allowAddFriend: $0.allowAddFriend
                     )
                 }
                 completion(result)
             }, completionHandler: {(errCode, errMsg) -> Void in
+                kickoff(errCode: errCode)
                 completion([])
             })
         }
     }
     
     static func ifQeuryConfig() {
-        OIMApi.queryConfigHandler = { (completion: @escaping ([String: Any]) -> Void) in
-            completion(AccountViewModel.clientConfig?.toMap() ?? [:])
+        OIMApi.queryConfigHandler = { (completion: (Int, [String: Any]) -> Void) in
+            completion(0, AccountViewModel.clientConfig?.config?.toMap() ?? [:])
         }
     }
     
-    static func loginDemo(phone: String? = nil, account: String? = nil, psw: String? = nil, verificationCode: String? = nil, areaCode: String, completionHandler: @escaping CompletionHandler) {
+    static func loginDemo(phone: String? = nil, account: String? = nil, email: String? = nil, psw: String? = nil, verificationCode: String? = nil, areaCode: String, completionHandler: @escaping CompletionHandler) {
         let body = JsonTool.toJson(fromObject: Request(phoneNumber: phone,
                                                        account: account,
+                                                       email: email,
                                                        psw: psw,
                                                        verificationCode: verificationCode,
                                                        areaCode: areaCode)).data(using: .utf8)
@@ -89,14 +105,14 @@ open class AccountViewModel {
         var req = try! URLRequest(url: API_BASE_URL + LoginAPI, method: .post)
         req.httpBody = body
         req.addValue(UUID().uuidString, forHTTPHeaderField: "operationID")
-
+        
         Alamofire.request(req).responseString { (response: DataResponse<String>) in
             switch response.result {
             case .success(let result):
                 if let res = JsonTool.fromJson(result, toClass: Response<UserEntity>.self) {
                     if res.errCode == 0 {
-                        // 登录IM
-                        savePreLoginAccount(phone)
+                        let cur = phone != nil ? phone : (email != nil ? email : account)
+                        savePreLoginAccount(cur)
                         loginIM(uid: res.data!.userID, imToken: res.data!.imToken, chatToken: res.data!.chatToken, completionHandler: completionHandler)
                     } else {
                         completionHandler(res.errCode, res.errMsg)
@@ -111,15 +127,27 @@ open class AccountViewModel {
         }
     }
     
-    static func registerAccount(phone: String,
-                                areaCode: String,
+    private static func queryUserInfoFromChatServer(userID: String) {
+        AccountViewModel.queryUserInfo(userIDList: [userID],
+                                       valueHandler: { infos in
+            guard let info = infos.first else { return }
+            
+            IMController.shared.enableRing = info.allowBeep == 2
+            IMController.shared.enableVibration = info.allowVibration == 2
+        }, completionHandler: { (errCode, errMsg) in
+            kickoff(errCode: errCode)
+        })
+    }
+    
+    static func registerAccount(phone: String?,
+                                areaCode: String?,
                                 verificationCode: String,
                                 password: String,
                                 faceURL: String,
                                 nickName: String,
                                 birth: Int = Int(NSDate().timeIntervalSince1970),
                                 gender: Int = 1,
-                                email: String = "",
+                                email: String?,
                                 invitationCode: String? = nil,
                                 completionHandler: @escaping CompletionHandler)
     {
@@ -133,13 +161,14 @@ open class AccountViewModel {
                                         nickName: nickName,
                                         birth: birth,
                                         gender: gender,
+                                        email: email,
                                         invitationCode: invitationCode)).data(using: .utf8)
         
         var req = try! URLRequest(url: API_BASE_URL + RegisterAPI, method: .post)
         req.httpBody = body
         req.addValue(UUID().uuidString, forHTTPHeaderField: "operationID")
         
-        Alamofire.request(req).responseString(encoding: .utf8) { (response: DataResponse<String>) in
+        Alamofire.request(req).responseString() { (response: DataResponse<String>) in
             switch response.result {
             case .success(let result):
                 if let res = JsonTool.fromJson(result, toClass: Response<UserEntity>.self) {
@@ -156,12 +185,13 @@ open class AccountViewModel {
         }
     }
     
-    // [usedFor] 1: Register, 2: Reset password, 3: Log in
-    static func requestCode(phone: String, areaCode: String, invaitationCode: String? = nil, useFor: UsedFor, completionHandler: @escaping CompletionHandler) {
+    // [usedFor] 1：注册，2：重置密码， 3: 登录
+    static func requestCode(phone: String? = nil, areaCode: String? = nil, email: String? = nil, invaitationCode: String? = nil, useFor: UsedFor, completionHandler: @escaping CompletionHandler) {
         let body = JsonTool.toJson(fromObject:
                                     CodeRequest(
                                         phone: phone,
                                         areaCode: areaCode,
+                                        email: email,
                                         usedFor: useFor.rawValue,
                                         invaitationCode: invaitationCode)).data(using: .utf8)
         
@@ -186,11 +216,13 @@ open class AccountViewModel {
         }
     }
     
-    static func verifyCode(phone: String, areaCode: String, useFor: UsedFor, verificationCode: String, completionHandler: @escaping CompletionHandler) {
+    // [usedFor] 1：注册，2：重置密码
+    static func verifyCode(phone: String?, areaCode: String?, email: String? = nil, useFor: UsedFor, verificationCode: String, completionHandler: @escaping CompletionHandler) {
         let body = JsonTool.toJson(fromObject:
                                     CodeRequest(
                                         phone: phone,
                                         areaCode: areaCode,
+                                        email: email,
                                         usedFor: useFor.rawValue,
                                         verificationCode: verificationCode)).data(using: .utf8)
         
@@ -214,8 +246,9 @@ open class AccountViewModel {
         }
     }
     
-    static func resetPassword(phone: String,
-                              areaCode: String,
+    static func resetPassword(phone: String?,
+                              areaCode: String?,
+                              email: String?,
                               verificationCode: String,
                               password: String,
                               completionHandler: @escaping CompletionHandler)
@@ -223,6 +256,7 @@ open class AccountViewModel {
         let body = JsonTool.toJson(fromObject:
                                     Request(
                                         phoneNumber: phone,
+                                        email: email,
                                         psw: password,
                                         verificationCode: verificationCode,
                                         areaCode: areaCode)).data(using: .utf8)
@@ -247,15 +281,17 @@ open class AccountViewModel {
         }
     }
     
-    static func changePassword(userID: String, password: String, completionHandler: @escaping CompletionHandler)
+    static func changePassword(userID: String, current password1: String, to password2: String, completionHandler: @escaping CompletionHandler)
     {
         let body = JsonTool.toJson(fromObject:
-                                    UpdateUserInfoRequest(
+                                    ChangePasswordRequest(
                                         userID: userID,
-                                        password: password)).data(using: .utf8)
+                                        currentPassword: password1,
+                                        newPassword: password2)).data(using: .utf8)
         
         var req = try! URLRequest(url: API_BASE_URL + ChangePasswordAPI, method: .post)
         req.httpBody = body
+        req.addValue(UserDefaults.standard.string(forKey: bussinessTokenKey)!, forHTTPHeaderField: "token")
         req.addValue(UUID().uuidString, forHTTPHeaderField: "operationID")
         
         Alamofire.request(req).responseString { (response: DataResponse<String>) in
@@ -265,6 +301,7 @@ open class AccountViewModel {
                     if res.errCode == 0 {
                         completionHandler(res.errCode, nil)
                     } else {
+                        kickoff(errCode: res.errCode)
                         completionHandler(res.errCode, res.errMsg)
                     }
                 } else {}
@@ -274,6 +311,7 @@ open class AccountViewModel {
         }
     }
     
+    // 更新个人信息
     static func updateUserInfo(userID: String,
                                account: String? = nil,
                                areaCode: String? = nil,
@@ -308,13 +346,14 @@ open class AccountViewModel {
         req.addValue(UserDefaults.standard.string(forKey: bussinessTokenKey)!, forHTTPHeaderField: "token")
         req.addValue(UUID().uuidString, forHTTPHeaderField: "operationID")
         
-        Alamofire.request(req).responseString(encoding: .utf8) { (response: DataResponse<String>) in
+        Alamofire.request(req).responseString { (response: DataResponse<String>) in
             switch response.result {
             case .success(let result):
                 if let res = JsonTool.fromJson(result, toClass: Response<UpdateUserInfoRequest>.self) {
                     if res.errCode == 0 {
                         completionHandler(res.errCode, nil)
                     } else {
+                        kickoff(errCode: res.errCode)
                         completionHandler(res.errCode, res.errMsg)
                     }
                 } else {}
@@ -324,6 +363,7 @@ open class AccountViewModel {
         }
     }
     
+    // 获取个人信息
     static func queryUserInfo(pageNumber: Int = 1,
                               showNumber: Int = 10,
                               userIDList: [String],
@@ -345,9 +385,12 @@ open class AccountViewModel {
                     if res.errCode == 0 {
                         valueHandler(res.data!.users)
                     } else {
+                        kickoff(errCode: res.errCode)
                         completionHandler(res.errCode, res.errMsg)
                     }
-                } else {}
+                } else {
+                    completionHandler(-1, result)
+                }
             case .failure(let err):
                 completionHandler(-1, err.localizedDescription)
             }
@@ -378,6 +421,7 @@ open class AccountViewModel {
                     if res.errCode == 0 {
                         valueHandler(res.data!.users)
                     } else {
+                        kickoff(errCode: res.errCode)
                         completionHandler(res.errCode, res.errMsg)
                     }
                 } else {
@@ -390,16 +434,20 @@ open class AccountViewModel {
     }
     
     static func loginIM(uid: String, imToken: String, chatToken: String, completionHandler: @escaping CompletionHandler) {
+        
         IMController.shared.login(uid: uid, token: imToken) { resp in
             print("login onSuccess \(String(describing: resp))")
+            completionHandler(0, nil)
+            
             ifQueryFriends()
             ifQueryUserInfo()
             ifQeuryConfig()
             saveUser(uid: uid, imToken: imToken, chatToken: chatToken)
-            completionHandler(0, nil)
+            queryUserInfoFromChatServer(userID: uid)
         } onFail: { (code: Int, msg: String?) in
             let reason = "login onFail: code \(code), reason \(String(describing: msg))"
             completionHandler(code, reason)
+            kickoff(errCode: code)
             saveUser(uid: nil, imToken: nil, chatToken: nil)
         }
     }
@@ -410,7 +458,7 @@ open class AccountViewModel {
         UserDefaults.standard.set(chatToken, forKey: bussinessTokenKey)
         UserDefaults.standard.synchronize()
         
-        IMController.shared.setup(businessServer: UserDefaults.standard.string(forKey: bussinessServerAddrKey)!, businessToken: chatToken)
+        IMController.shared.setup(businessServer: UserDefaults.standard.string(forKey: bussinessSeverAddrKey)!, businessToken: chatToken)
     }
     
     static func savePreLoginAccount(_ account: String?) {
@@ -433,28 +481,70 @@ open class AccountViewModel {
                           expiredTime: nil)
     }
     
-    static func getClientConfig() {
-        let body = try! JSONSerialization.data(withJSONObject: ["operationID": UUID().uuidString], options: .prettyPrinted)
+    
+    static func getClientConfig(completion: ((ClientConfigData?) -> Void)? = nil) {
+        let configData = ClientConfigData()
+        let config = ClientConfigData.Config()
+        config.discoverPageURL = discoverPageURL
+        config.allowSendMsgNotFriend = allowSendMsgNotFriend
         
-        var req = try! URLRequest(url: ADMIN_BASE_URL + GetClientConfigAPI, method: .post)
-        req.httpBody = body
-        req.addValue(UUID().uuidString, forHTTPHeaderField: "operationID")
+        completion?(configData)
+        /*
+         let body = try! JSONSerialization.data(withJSONObject: ["operationID": UUID().uuidString], options: .prettyPrinted)
+         
+         var req = try! URLRequest(url: ADMIN_BASE_URL + GetClientConfigAPI, method: .post)
+         req.httpBody = body
+         req.addValue(UUID().uuidString, forHTTPHeaderField: "operationID")
+         
+         Alamofire.request(req).responseString(encoding: .utf8) { (response: DataResponse<String>) in
+         switch response.result {
+         case .success(let result):
+         if let res = JsonTool.fromJson(result, toClass: Response<ClientConfigData>.self) {
+         if res.errCode == 0 {
+         clientConfig = res.data
+         completion?(clientConfig)
+         } else {
+         completion?(nil)
+         }
+         } else {
+         completion?(nil)
+         }
+         case .failure(_):
+         completion?(nil)
+         }
+         }
+         */
+    }
+    
+    // 配置
+    static var clientConfig: ClientConfigData?
+    
+    static public func checkVersion() async -> (url: String, version: String)? {
         
-        Alamofire.request(req).responseString(encoding: .utf8) { (response: DataResponse<String>) in
-            switch response.result {
-            case .success(let result):
-                if let res = JsonTool.fromJson(result, toClass: Response<ClientConfigData>.self) {
-                    if res.errCode == 0 {
-                        clientConfig = res.data
+        let param = ["_api_key": "",
+                     "appKey": ""]
+        
+        guard let url = URL(string: "https://www.pgyer.com/apiv2/app/check") else { return nil }
+        
+        return await withCheckedContinuation { continuation in
+            Alamofire.request(url, method: .post, parameters: param, headers: ["contentType": "application/x-www-form-urlencoded"]).responseJSON { response in
+                
+                switch response.result {
+                case .success(let data):
+                    if let json = data as? [String: Any], let data2 = json["data"] as? [String: Any], let url = data2["appURl"] as? String {
+                        let version = "\((data2["buildVersion"] as! String)) + \((data2["buildVersionNo"] as! String))"
+                        
+                        continuation.resume(returning: (url: url, version: version))
                     } else {
+                        continuation.resume(returning: nil)
                     }
-                } else {}
-            case .failure(_):
-                break
+                case .failure(_):
+                    
+                    continuation.resume(returning: nil)
+                }
             }
         }
     }
-    static var clientConfig: ClientConfigData?
 }
 
 
@@ -465,8 +555,11 @@ class Request: Encodable {
     private let verifyCode: String?
     private let platform: Int = 1
     private let account: String?
-    init(phoneNumber: String? = nil, account: String? = nil, psw: String? = nil, verificationCode: String? = nil, areaCode: String? = nil) {
+    private let email: String?
+    
+    init(phoneNumber: String? = nil, account: String? = nil, email: String? = nil, psw: String? = nil, verificationCode: String? = nil, areaCode: String? = nil) {
         self.phoneNumber = phoneNumber
+        self.email = email
         self.account = account
         self.password = psw?.md5() ?? ""
         self.areaCode = areaCode
@@ -496,23 +589,26 @@ class RegisterRequest: Encodable {
     private let deviceID = UUID().uuidString
     private let autoLogin = true
     
-    init(phone: String, areaCode: String, verificationCode: String?, password: String?, faceURL: String?, nickName: String?, birth: Int?, gender: Int?, email: String? = nil, invitationCode: String?) {
-        self.user = UpdateUserInfoRequest(userID: "", phone: phone, password: password, areaCode: areaCode, nickname: nickName)
+    init(phone: String?, areaCode: String?, verificationCode: String?, password: String?, faceURL: String?, nickName: String?, birth: Int?, gender: Int?, email: String? = nil, invitationCode: String?) {
+        self.user = UpdateUserInfoRequest(phone: phone, password: password, areaCode: areaCode, nickname: nickName, email: email)
         self.verifyCode = verificationCode
         self.invitationCode = invitationCode
     }
 }
 
 class CodeRequest: Encodable {
-    private let areaCode: String
-    private let phoneNumber: String
+    private let areaCode: String?
+    private let phoneNumber: String?
+    private let email: String?
     private let usedFor: Int
     private let verifyCode: String?
     private let invaitationCode: String?
     private let platform: Int = 1
     
-    init(phone: String, areaCode: String, usedFor: Int, invaitationCode: String? = nil, verificationCode: String? = nil) {
+    init(phone: String? = nil, areaCode: String? = nil, email: String? = nil, usedFor: Int, invaitationCode: String? = nil, verificationCode: String? = nil) {
+        assert(phone != nil || email != nil, "phone or email is nil")
         self.phoneNumber = phone
+        self.email = email
         self.areaCode = areaCode
         self.usedFor = usedFor
         self.verifyCode = verificationCode
@@ -549,14 +645,14 @@ class UpdateUserInfoRequest: Codable {
     private var platform: Int? = 1
     var birth: Int?
     var gender: Int?
-    let email: String?
+    var email: String?
     let englishName: String?
     let forbidden: Int?
     let allowAddFriend: Int?
     let allowBeep: Int?
     let allowVibration: Int?
     
-    init(userID: String,
+    init(userID: String? = nil,
          phone: String? = nil,
          password: String? = nil,
          telephone: String? = nil,
@@ -596,6 +692,18 @@ class UpdateUserInfoRequest: Codable {
     }
 }
 
+class ChangePasswordRequest: Encodable {
+    private let userID: String
+    private let currentPassword: String
+    private let newPassword: String
+    
+    init(userID: String, currentPassword: String, newPassword: String) {
+        self.userID = userID
+        self.currentPassword = currentPassword.md5
+        self.newPassword = newPassword.md5
+    }
+}
+
 class QueryFriendsRequest: Encodable {
     private let pagination: Pagination
     private let keyword: String
@@ -618,17 +726,22 @@ class Pagination: Encodable {
 }
 
 class ClientConfigData: Codable {
-    var discoverPageURL: String?
-    var ordinaryUserAddFriend: Int?
-    var bossUserID: String?
-    var adminURL: String?
-    var allowSendMsgNotFriend: Int?
-    var needInvitationCodeRegister: Int?
-    var robots: [String]?
     
-    func toMap() -> [String: Any] {
-        return JsonTool.toMap(fromObject: self)
+    class Config: Codable {
+        var discoverPageURL: String?
+        var ordinaryUserAddFriend: String?
+        var bossUserID: String?
+        var adminURL: String?
+        var allowSendMsgNotFriend: String?
+        var needInvitationCodeRegister: String?
+        var robots: [String]?
+        
+        func toMap() -> [String: Any] {
+            return JsonTool.toMap(fromObject: self)
+        }
     }
+    
+    var config: Config?
 }
 
 struct DemoError: Error, Decodable {

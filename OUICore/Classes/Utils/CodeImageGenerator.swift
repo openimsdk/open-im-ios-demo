@@ -6,15 +6,15 @@ public enum CodeGeneratorType: String {
 }
 
 public class CodeImageGenerator {
-    /// 创建二维码
+
     public static func createQRCodeImage(content: String, size: CGSize, foregroundColor: UIColor, backgroundColor: UIColor) -> UIImage? {
         let generatorType = CodeGeneratorType.typeQrCode
         guard let codeFilter = CIFilter(name: generatorType.rawValue), let data = content.data(using: .utf8) else {
             return nil
         }
-        // 设置内容
+
         codeFilter.setValue(data, forKey: "inputMessage")
-        // 设置容错等级
+
         codeFilter.setValue("H", forKey: "inputCorrectionLevel")
         guard let codeImage = codeFilter.outputImage else {
             return nil

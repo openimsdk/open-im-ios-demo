@@ -6,6 +6,7 @@ import RxGesture
 import SnapKit
 import ProgressHUD
 import Localize_Swift
+import OUICore
 //import GTSDK
 
 public class InputPasswordViewController: UIViewController {
@@ -13,10 +14,12 @@ public class InputPasswordViewController: UIViewController {
     private let _disposeBag = DisposeBag()
     lazy var basicInfo: [String: String] = [:]
     private var usedFor: UsedFor = .register
-    
-    init(usedFor: UsedFor = .register) {
+    private var operateType: LoginType!
+
+    init(usedFor: UsedFor = .register, operateType: LoginType) {
         super.init(nibName: nil, bundle: nil)
         self.usedFor = usedFor
+        self.operateType = operateType
     }
     
     required init?(coder: NSCoder) {
@@ -25,8 +28,8 @@ public class InputPasswordViewController: UIViewController {
     
     private let nameLabel: UILabel = {
         let v = UILabel()
-        v.font = UIFont.preferredFont(forTextStyle: .footnote)
-        v.text = "昵称".localized()
+        v.font = .f12
+        v.text = "nickname".localized()
         v.textColor = DemoUI.color_8E9AB0
         
         return v
@@ -34,7 +37,7 @@ public class InputPasswordViewController: UIViewController {
     
     private lazy var nameTextField: UITextField = {
         let v = UITextField()
-        v.placeholder = "请输入你的昵称".localized()
+        v.placeholder = "plsEnterYourX".localizedFormat("nickname".localized())
         v.layer.cornerRadius = DemoUI.cornerRadius
         v.layer.borderColor = DemoUI.color_E8EAEF.cgColor
         v.layer.borderWidth = 1
@@ -49,9 +52,9 @@ public class InputPasswordViewController: UIViewController {
     
     private lazy var pswLabel: UILabel = {
         let v = UILabel()
-        v.font = .preferredFont(forTextStyle: .footnote)
+        v.font = .f12
         v.textColor = DemoUI.color_8E9AB0
-        v.text = "密码".localized()
+        v.text = "password".localized()
         
         return v
     }()
@@ -76,7 +79,7 @@ public class InputPasswordViewController: UIViewController {
     
     private lazy var pswTextField: UITextField = {
         let v = UITextField()
-        v.placeholder = "请输入密码".localized()
+        v.placeholder = "plsEnterPassword".localized()
         v.isSecureTextEntry = true
         v.rightViewMode = .always
         v.layer.cornerRadius = DemoUI.cornerRadius
@@ -93,16 +96,16 @@ public class InputPasswordViewController: UIViewController {
     
     private lazy var againPswLabel: UILabel = {
         let v = UILabel()
-        v.font = UIFont.preferredFont(forTextStyle: .footnote)
+        v.font = .f12
         v.textColor = DemoUI.color_8E9AB0
-        v.text = "确认密码".localized()
+        v.text = "confirmPassword".localized()
         
         return v
     }()
     
     private lazy var againPswTextField: UITextField = {
         let v = UITextField()
-        v.placeholder = "请再次输入密码".localized()
+        v.placeholder = "plsConfirmPasswordAgain".localized()
         v.isSecureTextEntry = true
         v.rightViewMode = .always
         v.layer.cornerRadius = DemoUI.cornerRadius
@@ -117,13 +120,16 @@ public class InputPasswordViewController: UIViewController {
         return v
     }()
     
-    lazy var loginBtn: UIButton = {
+    lazy var nextStepBtn: UIButton = {
         let v = UIButton(type: .system)
-        v.setTitle("下一步".localized(), for: .normal)
+        v.setTitle("nextStep".localized(), for: .normal)
         v.setTitleColor(.white, for: .normal)
-        v.backgroundColor = DemoUI.color_0089FF
-        v.titleLabel?.font = UIFont.preferredFont(forTextStyle: .title3)
+        v.titleLabel?.font = .f20
         v.layer.cornerRadius = DemoUI.cornerRadius
+        v.layer.masksToBounds = true
+        v.isEnabled = false
+        v.setBackgroundColor(.c0089FF, for: .normal)
+        v.setBackgroundColor(.c0089FF.withAlphaComponent(0.5), for: .disabled)
         
         v.rx.tap.subscribe(onNext: { [weak self] _ in
             guard let sself = self else { return }
@@ -146,83 +152,107 @@ public class InputPasswordViewController: UIViewController {
         bgImageView.frame = view.bounds
         view.addSubview(bgImageView)
         
-        let backButton = UIButton(type: .system)
-        backButton.setImage(UIImage(systemName: "chevron.left"), for: .normal)
+        bgImageView.isUserInteractionEnabled = true
+        let tap = UITapGestureRecognizer()
+        bgImageView.addGestureRecognizer(tap)
+        tap.rx.event.subscribe(onNext: { [weak self] _ in
+            self?.view.endEditing(true)
+        }).disposed(by: _disposeBag)
+        
+        let backButton = UIButton(type: .custom)
+        backButton.setImage(UIImage(named: "common_back_icon"), for: .normal)
         backButton.rx.tap.subscribe(onNext: { [weak self] in
             self?.navigationController?.popViewController(animated: true)
         }).disposed(by: _disposeBag)
 
         view.addSubview(backButton)
         backButton.snp.makeConstraints { make in
-            make.leading.equalToSuperview().offset(24)
-            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(8)
+            make.leading.equalToSuperview().offset(28)
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(10.h)
         }
         let label = UILabel()
-        label.text = usedFor == .forgotPassword ? "设置密码".localized() : "设置信息".localized()
+        label.text = "set".localized() + (usedFor == .forgotPassword ? "password".localized() : "info".localized())
         label.font = .systemFont(ofSize: 22, weight: .semibold)
         label.textColor = .systemBlue
 
         view.addSubview(label)
         label.snp.makeConstraints { make in
-            make.leading.equalTo(backButton)
-            make.top.equalTo(backButton.snp.bottom).offset(42)
+            make.leading.equalToSuperview().offset(32)
+            make.top.equalTo(backButton.snp.bottom).offset(38.h)
         }
 
         let pswTipsLabel = UILabel()
         pswTipsLabel.textColor = DemoUI.color_8E9AB0
-        pswTipsLabel.font = .preferredFont(forTextStyle: .footnote)
-        pswTipsLabel.text = "包含6~20位字符、大小写字母、特殊字符组合"
+        pswTipsLabel.font = .f12
+        pswTipsLabel.text = "loginPwdFormat".localized()
         
         let nameStack = UIStackView(arrangedSubviews: [nameLabel, nameTextField])
         nameStack.axis = .vertical
-        nameStack.spacing = 4
+        nameStack.spacing = 6
         
         nameTextField.snp.makeConstraints { make in
-            make.height.equalTo(42)
+            make.height.equalTo(42.h)
         }
         
         let pswStack = UIStackView(arrangedSubviews: [pswLabel, pswTextField, pswTipsLabel])
         pswStack.axis = .vertical
-        pswStack.spacing = 4
+        pswStack.spacing = 6
         
         pswTextField.snp.makeConstraints { make in
-            make.height.equalTo(42)
+            make.height.equalTo(42.h)
         }
         
         let againStack = UIStackView(arrangedSubviews: [againPswLabel, againPswTextField])
         againStack.axis = .vertical
-        againStack.spacing = 4
+        againStack.spacing = 6
         
         againPswTextField.snp.makeConstraints { make in
-            make.height.equalTo(42)
+            make.height.equalTo(42.h)
         }
 
         let verSV = UIStackView(arrangedSubviews:
                                     usedFor == .forgotPassword ?
                                 [pswStack, againStack] : [nameStack, pswStack, againStack])
-        verSV.spacing = 24
+        verSV.spacing = 17.h
         verSV.axis = .vertical
 
         view.addSubview(verSV)
 
         verSV.snp.makeConstraints { make in
             make.leading.trailing.equalToSuperview().inset(32)
-            make.top.equalTo(label.snp.bottom).offset(48)
+            make.top.equalTo(label.snp.bottom).offset(29.h)
         }
 
-        view.addSubview(loginBtn)
-        loginBtn.snp.makeConstraints { make in
-            make.top.equalTo(verSV.snp.bottom).offset(48)
+        view.addSubview(nextStepBtn)
+        nextStepBtn.snp.makeConstraints { make in
+            make.top.equalTo(verSV.snp.bottom).offset(47.h)
             make.leading.trailing.equalTo(verSV)
-            make.height.equalTo(40)
+            make.height.equalTo(42.h)
         }
-
-        let tap = UITapGestureRecognizer()
-        view.addGestureRecognizer(tap)
         
-        tap.rx.event.subscribe(onNext: { [weak self] _ in
-            self?.view.endEditing(true)
-        }).disposed(by: _disposeBag)
+        bindData()
+    }
+    
+    private func bindData() {
+        let textField1Observable = nameTextField.rx.text.orEmpty.asObservable()
+        let textField2Observable = pswTextField.rx.text.orEmpty.asObservable()
+        let textField3Observable = againPswTextField.rx.text.orEmpty.asObservable()
+
+        if usedFor == .forgotPassword {
+            let isButtonEnabledObservable = Observable.combineLatest(textField2Observable, textField3Observable)
+            { (text1, text2) -> Bool in
+                return !text1.isEmpty && !text2.isEmpty
+            }
+            
+            isButtonEnabledObservable.bind(to: nextStepBtn.rx.isEnabled).disposed(by: _disposeBag)
+        } else {
+            let isButtonEnabledObservable = Observable.combineLatest(textField1Observable, textField2Observable, textField3Observable)
+            { (text1, text2, text3) -> Bool in
+                return !text1.isEmpty && !text2.isEmpty && !text3.isEmpty
+            }
+            
+            isButtonEnabledObservable.bind(to: nextStepBtn.rx.isEnabled).disposed(by: _disposeBag)
+        }
     }
     
     deinit {
@@ -231,56 +261,85 @@ public class InputPasswordViewController: UIViewController {
 #endif
     }
     
+    private func validatePassword(_ password: String) -> Bool {
+        let passwordRegex = "^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\\-=[\\]{};':\"\\\\|,.<>\\/?]).{6,20}$"
+        let passwordPredicate = NSPredicate(format: "SELF MATCHES %@", passwordRegex)
+        
+        return passwordPredicate.evaluate(with: password)
+    }
+    
     func toComplate() {
         view.endEditing(true)
-        if let psw = againPswTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines), psw.count >= 6 {
+        if let psw = againPswTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines), psw.validatePassword() {
+            
+            let p1 = pswTextField.text!.trimmingCharacters(in: .whitespacesAndNewlines)
+            let p2 = againPswTextField.text!.trimmingCharacters(in: .whitespacesAndNewlines)
+            
+            if p1 != p2 {
+                ProgressHUD.error("twicePwdNoSame".localized())
+                return
+            }
+            
             if usedFor == .register {
                 guard let name = nameTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines), !name.isEmpty else {
-                    ProgressHUD.error("输入昵称".localized())
+                    ProgressHUD.error( "plsEnterYourX".localizedFormat("nickname".localized()))
                     return
                 }
                 ProgressHUD.animate()
-                AccountViewModel.registerAccount(phone: basicInfo["phone"]!,
+                let account = operateType == .phone ? basicInfo["accout"]! : nil
+                let preAccount = AccountViewModel.perLoginAccount
+                
+                let tabController = UIApplication.shared.keyWindow?.rootViewController as? MainTabViewController
+                
+                if account != preAccount {
+                    tabController?.clearConversation()
+                }
+
+                AccountViewModel.registerAccount(phone: account,
                                                  areaCode: basicInfo["areaCode"]!,
                                                  verificationCode: basicInfo["verCode"]!,
                                                  password: psw,
                                                  faceURL: "",
                                                  nickName: name,
+                                                 email: operateType == .email ? basicInfo["accout"]! : nil,
                                                  invitationCode: basicInfo["invitationCode"]) { (errCode, errMsg) in
                     if errMsg != nil {
-                        ProgressHUD.error(errMsg)
+                        ProgressHUD.error(String(errCode).localized())
                     } else {
                         AccountViewModel.loginIM(uid: AccountViewModel.baseUser.userID,
                                                  imToken: AccountViewModel.baseUser.imToken,
-                                                 chatToken: AccountViewModel.baseUser.chatToken) { errCode, errMsg in
+                                                 chatToken: AccountViewModel.baseUser.chatToken) { [weak self] errCode, errMsg in
                             
                             if let userID = AccountViewModel.userID {
 //                                GeTuiSdk.bindAlias(userID, andSequenceNum: "im")
                             }
-                            
+                            UserDefaults.standard.setValue(self?.operateType.rawValue, forKey: loginTypeKey)
+                            UserDefaults.standard.synchronize()
+                            AccountViewModel.savePreLoginAccount(account)
                             AccountViewModel.updateUserInfo(userID: AccountViewModel.userID!) { (errCode, errMsg) in
-                                ProgressHUD.dismiss()
-                                self.dismiss(animated: true)
+                                tabController?.loginSuccess(dismiss: true)
                             }
                         }
                     }
                 }
             } else {
-                AccountViewModel.resetPassword(phone: basicInfo["phone"]!,
+                ProgressHUD.animate()
+                AccountViewModel.resetPassword(phone: operateType == .phone ? basicInfo["accout"]! : nil,
                                                areaCode: basicInfo["areaCode"]!,
+                                               email: operateType == .email ? basicInfo["accout"]! : nil,
                                                verificationCode: basicInfo["verCode"]!,
                                                password: psw) { [weak self] (errCode, errMsg) in
                     
                     if errCode == 0, let `self` = self {
-                        ProgressHUD.success("修改密码成功，请重新登录")
+                        ProgressHUD.success("changed".localized() + "success".localized())
                         self.navigationController?.popToRootViewController(animated: true)
                     } else {
-                        ProgressHUD.error(errMsg)
+                        ProgressHUD.error(String(errCode).localized())
                     }
                 }
             }
         } else {
-            ProgressHUD.error("输入正确的密码")
+            ProgressHUD.error("plsEnterRightX".localizedFormat("password".localized()))
         }
     }
 }

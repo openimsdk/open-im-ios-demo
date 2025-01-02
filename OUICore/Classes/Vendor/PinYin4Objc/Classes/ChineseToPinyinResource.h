@@ -9,7 +9,7 @@
     NSString* _directory;
     NSDictionary *_unicodeToHanyuPinyinTable;
 }
-//@property(nonatomic, strong)NSDictionary *unicodeToHanyuPinyinTable;
+
 
 - (id)init;
 - (void)initializeResource;

@@ -4,14 +4,27 @@ import Foundation
 protocol ReloadDelegate: AnyObject {
 
     func reloadMessage(with id: String)
-    func didTapAvatar(with id: String)
-    func didTapContent(with id: String,  data: Message.Data)
-    func removeMessage(messageID: String)
+    func resendMessage(messageID: String)
+    func removeMessage(messageID: String, completion:(() -> Void)?)
 }
 
-// view 的点击代理，经过controler 传递到 view controller
 extension ReloadDelegate {
-    func didTapAvatar(with _: String) {}
-    func didTapContent(with _: String, _: Message.Data) {}
+    func resendMessage(_: String) {}
     func removeMessage(_: String) {}
+}
+
+protocol GestureDelegate: AnyObject {
+    func longPress(with message: Message, sourceView: UIView, point: CGPoint)
+    func onTapEdgeAligningView()
+
+    func didTapAvatar(with user: User)
+    func didTapContent(with id: String, data: Message.Data)
+}
+
+extension GestureDelegate {
+    func longPress(with _: String, _: UIView, _: CGPoint) {}
+    func onTapEdgeAligningView() {}
+
+    func didTapAvatar(with _: User) {}
+    func didTapContent(with _: String, _: Message.Data) {}
 }

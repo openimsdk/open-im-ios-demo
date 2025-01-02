@@ -2,86 +2,202 @@
 import OUICore
 import Localize_Swift
 import RxSwift
-//import GTSDK
+import ProgressHUD
+import GTSDK
+import AlamofireNetworkActivityLogger
+import FirebaseCore
+import FirebaseMessaging
 
-let kGtAppId = ""
-let kGtAppKey = ""
-let kGtAppSecret = ""
+let bussinessPort = ":10008"
+let bussinessRoute = "/chat"
 
-//The domain name used by default
-let defaultHost = "127.0.0.1"
-
-// The default IP or domain name used in the settings page. After the settings page is saved, defaultHost will become invalid.
-let defaultIP = "127.0.0.1"
-let defaultDomain = "xxx.com"
-
-let businessPort = ":10008"
-let businessRoute = "/chat"
-
-let adminPort = ":10009"
-let adminRoute = "/complete_admin"
+let adminPort = ":10008"
+let adminRoute = "/chat"
 let sdkAPIPort = ":10002"
 let sdkAPIRoute = "/api"
 let sdkWSPort = ":10001"
 let sdkWSRoute = "/msg_gateway"
 
+let defaultHost = "116.205.175.233"
+
+let discoverPageURL = "https://docs.openim.io/"
+let allowSendMsgNotFriend = "1"
+
+let adminSeverAddrKey = "io.openim.admin.adr"
+let bussinessSeverAddrKey = "io.openim.bussiness.api.adr"
+
+// If you are using FCM, refer to the link to integrate https://firebase.google.com/docs/cloud-messaging/ios/client.
+// If you are using getui, just set the key. refer to the link to integrate https://docs.getui.com/getui/mobile/ios/xcode/
+fileprivate let kGtAppId = ""
+fileprivate let kGtAppKey = ""
+fileprivate let kGtAppSecret = ""
+
+enum PushType: Int {
+    case none
+    case getui
+    case fcm
+}
+
+fileprivate var pushType: PushType = .none
+
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
     
     var backgroundTaskIdentifier: UIBackgroundTaskIdentifier?
-    
+    var orientation = UIInterfaceOrientationMask.portrait
     var window: UIWindow?
-    private let _disposeBag = DisposeBag();
+    private let _disposeBag = DisposeBag()
+    
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         
         UINavigationBar.appearance().tintColor = .c0C1C33
-        // Main configuration here, pay attention to the differences between http and https, ws and wss, IP uses port, domain name uses routing
-        let enableTLS = UserDefaults.standard.object(forKey: useTLSKey) == nil
-        ? false : UserDefaults.standard.bool(forKey: useTLSKey)
+        UINavigationBar.appearance().isTranslucent = true
+        UINavigationBar.appearance().isOpaque = true
+        let backImage = UIImage(named: "common_back_icon")
+        UISwitch.appearance().onTintColor = .c0089FF
+        
+        let barAppearance = UINavigationBarAppearance()
+        barAppearance.configureWithDefaultBackground()
+        barAppearance.setBackIndicatorImage(backImage, transitionMaskImage: backImage)
+        UINavigationBar.appearance().standardAppearance = barAppearance
+        
+        ProgressHUD.animationType = .circleDotSpinFade
+        ProgressHUD.colorAnimation = .systemGray2
+        ProgressHUD.colorProgress = .systemGray2
+        ProgressHUD.colorBackground = .clear
+        ProgressHUD.colorHUD = .c0C1C33
+        ProgressHUD.colorStatus = .white
+        
+        if #available(iOS 13.0, *) {
+            let app = UINavigationBarAppearance()
+            app.configureWithOpaqueBackground()
+            app.titleTextAttributes = [
+                NSAttributedString.Key.font: UIFont.systemFont(ofSize: 18),
+                NSAttributedString.Key.foregroundColor: UIColor.c0C1C33,
+            ]
+            app.backgroundColor = UIColor.white
+            app.shadowColor = .clear
+            UINavigationBar.appearance().scrollEdgeAppearance = app
+            UINavigationBar.appearance().standardAppearance = app
+        }
+        
+        NetworkActivityLogger.shared.level = .debug
+        NetworkActivityLogger.shared.startLogging()
+        
+        let language = Localize.currentLanguage()
+        Localize.setCurrentLanguage(language)
+        
+        let isIP = isValidIPAddress(defaultHost)
+
+        let enableTLS = !isIP ? true : false
+        
+        let enableDomain = !isIP ? true : false
         
         let httpScheme = enableTLS ? "https://" : "http://"
         let wsScheme = enableTLS  ? "wss://" : "ws://"
         
-//        let predicateStr = "^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
-//        let predicate = NSPredicate(format: "SELF MATCHES %@", predicateStr)
-//        let isIP = predicate.evaluate(with: defaultHost)
+        let appSeverAddress = httpScheme + defaultHost + (!enableDomain ? bussinessPort: bussinessRoute)
+        let sdkAPIAddr = httpScheme + defaultHost + (!enableDomain ? sdkAPIPort : sdkAPIRoute)
+        let sdkWSAddr = wsScheme + defaultHost + (!enableDomain ? sdkWSPort : sdkWSRoute)
+        let logLevel = 5
         
-        let enableDomain = UserDefaults.standard.object(forKey: useDomainKey) == nil
-        ? false : UserDefaults.standard.bool(forKey: useDomainKey)
+        UserDefaults.standard.setValue(httpScheme + defaultHost + (!enableDomain ? adminPort : adminRoute), forKey: adminSeverAddrKey)
+        UserDefaults.standard.setValue(appSeverAddress, forKey: bussinessSeverAddrKey)
+        UserDefaults.standard.synchronize()
         
-        let serverAddress = UserDefaults.standard.string(forKey: serverAddressKey) ?? defaultHost
-        
-        // Set and retrieve global configuration
-        UserDefaults.standard.setValue(httpScheme + serverAddress + (!enableDomain ? adminPort : adminRoute), forKey: adminServerAddrKey)
-
-        // Set login, registration, and more - AccountViewModel
-        UserDefaults.standard.setValue(httpScheme + serverAddress + (!enableDomain ? businessPort: businessRoute), forKey: bussinessServerAddrKey)
-
-        // Set SDK API address
-        let sdkAPIAddress = UserDefaults.standard.string(forKey: sdkAPIAddrKey) ??
-        httpScheme + serverAddress + (!enableDomain ? sdkAPIPort : sdkAPIRoute)
-
-        // Set WebSocket address
-        let sdkWebSocketAddress = UserDefaults.standard.string(forKey: sdkWSAddrKey) ??
-        wsScheme + serverAddress + (!enableDomain ? sdkWSPort : sdkWSRoute)
-
-        // Set object storage
-        let sdkObjectStorage = UserDefaults.standard.string(forKey: sdkObjectStorageKey) ??
-        "minio"
-
-        // Initialize the SDK
-        IMController.shared.setup(sdkAPIAdrr: sdkAPIAddress,
-                                  sdkWSAddr: sdkWebSocketAddress) {
-            IMController.shared.currentUserRelay.accept(nil)
-            AccountViewModel.saveUser(uid: nil, imToken: nil, chatToken: nil)
+        IMController.shared.setup(sdkAPIAdrr: sdkAPIAddr,
+                                  sdkWSAddr: sdkWSAddr,
+                                  logLevel: logLevel) {
+            ProgressHUD.banner("accountWarn".localized(), "accountException".localized())
+            NotificationCenter.default.post(name: .init("logout"), object: nil)
+        } onUserTokenInvalid: {
+            ProgressHUD.banner("accountWarn".localized(), "tokenInvalid".localized())
             NotificationCenter.default.post(name: .init("logout"), object: nil)
         }
         
-//        GeTuiSdk.start(withAppId: kGtAppId, appKey: kGtAppKey, appSecret: kGtAppSecret, delegate: self)
-//        GeTuiSdk.registerRemoteNotification([.alert, .badge, .sound])
-    
+        DispatchQueue.main.asyncAfter(deadline: DispatchTime.now() + 0.1) { [self] in
+            if let rootViewController = window?.rootViewController {
+                let vc = ScreenLockSettingViewController()
+                vc.modalPresentationStyle = .overFullScreen
+                
+                vc.showScreenLock(inController: rootViewController) { [weak self] in
+                    self?.window!.rootViewController!.dismiss(animated: false) {
+                        IMController.shared.logout { _ in
+                            self?.logout()
+                        }
+                    }
+                }
+            }
+        }
+        
         AccountViewModel.getClientConfig()
+        
+        Task.detached { [self] in
+            guard let result = await AccountViewModel.checkVersion() else { return }
+            
+            await updateDialog(url: result.url, version: result.version)
+        }
+        
+        OIMApi.rotationHandler = { [weak self] o in
+            self?.orientation = o
+        }
+        
+        if pushType == .fcm {
+            FirebaseApp.configure()
+            Messaging.messaging().delegate = self
+
+            UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .badge, .sound]) { granted, error in
+                if granted {
+                    print("Notification permission granted")
+                } else {
+                    print("Notification permission denied")
+                }
+            }
+            
+            application.registerForRemoteNotifications()
+            
+        } else if pushType == .getui {
+            assert(!kGtAppId.isEmpty, "GeTuiSdk.appId is nil")
+            GeTuiSdk.start(withAppId: kGtAppId, appKey: kGtAppKey, appSecret: kGtAppSecret, delegate: self)
+            GeTuiSdk.registerRemoteNotification([.alert, .badge, .sound])
+        }
+        
         return true
+    }
+    
+    private func logout() {
+        NotificationCenter.default.post(name: .init("logout"), object: nil)
+    }
+    
+    func isValidIPAddress(_ ip: String) -> Bool {
+        let ipv4Regex = "^(25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})(\\.(25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})){3}$"
+        let ipv6Regex = "^([0-9a-fA-F]{1,4}:){7}([0-9a-fA-F]{1,4})$"
+        
+        let ipv4Predicate = NSPredicate(format: "SELF MATCHES %@", ipv4Regex)
+        let ipv6Predicate = NSPredicate(format: "SELF MATCHES %@", ipv6Regex)
+        
+        return ipv4Predicate.evaluate(with: ip) || ipv6Predicate.evaluate(with: ip)
+    }
+    
+    @MainActor
+    private func updateDialog(url: String, version: String) {
+        let infoDictionary = Bundle.main.infoDictionary
+        let majorVersion = infoDictionary!["CFBundleShortVersionString"] as! String
+        let minorVersion = infoDictionary!["CFBundleVersion"] as! String
+        
+        let appVersion = "\(majorVersion) + \(minorVersion)"
+        
+        guard appVersion != version else { return }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) { [self] in
+            guard let rootViewController = window?.rootViewController else { return }
+            
+            rootViewController.presentAlert(title: "upgradeVersion".localizedFormat(version, appVersion), confirmTitle: "upgradeNow".localized(), cancelTitle: "upgradeLater".localized()) {
+                if let u = URL(string: url) {
+                    UIApplication.shared.open(u)
+                }
+            }
+        }
     }
     
     func applicationWillResignActive(_ application: UIApplication) {
@@ -92,6 +208,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
         self.backgroundTaskIdentifier = UIApplication.shared.beginBackgroundTask(withName: "taskname", expirationHandler: {
             
             if (self.backgroundTaskIdentifier != .invalid) {
+                print("\(#function)")
                 UIApplication.shared.endBackgroundTask(self.backgroundTaskIdentifier!);
                 self.backgroundTaskIdentifier = .invalid;
             }
@@ -101,6 +218,16 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     func applicationWillEnterForeground(_ application: UIApplication) {
         application.applicationIconBadgeNumber = 0
         UIApplication.shared.endBackgroundTask(self.backgroundTaskIdentifier!);
+        if let rootViewController = window?.rootViewController {
+            
+            ScreenLockSettingViewController().showScreenLock(inController: rootViewController) { [weak self] in
+                self?.window!.rootViewController!.dismiss(animated: false) {
+                    IMController.shared.logout { _ in
+                        self?.logout()
+                    }
+                }
+            }
+        }
     }
     
     func applicationDidBecomeActive(_ application: UIApplication) {
@@ -108,16 +235,39 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     }
     
     func applicationWillTerminate(_ application: UIApplication) {
-        
+        print("\(#function)")
     }
+    
+    func application(_ application: UIApplication, supportedInterfaceOrientationsFor window: UIWindow?) -> UIInterfaceOrientationMask {
+        return orientation
+    }
+    
     func application(_ application: UIApplication, didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data) {
+        if pushType == .fcm {
+            Messaging.messaging().apnsToken = deviceToken
+        }
     }
     
     func application(_ application: UIApplication, didFailToRegisterForRemoteNotificationsWithError error: Error) {
         print("did Fail To Register For Remote Notifications With Error: %@", error)
     }
     
-    // MARK: - GeTuiSdkDelegate
+    func application(_ application: UIApplication,
+                       didReceiveRemoteNotification userInfo: [AnyHashable: Any]) {
+        // If you are receiving a notification message while your app is in the background,
+        // this callback will not be fired till the user taps on the notification launching the application.
+        // TODO: Handle data of notification
+        // Print full message.
+        print(userInfo)
+        
+        if pushType == .fcm {
+            Messaging.messaging().appDidReceiveMessage(userInfo)
+        }
+      }
+}
+
+// MARK: - GeTuiSdkDelegate
+extension AppDelegate: GeTuiSdkDelegate {
     func geTuiSdkDidRegisterClient(_ clientId: String) {
         let msg = "[ TestDemo ] \(#function):\(clientId)"
         print(msg)
@@ -125,11 +275,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     
     func geTuiSdkDidOccurError(_ error: Error) {
         let msg = "[ TestDemo ] \(#function) \(error.localizedDescription)"
-        print(msg)
-    }
-    
-    func getuiSdkGrantAuthorization(_ granted: Bool, error: Error?) {
-        let msg = "[ TestDemo ] \(#function) \(granted ? "Granted":"NO Granted")"
         print(msg)
     }
     
@@ -158,37 +303,35 @@ class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterD
     
     func geTuiSdkDidReceiveSlience(_ userInfo: [AnyHashable : Any], fromGetui: Bool, offLine: Bool, appId: String?, taskId: String?, msgId: String?, fetchCompletionHandler completionHandler: ((UIBackgroundFetchResult) -> Void)? = nil) {
         var dic: [AnyHashable : Any] = [:]
+        
         if fromGetui {
-            
             dic = ["_gmid_":"\(String(describing: taskId)):\(String(describing: msgId))"]
         } else {
-            //APNs静默通知
             dic = userInfo;
         }
+        
         if fromGetui && !offLine {
             pushLocalNotification(userInfo["payload"] as! String, dic)
         }
     }
-    
-    @available(iOS 10.0, *)
-    func geTuiSdkNotificationCenter(_ center: UNUserNotificationCenter, openSettingsFor notification: UNNotification?) {
-    }
-    
-    func geTuiSdkDidSendMessage(_ messageId: String, result: Int32) {
-        let msg = "[ TestDemo ] \(#function) \(String(describing: messageId)), result=\(result)"
-        print(msg)
-    }
-    
-    func geTuiSdkDidAliasAction(_ action: String, result isSuccess: Bool, sequenceNum aSn: String, error aError: Error?) {
-    }
-    
-    
-    //MARK: - 标签设置
-    func geTuiSdkDidSetTagsAction(_ sequenceNum: String, result isSuccess: Bool, error aError: Error?) {
-        
-        let msg = "[ TestDemo ] \(#function)  sequenceNum:\(sequenceNum) isSuccess:\(isSuccess) error: \(String(describing: aError))"
-        
-        print(msg)
-    }
 }
 
+extension AppDelegate: MessagingDelegate {
+    
+  func messaging(_ messaging: Messaging, didReceiveRegistrationToken fcmToken: String?) {
+    print("Firebase registration token: \(String(describing: fcmToken))")
+
+    let dataDict: [String: String] = ["token": fcmToken ?? ""]
+    NotificationCenter.default.post(
+      name: Notification.Name("FCMToken"),
+      object: nil,
+      userInfo: dataDict
+    )
+    // TODO: If necessary send token to application server.
+    // Note: This callback is fired at each app startup and whenever a new token is generated.
+      
+      if let fcmToken {
+          IMController.shared.updateFCMToken(fcmToken)
+      }
+  }
+}

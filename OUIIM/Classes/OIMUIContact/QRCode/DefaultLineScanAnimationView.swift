@@ -4,10 +4,11 @@ import OUICore
 class DefaultLineScanAnimationView: UIView, ScanAnimationViewProtocol {
     override init(frame: CGRect) {
         super.init(frame: frame)
-        backgroundColor = UIColor(white: 0, alpha: 0.4)
+        backgroundColor = .clear
+        
         addSubview(_focusView)
         _focusView.snp.makeConstraints { make in
-            make.size.equalTo(250)
+            make.size.equalTo(250.h)
             make.center.equalToSuperview()
         }
 
@@ -35,19 +36,30 @@ class DefaultLineScanAnimationView: UIView, ScanAnimationViewProtocol {
         _animate()
     }
 
-    private func _animate() {
-        if !_allowAnimate {
-            _lineImageView.isHidden = true
-            return
-        }
-        let imageY = _focusView.frame.origin.y
-        _lineImageView.frame.origin.y = imageY
-        UIView.animate(withDuration: 1.4) {
-            let targetY = imageY + self._focusView.frame.size.height - 15
-            self._lineImageView.frame.origin.y = targetY
-        } completion: { _ in
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                self._animate()
+    private func _animate(reverse: Bool = false) {
+        if reverse {
+            let imageY = _focusView.frame.minY
+            
+            UIView.animate(withDuration: 2) { [self] in
+                self._lineImageView.frame.origin.y = imageY
+            } completion: { [self] _ in
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    self._animate()
+                }
+            }
+        } else {
+            if !_allowAnimate {
+                _lineImageView.isHidden = true
+                return
+            }
+            let imageY = _focusView.frame.maxY
+            
+            UIView.animate(withDuration: 2) { [self] in
+                self._lineImageView.frame.origin.y = imageY - 15.h
+            } completion: { [self] _ in
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    self._animate(reverse: true)
+                }
             }
         }
     }
@@ -65,6 +77,10 @@ class DefaultLineScanAnimationView: UIView, ScanAnimationViewProtocol {
     private let _focusView: UIView = {
         let v = UIView()
         v.backgroundColor = UIColor(white: 1, alpha: 0)
+        v.layer.borderColor = UIColor.white.withAlphaComponent(0.8).cgColor
+        v.layer.borderWidth = 1.0
+        v.layer.cornerRadius = 4
+        
         return v
     }()
 }

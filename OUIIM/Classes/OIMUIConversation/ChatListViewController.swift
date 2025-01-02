@@ -3,11 +3,55 @@ import OUICore
 import OUICoreView
 import ProgressHUD
 import RxSwift
+import Localize_Swift
+import YYText
+
+#if ENABLE_CALL
+import OUICalling
+#endif
+
+#if ENABLE_LIVE_ROOM
+import OUILive
+#endif
 
 open class ChatListViewController: UIViewController, UITableViewDelegate {
+    
+    public var tapTab = false
+    
+    private var scrolledIndex = 0
+    
+    private var reInstall = false
+    
+    public func scrollToUnreadItem() {
+        let conversations = _viewModel.conversationsRelay.value
+        var currentIndex = 0
+        
+        for(i, item) in conversations.enumerated() {
+            if item.unreadCount > 0, i > scrolledIndex {
+                currentIndex = i
+                break
+            }
+        }
+        scrolledIndex = currentIndex
+        
+        _tableView.scrollToRow(at: IndexPath(row: scrolledIndex, section: 0), at: .top, animated: true)
+    }
+    
+    public func refreshConversations() {
+        _viewModel.getAllConversations()
+    }
+    
+    public func refreshUserInfo(userInfo: UserInfo? = nil) {
+        _headerView.avatarImageView.setAvatar(url: userInfo?.faceURL?.defaultThumbnailURLString, text: userInfo?.nickname)
+        _headerView.nameLabel.text = userInfo?.nickname
+    }
+    
+    public func clearRecord() {
+        _viewModel.conversationsRelay.accept([])
+    }
+    
     private lazy var _headerView: ChatListHeaderView = {
         let v = ChatListHeaderView()
-        
         return v
     }()
 
@@ -16,11 +60,11 @@ open class ChatListViewController: UIViewController, UITableViewDelegate {
         v.register(ChatTableViewCell.self, forCellReuseIdentifier: ChatTableViewCell.className)
         v.delegate = self
         v.separatorStyle = .none
-        v.rowHeight = 68
+        v.rowHeight = 68.h
+        
         let refresh: UIRefreshControl = {
             let v = UIRefreshControl(frame: CGRect(x: 0, y: 0, width: 35, height: 35))
             v.rx.controlEvent(.valueChanged).subscribe(onNext: { [weak self, weak v] in
-                self?._viewModel.getAllConversations()
                 self?._viewModel.getSelfInfo()
                 v?.endRefreshing()
             }).disposed(by: _disposeBag)
@@ -31,10 +75,21 @@ open class ChatListViewController: UIViewController, UITableViewDelegate {
         
         return v
     }()
+    
+    open override func viewWillLayoutSubviews() {
+        super.viewWillLayoutSubviews()
 
+        if tapTab {
+            navigationController?.setNavigationBarHidden(true, animated: false)
+            tapTab = false
+        }
+    }
+    
     override open func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        navigationController?.setNavigationBarHidden(true, animated: false)
+        if !tapTab {
+            navigationController?.setNavigationBarHidden(true, animated: true)
+        }
     }
 
     override open func viewWillDisappear(_ animated: Bool) {
@@ -42,32 +97,35 @@ open class ChatListViewController: UIViewController, UITableViewDelegate {
         navigationController?.setNavigationBarHidden(false, animated: true)
     }
 
-    private lazy var _menuView: ChatMenuView = {
-        let v = ChatMenuView()
-        let scanItem = ChatMenuView.MenuItem(title: "扫一扫".innerLocalized(), icon: UIImage(nameInBundle: "chat_menu_scan_icon")) { [weak self] in
+    private func createMenuItems() -> [PopoverTableViewController.MenuItem] {
+      
+        let scanItem = PopoverTableViewController.MenuItem(title: "scanQrcode".innerLocalized(), icon: UIImage(nameInBundle: "chat_menu_scan_icon")) { [weak self] in
             let vc = ScanViewController()
             vc.scanDidComplete = { [weak self] (result: String) in
                 if result.contains(IMController.addFriendPrefix) {
+                    self?.navigationController?.popViewController(animated: false)
+
                     let uid = result.replacingOccurrences(of: IMController.addFriendPrefix, with: "")
                     let vc = UserDetailTableViewController(userId: uid, groupId: nil)
                     vc.hidesBottomBarWhenPushed = true
                     self?.navigationController?.pushViewController(vc, animated: true)
-                    self?.dismiss(animated: false)
                 } else if result.contains(IMController.joinGroupPrefix) {
+                    self?.navigationController?.popViewController(animated: false)
+
                     let groupID = result.replacingOccurrences(of: IMController.joinGroupPrefix, with: "")
                     let vc = GroupDetailViewController(groupId: groupID)
                     vc.hidesBottomBarWhenPushed = true
                     self?.navigationController?.pushViewController(vc, animated: true)
-                    self?.dismiss(animated: false)
                 } else {
-                    ProgressHUD.error(result)
+                    ProgressHUD.error("unrecognized".innerLocalized())
+                    self?.navigationController?.popViewController(animated: true)
                 }
             }
-            vc.modalPresentationStyle = .fullScreen
-            self?.present(vc, animated: true, completion: nil)
+            vc.hidesBottomBarWhenPushed = true
+            self?.navigationController?.pushViewController(vc, animated: true)
         }
-        let addFriendItem = ChatMenuView.MenuItem(title: "添加好友".innerLocalized(), icon: UIImage(nameInBundle: "chat_menu_add_friend_icon")) { [weak self] in
-            let vc = SearchFriendViewController()
+        let addFriendItem = PopoverTableViewController.MenuItem(title: "addFriend".innerLocalized(), icon: UIImage(nameInBundle: "chat_menu_add_friend_icon")) { [weak self] in
+            let vc = SearchFriendIndexViewController()
             vc.hidesBottomBarWhenPushed = true
             self?.navigationController?.pushViewController(vc, animated: true)
             vc.didSelectedItem = { [weak self] id in
@@ -76,8 +134,8 @@ open class ChatListViewController: UIViewController, UITableViewDelegate {
             }
         }
 
-        let addGroupItem = ChatMenuView.MenuItem(title: "添加群聊".innerLocalized(), icon: UIImage(nameInBundle: "chat_menu_add_group_icon")) { [weak self] in
-            let vc = SearchGroupViewController()
+        let addGroupItem = PopoverTableViewController.MenuItem(title: "addGroup".innerLocalized(), icon: UIImage(nameInBundle: "chat_menu_add_group_icon")) { [weak self] in
+            let vc = SearchGroupIndexViewController()
             vc.hidesBottomBarWhenPushed = true
             self?.navigationController?.pushViewController(vc, animated: true)
             
@@ -87,38 +145,61 @@ open class ChatListViewController: UIViewController, UITableViewDelegate {
             }
         }
         
-        let createWorkGroupItem = ChatMenuView.MenuItem(title: "创建大群".innerLocalized(), icon: UIImage(nameInBundle: "chat_menu_create_work_group_icon")) { [weak self] in
-
-            let vc = SelectContactsViewController()
+        let createWorkGroupItem = PopoverTableViewController.MenuItem(title: "createGroup".innerLocalized(), icon: UIImage(nameInBundle: "chat_menu_create_work_group_icon")) { [weak self] in
+            #if ENABLE_ORGANIZATION
+            let vc = MyContactsViewController(types: [.friends, .staff], multipleSelected: true)
+            #else
+            let vc = MyContactsViewController(types: [.friends], multipleSelected: true, selectMaxCount: 50, enableChangeSelectedModel: true)
+            #endif
             vc.selectedContact(blocked: [IMController.shared.uid]) { [weak self] (r: [ContactInfo]) in
                 guard let sself = self else { return }
+                
                 let users = r.map {UserInfo(userID: $0.ID!, nickname: $0.name, faceURL: $0.faceURL)}
-                let vc = NewGroupViewController(users: users, groupType: .working)
-                self?.navigationController?.pushViewController(vc, animated: true)
+                
+                if users.count > 0 {
+                    let vc = NewGroupViewController(users: users, groupType: .working)
+                    self?.navigationController?.pushViewController(vc, animated: true)
+                } else {
+                    guard let userID = users.first?.userID else { return }
+                    ProgressHUD.animate()
+                    sself._viewModel.createSingleChat(userID: userID) { [sself] conversation in
+                        ProgressHUD.dismiss()
+                        sself.toChat(conversation: conversation)
+                    }
+                }
             }
             vc.hidesBottomBarWhenPushed = true
             self?.navigationController?.pushViewController(vc, animated: true)
         }
         var items = [scanItem, addFriendItem, addGroupItem, createWorkGroupItem]
-
-        v.setItems(items)
         
-        return v
-    }()
-
-    func refreshConversations() {
-        _viewModel.getAllConversations()
+#if ENABLE_LIVE_ROOM
+        let meetingItem = PopoverTableViewController.MenuItem(title: "videoMeeting".innerLocalized(), icon: UIImage(nameInBundle: "chat_menu_create_live_room_icon")) { [weak self] in
+            let vc = LiveRecordsViewController()
+            vc.hidesBottomBarWhenPushed = true
+            self?.navigationController?.pushViewController(vc, animated: true)
+        }
+        items.append(meetingItem)
+#endif
+        return items
     }
     
     private let _disposeBag = DisposeBag()
     private let _viewModel = ChatListViewModel()
+    private let _contactViewModel = ContactsViewModel()
 
     override open func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemGroupedBackground
+        NotificationCenter.default.addObserver(self, selector: #selector(setText), name: NSNotification.Name(LCLLanguageChangeNotification), object: nil)
+        YYTextAsyncLayer.swizzleDisplay
         
         initView()
         bindData()
+    }
+    
+    @objc private func setText() {
+        _tableView.reloadData()
     }
 
     private func initView() {
@@ -128,39 +209,72 @@ open class ChatListViewController: UIViewController, UITableViewDelegate {
         }
         view.addSubview(_tableView)
         _tableView.snp.makeConstraints { make in
-            make.top.equalTo(_headerView.snp.bottom).offset(16)
+            make.top.equalTo(_headerView.snp.bottom)
             make.leading.bottom.trailing.equalToSuperview()
         }
+    }
+    
+    private func toChat(conversation: ConversationInfo) {
+        do {
+            let toMap = JsonTool.toJson(fromObject: conversation)
+            iLogger.print("\(type(of: self)) \(#function) conversation is: \(toMap)")
+        } catch (let e) {
+            iLogger.print("\(type(of: self)) \(#function) throw error: \(e.localizedDescription)")
+        }
+        let vc = ChatViewControllerBuilder().build(conversation, hiddenInputBar: conversation.conversationType == .notification)
+        vc.hidesBottomBarWhenPushed = true
+        navigationController?.pushViewController(vc, animated: true)
     }
 
     private func bindData() {
         
-        IMController.shared.connectionRelay.subscribe(onNext: { [weak self] status in
-            self?._headerView.updateConnectionStatus(status: status)
+        IMController.shared.connectionRelay.subscribe(onNext: { [weak self] result in
+            print("=====Connection status: \(result)")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [self] in
+                
+                let status = result.status
+                let install = result.reInstall
+                
+                if status == .syncStart {
+                    self?.reInstall = install ?? false
+                    
+                    if self?.reInstall == true {
+                        ProgressHUD.animate(ConnectionStatus.syncStart.title, interaction: false)
+                    }
+                } else if status == .syncProgress {
+                    
+                    if self?.reInstall == true {
+                        let p = CGFloat(result.progress!) / 100.0
+
+                        ProgressHUD.progress(ConnectionStatus.syncStart.title, p, interaction: false)
+                    }
+                } else if status == .syncComplete {
+                    ProgressHUD.dismiss()
+                    self?._viewModel.getAllConversations()
+                }
+                
+                if self?.reInstall == false || (self?.reInstall == true && (status == .connectFailure || status == .syncFailure)) {
+                    self?._headerView.updateConnectionStatus(status: status)
+                }
+            }
         })
         
         _headerView.addBtn.rx.tap.subscribe(onNext: { [weak self] in
-            guard let sself = self else { return }
-            if sself._menuView.superview == nil, let window = sself.view.window {
-                sself._menuView.frame = window.bounds
-                window.addSubview(sself._menuView)
-            } else {
-                sself._menuView.removeFromSuperview()
-            }
+            guard let self else { return }
+            let popover = PopoverTableViewController(items: createMenuItems())
+            popover.topInset = 0
+            popover.show(in: self, sender: _headerView.addBtn, permittedArrowDirections: [])
         }).disposed(by: _disposeBag)
 
-        _viewModel.conversationsRelay.asDriver(onErrorJustReturn: []).drive(_tableView.rx.items) { (tableView, _, item: ConversationInfo) in
-            let cell = tableView.dequeueReusableCell(withIdentifier: ChatTableViewCell.className) as! ChatTableViewCell
+        _viewModel.conversationsRelay.bind(to: _tableView.rx.items(cellIdentifier: ChatTableViewCell.className, cellType: ChatTableViewCell.self)) { (row, item, cell) in
+     
             let placeholderName: String = item.conversationType == .c2c ? "contact_my_friend_icon" : "contact_my_group_icon"
-            cell.avatarImageView.setAvatar(url: item.faceURL, text: item.showName, placeHolder: placeholderName)
+            cell.avatarImageView.setAvatar(url: item.faceURL, text: item.conversationType == .c2c ? item.showName : nil, placeHolder: placeholderName)
             cell.muteImageView.isHidden = item.recvMsgOpt == .receive
             
             cell.titleLabel.text = item.showName
-            cell.contentView.backgroundColor = item.isPinned ? .cF0F0F0 : .tertiarySystemBackground
-            if item.recvMsgOpt != .receive, item.unreadCount > 0 {
-                let unread = "[\(item.unreadCount)条]"
-            }
-            cell.subtitleLabel.attributedText = MessageHelper.getAbstructOf(conversation: item)
+            cell.pinImageView.isHidden = !item.isPinned
+            cell.subtitleLabel.attributedText = MessageHelper.getAbstructOf(conversation: item, highlight: false)
             var unreadShouldHide: Bool = false
             if item.recvMsgOpt != .receive {
                 unreadShouldHide = true
@@ -169,54 +283,93 @@ open class ChatListViewController: UIViewController, UITableViewDelegate {
                 unreadShouldHide = true
             }
             cell.unreadLabel.isHidden = unreadShouldHide
-            cell.unreadLabel.text = "\(item.unreadCount)"
+            cell.unreadLabel.text =  item.unreadCount > 99 ? "99+" : "\(item.unreadCount)"
             cell.muteImageView.isHidden = item.recvMsgOpt == .receive
             cell.timeLabel.text = MessageHelper.convertList(timestamp_ms: item.latestMsgSendTime)
-            return cell
+            
         }.disposed(by: _disposeBag)
 
         _tableView.rx.modelSelected(ConversationInfo.self).subscribe(onNext: { [weak self] (conversation: ConversationInfo) in
             
-            let vc = ChatViewControllerBuilder().build(conversation)
-            vc.hidesBottomBarWhenPushed = true
-            self?.navigationController?.pushViewController(vc, animated: true)
+            self?.toChat(conversation: conversation)
         }).disposed(by: _disposeBag)
 
         _viewModel.loginUserPublish.subscribe(onNext: { [weak self] (userInfo: UserInfo?) in
-            self?._headerView.avatarImageView.setAvatar(url: userInfo?.faceURL, text: userInfo?.nickname, onTap: nil)
+            self?._headerView.avatarImageView.setAvatar(url: userInfo?.faceURL?.defaultThumbnailURLString, text: userInfo?.nickname, onTap: nil)
             self?._headerView.nameLabel.text = userInfo?.nickname
-            self?._headerView.statusLabel.titleLabel.text = "手机在线".innerLocalized()
-            self?._headerView.statusLabel.statusView.backgroundColor = StandardUI.color_10CC64
+            self?._contactViewModel.getFriendApplications()
+            self?._contactViewModel.getGroupApplications()
         }).disposed(by: _disposeBag)
     }
 
     public func tableView(_: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         let item = _viewModel.conversationsRelay.value[indexPath.row]
 
-        let pinActionTitle = item.isPinned ? "取消置顶".innerLocalized() : "置顶".innerLocalized()
-        let setTopAction = UIContextualAction(style: .normal, title: pinActionTitle) { [weak self] _, _, completion in
-            self?._viewModel.pinConversation(id: item.conversationID, isPinned: item.isPinned, onSuccess: { _ in
-                completion(true)
-            })
-        }
-        setTopAction.backgroundColor = UIColor.c0089FF
+        var actions: [UIContextualAction] = []
         
-        let markReadTitle = "标记已读".innerLocalized()
-        let markReadAction = UIContextualAction(style: .normal, title: markReadTitle) { [weak self] _, _, completion in
-            self?._viewModel.markReaded(id: item.conversationID, onSuccess: { _ in
-                completion(true)
-            })
-        }
-        markReadAction.backgroundColor = UIColor.c8E9AB0
-
-        let deleteAction = UIContextualAction(style: .destructive, title: "移除".innerLocalized()) { [weak self] _, _, completion in
+        let deleteAction = UIContextualAction(style: .destructive, title: "deleteChat".innerLocalized()) { [weak self] _, _, completion in
             self?._viewModel.deleteConversation(conversationID: item.conversationID, completion: { _ in
                 completion(true)
             })
         }
-
         deleteAction.backgroundColor = UIColor.cFF381F
-        let configure = UISwipeActionsConfiguration(actions: [deleteAction, markReadAction, setTopAction])
+        
+        actions.append(deleteAction)
+        
+        if item.unreadCount > 0 {
+            let markReadTitle = "markHasRead".innerLocalized()
+            let markReadAction = UIContextualAction(style: .normal, title: markReadTitle) { [weak self] _, _, completion in
+                ProgressHUD.animate()
+                self?._viewModel.markReaded(id: item.conversationID, onSuccess: { res in
+                    ProgressHUD.dismiss()
+                    completion(res)
+                })
+            }
+            markReadAction.backgroundColor = UIColor.c8E9AB0
+            
+            actions.append(markReadAction)
+        }
+
+        
+        let pinActionTitle = item.isPinned ? "cancelTop".innerLocalized() : "top".innerLocalized()
+        let setTopAction = UIContextualAction(style: .normal, title: pinActionTitle) { [weak self] _, _, completion in
+            ProgressHUD.animate()
+            self?._viewModel.pinConversation(id: item.conversationID, isPinned: !item.isPinned, onSuccess: { res in
+                ProgressHUD.dismiss()
+                completion(res)
+            })
+        }
+        setTopAction.backgroundColor = UIColor.c0089FF
+        
+        actions.append(setTopAction)
+        
+        let configure = UISwipeActionsConfiguration(actions: actions)
+        
         return configure
+    }
+}
+
+extension YYTextAsyncLayer {
+    static let swizzleDisplay: Void = {
+        guard #available(iOS 17, *) else { return }
+        
+        let originalSelector = #selector(display)
+        let swizzledSelector = #selector(swizzing_display)
+        
+        guard let originalMethod = class_getInstanceMethod(YYTextAsyncLayer.self, originalSelector),
+              let swizzledMethod = class_getInstanceMethod(YYTextAsyncLayer.self, swizzledSelector) else {
+            return
+        }
+        
+        method_exchangeImplementations(originalMethod, swizzledMethod)
+    }()
+
+    @objc func swizzing_display() {
+        if bounds.size.width <= 0 || bounds.size.height <= 0 {
+            contents = nil
+            return
+        } else {
+            swizzing_display()
+        }
     }
 }

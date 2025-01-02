@@ -3,12 +3,12 @@ import RxSwift
 import ProgressHUD
 import OUICore
 import OUICoreView
+import Photos
 
 class GroupChatSettingTableViewController: UITableViewController {
-    private let _viewModel: GroupChatSettingViewModel
-    private let _disposeBag = DisposeBag()
-    init(conversation: ConversationInfo, style: UITableView.Style) {
-        _viewModel = GroupChatSettingViewModel(conversation: conversation)
+    
+    init(conversation: ConversationInfo, groupInfo: GroupInfo? = nil, groupMembers: [GroupMemberInfo]? = nil, style: UITableView.Style) {
+        _viewModel = GroupChatSettingViewModel(conversation: conversation, groupInfo: groupInfo, groupMembers: groupMembers)
         super.init(style: .insetGrouped)
     }
     
@@ -17,12 +17,52 @@ class GroupChatSettingTableViewController: UITableViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    
+    private let _viewModel: GroupChatSettingViewModel
+    private let _disposeBag = DisposeBag()
+    private let selectMaxCount = 200
     private var sectionItems: [[RowType]]!
+    
+    private lazy var _photoHelper: PhotoHelper = {
+        let v = PhotoHelper()
+        v.setConfigToPickAvatar()
+        v.didPhotoSelected = { [weak self] (images: [UIImage], _: [PHAsset]) in
+            guard var first = images.first else { return }
+            ProgressHUD.animate()
+            first = first.compress(expectSize: 20 * 1024)
+            let result = FileHelper.shared.saveImage(image: first)
+            
+            if result.isSuccess {
+                self?._viewModel.uploadFile(fullPath: result.fullPath, onProgress: { progress in
+                    ProgressHUD.progress(progress)
+                }, onComplete: {
+                    ProgressHUD.success("头像上传成功".innerLocalized())
+                })
+            } else {
+                ProgressHUD.dismiss()
+            }
+        }
+        
+        v.didCameraFinished = { [weak self] (photo: UIImage?, _: URL?) in
+            guard let sself = self else { return }
+            if var photo {
+                photo = photo.compress(expectSize: 20 * 1024)
+                let result = FileHelper.shared.saveImage(image: photo)
+                if result.isSuccess {
+                    self?._viewModel.uploadFile(fullPath: result.fullPath, onProgress: { progress in
+                        ProgressHUD.progress(progress)
+                    }, onComplete: {
+                        ProgressHUD.success("头像上传成功".innerLocalized())
+                    })
+                }
+            }
+        }
+        return v
+    }()
     
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.title = "群聊设置".innerLocalized()
+        navigationController?.navigationBar.topItem?.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
 
         configureTableView()
         initView()
@@ -34,11 +74,19 @@ class GroupChatSettingTableViewController: UITableViewController {
         _viewModel.getConversationInfo()
     }
     
-    private func defaultSectionItems() -> [[RowType]] {
-        return [
+    private var defaultSectionItems: [[RowType]] {
+        [
             [.header],
             [.members],
-            [.quitGroup],
+            [.setDisturbOn],
+            [.clearRecord, .quitGroup],
+        ]
+    }
+    
+    private var notInGroupSectionItems: [[RowType]] {
+        [
+            [.setDisturbOn],
+            [.clearRecord, .quitGroup],
         ]
     }
     
@@ -56,17 +104,36 @@ class GroupChatSettingTableViewController: UITableViewController {
         tableView.register(OptionTableViewCell.self, forCellReuseIdentifier: OptionTableViewCell.className)
         tableView.register(OptionImageTableViewCell.self, forCellReuseIdentifier: OptionImageTableViewCell.className)
         tableView.register(QuitTableViewCell.self, forCellReuseIdentifier: QuitTableViewCell.className)
-        tableView.register(SingleChatRecordTableViewCell.self, forCellReuseIdentifier: SingleChatRecordTableViewCell.className)
     }
     
     private func initView() {}
     
     private func bindData() {
-        sectionItems = defaultSectionItems()
+        sectionItems = defaultSectionItems
+        
+        _viewModel.isInGroupRelay.subscribe(onNext: { [weak self] isIn in
+            guard let self else { return }
+            
+            sectionItems = isIn ? sectionItems : notInGroupSectionItems
+            
+            tableView.reloadData()
+        }).disposed(by: _disposeBag)
         
         _viewModel.groupInfoRelay.subscribe(onNext: { [weak self] (groupInfo: GroupInfo?) in
-
-            self?.tableView.reloadData()
+            guard let self else { return }
+            tableView.reloadData()
+        }).disposed(by: _disposeBag)
+        
+        _viewModel.myInfoInGroup.subscribe(onNext: { [weak self] (memberInfo: GroupMemberInfo?) in
+            guard let self else { return }
+                        
+            if let info = memberInfo {
+                if info.roleLevel == .owner {
+                    sectionItems[2] = [.manage]
+                }
+                
+                tableView.reloadData()
+            }
         }).disposed(by: _disposeBag)
     }
     
@@ -108,13 +175,29 @@ class GroupChatSettingTableViewController: UITableViewController {
         let rowType = sectionItems[indexPath.section][indexPath.row]
         switch rowType {
         case .header:
-            let cell = tableView.dequeueReusableCell(withIdentifier: GroupBasicInfoCell.className) as! GroupBasicInfoCell
+            let cell = tableView.dequeueReusableCell(withIdentifier: GroupBasicInfoCell.className, for: indexPath) as! GroupBasicInfoCell
             let groupInfo = _viewModel.groupInfoRelay.value
-            cell.avatarView.setAvatar(url: groupInfo?.faceURL, text: groupInfo?.groupName)
+            let isAdmin = _viewModel.myInfoInGroup.value?.isOwnerOrAdmin == true
+            
+            cell.avatarView.setAvatar(url: groupInfo?.faceURL, text: groupInfo?.groupName, showEdit: isAdmin, onTap: { [weak self] in
+                guard let self, isAdmin else { return }
+                
+                presentSelectedPictureActionSheet { [weak self] in
+                    guard let self else { return }
+                    
+                    _photoHelper.presentPhotoLibrary(byController: self)
+                } cameraHandler: { [weak self] in
+                    guard let self else { return }
+                    
+                    _photoHelper.presentCamera(byController: self)
+                }
+            })
+            
             let count = groupInfo?.memberCount ?? 0
-            cell.textFiled.text = groupInfo?.groupName?.append(string: "(\(count))")
+            cell.titleLabel.text = groupInfo?.groupName?.append(string: "(\(count))")
             cell.subLabel.text = groupInfo?.groupID
-            cell.textFiled.rightViewMode = groupInfo?.isMine == true ? .always : .never
+            cell.enableInput = isAdmin
+
             cell.inputHandler = { [weak self] in
                 
                 let vc = ModifyNicknameViewController()
@@ -123,7 +206,7 @@ class GroupChatSettingTableViewController: UITableViewController {
                 vc.avatarView.setAvatar(url: self?._viewModel.groupInfoRelay.value?.faceURL, text: self?._viewModel.groupInfoRelay.value?.groupName)
                 vc.nameTextField.text = self?._viewModel.groupInfoRelay.value?.groupName
                 vc.completeBtn.rx.tap.subscribe(onNext: { [weak self, weak vc] in
-                    guard let text = vc?.nameTextField.text, !text.isEmpty else { return }
+                    guard let text = vc?.nameTextField.text?.trimmingCharacters(in: .whitespacesAndNewlines), !text.isEmpty else { return }
                     ProgressHUD.animate()
                     self?._viewModel.updateGroupName(text, onSuccess: { _ in
                         ProgressHUD.success()
@@ -138,7 +221,7 @@ class GroupChatSettingTableViewController: UITableViewController {
                 let vc = QRCodeViewController(idString: IMController.joinGroupPrefix.append(string: self._viewModel.conversation.groupID))
                 vc.avatarView.setAvatar(url: self._viewModel.conversation.faceURL, text: self._viewModel.conversation.showName)
                 vc.nameLabel.text = self._viewModel.conversation.showName
-                vc.tipLabel.text = "扫一扫群二维码，立刻加入该群。".innerLocalized()
+                vc.tipLabel.text = "groupQrcodeHint".innerLocalized()
                 self.navigationController?.pushViewController(vc, animated: true)
             }
             return cell
@@ -166,42 +249,101 @@ class GroupChatSettingTableViewController: UITableViewController {
             _viewModel.membersCountRelay.map { "（\($0)）" }.bind(to: cell.countLabel.rx.text).disposed(by: cell.disposeBag)
             cell.titleLabel.text = rowType.title
             
-            cell.memberCollectionView.rx.modelSelected(GroupMemberInfo.self).subscribe(onNext: { [weak self] (userInfo: GroupMemberInfo) in
-                guard let sself = self else { return }
+            cell.memberCollectionView.rx.modelSelected(GroupMemberInfo.self).subscribe(onNext: { [weak self, weak cell] (userInfo: GroupMemberInfo) in
+                guard let self else { return }
+                
                 if userInfo.isAddButton || userInfo.isRemoveButton {
+                    if userInfo.isAddButton {
+#if ENABLE_ORGANIZATION
+                        let vc = MyContactsViewController(types: [.friends, .staff], multipleSelected: true, selectMaxCount: selectMaxCount)
+#else
+                        let vc = MyContactsViewController(types: [.friends], multipleSelected: true, selectMaxCount: selectMaxCount)
+#endif
+                        vc.title = "邀请群成员".innerLocalized()
+                        let blocked = _viewModel.allMembers + [IMController.shared.uid]
 
-                    let vc = SelectContactsViewController()
-                    vc.title = userInfo.isAddButton ? "邀请群成员".innerLocalized() : "移除群成员".innerLocalized()
-                    vc.selectedContact(blocked: userInfo.isAddButton ? sself._viewModel.allMembers + [IMController.shared.uid] : nil) { [weak vc] (r: [ContactInfo]) in
-                        guard let sself = self, let groupID = sself._viewModel.groupInfoRelay.value?.groupID else { return }
-                        
-                        let uids = r.compactMap { $0.ID }
-                        if userInfo.isAddButton {
-                            IMController.shared.inviteUsersToGroup(groupId: groupID, uids: uids) {
-                                vc?.navigationController?.popViewController(animated: true)
-                            }
-                        } else {
-                            IMController.shared.kickGroupMember(groupId: groupID, uids: uids) {
-                                vc?.navigationController?.popViewController(animated: true)
+                        vc.selectedContact(blocked: blocked) { [self] (r: [ContactInfo]) in
+                            
+                            ProgressHUD.animate()
+                            self._viewModel.inviteUsersToGroup(uids: r.compactMap({ $0.ID })) { [weak cell, weak vc, self] in
+                                ProgressHUD.success("invitationSuccessful".innerLocalized())
+                                cell?.reloadData()
+                                
+                                self.navigationController?.popToViewController(self, animated: true)
+                            } onFailure: { errCode, errMsg in
+                                ProgressHUD.error(errMsg)
                             }
                         }
+                        
+                        navigationController?.pushViewController(vc, animated: true)
+
+                        return
                     }
-                    self?.navigationController?.pushViewController(vc, animated: true)
+
+                    let vc = SelectContactsViewController(types: [.members], sourceID: _viewModel.groupInfoRelay.value?.groupID)
+
+                    vc.title = "removeGroupMember".innerLocalized()
+                    
+                    let blocked = _viewModel.myInfoInGroup.value?.roleLevel == .owner ? nil : _viewModel.superAndAdmins
+                    
+                    vc.selectedContact(hasSelected: [],
+                                       blocked: blocked?.compactMap({ $0.userID })) { [weak vc, self] (tapBack, r: [ContactInfo]) in
+                        if r.isEmpty || tapBack {
+                            self.navigationController?.popToViewController(self, animated: true)
+                            return
+                        }
+                        guard let groupID = self._viewModel.groupInfoRelay.value?.groupID else { return }
+                        
+                        ProgressHUD.animate()
+                        let uids = r.compactMap { $0.ID }
+               
+                        self._viewModel.kickGroupMember(uids: uids) { [weak cell, self] in
+                            ProgressHUD.dismiss()
+                            cell?.reloadData()
+                            self.navigationController?.popToViewController(self, animated: true)
+                        }
+                        
+                    }
+                    navigationController?.pushViewController(vc, animated: true)
                 } else {
-                    if self?._viewModel.groupInfoRelay.value?.lookMemberInfo == 0 {
-                        let vc = UserDetailTableViewController(userId: userInfo.userID!, groupId: sself._viewModel.conversation.groupID, groupInfo: sself._viewModel.groupInfoRelay.value!)
-                        self?.navigationController?.pushViewController(vc, animated: true)
+                    if _viewModel.groupInfoRelay.value?.lookMemberInfo == 0 {
+                        let vc = UserDetailTableViewController(userId: userInfo.userID!, groupId: _viewModel.conversation.groupID, groupInfo: _viewModel.groupInfoRelay.value!, groupMemberInfo: userInfo, userInfo: userInfo.toSimplePublicUserInfo())
+                        navigationController?.pushViewController(vc, animated: true)
                     }
                 }
             }).disposed(by: cell.disposeBag)
+            
+            return cell
+        case .manage, .clearRecord:
+            let cell = tableView.dequeueReusableCell(withIdentifier: OptionTableViewCell.className, for: indexPath) as! OptionTableViewCell
+            cell.titleLabel.text = rowType.title
+            return cell
+        case .setDisturbOn:
+            let cell = tableView.dequeueReusableCell(withIdentifier: SwitchTableViewCell.className, for: indexPath) as! SwitchTableViewCell
+            _viewModel.noDisturbRelay.bind(to: cell.switcher.rx.isOn).disposed(by: cell.disposeBag)
+            cell.switcher.rx.controlEvent(.valueChanged).subscribe(onNext: { [weak self, weak cell] in
+                guard let scell = cell else { return }
+
+                if !scell.switcher.isOn {
+                    self?._viewModel.setNoDisturbOff()
+                    return
+                }
+                self?._viewModel.setNoDisturbWithNotNotify()
+                 
+            }).disposed(by: cell.disposeBag)
+            cell.titleLabel.text = rowType.title
             return cell
         case .quitGroup:
-            let cell = tableView.dequeueReusableCell(withIdentifier: OptionTableViewCell.className) as! OptionTableViewCell
+            let cell = tableView.dequeueReusableCell(withIdentifier: OptionTableViewCell.className, for: indexPath) as! OptionTableViewCell
             cell.titleLabel.textColor = .cFF381F
-            _viewModel.myInfoInGroup.map { (info: GroupMemberInfo?) -> String in
-                let title = info?.roleLevel == .owner ? "解散群聊".innerLocalized() : "退出群聊".innerLocalized()
-                return title
-            }.bind(to: cell.titleLabel.rx.text).disposed(by: cell.disposeBag)
+            _viewModel.isInGroupRelay.map({ [weak self] isIn -> String in
+                if isIn {
+                    return self?._viewModel.myInfoInGroup.value?.roleLevel == .owner ? "解散群聊".innerLocalized() : "退出群聊".innerLocalized()
+                } else {
+                    return "delete".innerLocalized()
+                }
+            }).bind(to: cell.titleLabel.rx.text).disposed(by: cell.disposeBag)
+                
             return cell
         }
     }
@@ -212,16 +354,43 @@ class GroupChatSettingTableViewController: UITableViewController {
         case .members:
             let vc = MemberListViewController(viewModel: MemberListViewModel(groupInfo: _viewModel.groupInfoRelay.value!))
             navigationController?.pushViewController(vc, animated: true)
+        case .manage:
+            let vc = GroupSettingManageTableViewController(groupInfo: _viewModel.groupInfoRelay.value!)
+            navigationController?.pushViewController(vc, animated: true)
+        case .clearRecord:
+            presentAlert(title: "确认清空所有聊天记录吗？".innerLocalized()) {
+                ProgressHUD.animate(interaction: false)
+                self._viewModel.clearRecord(completion: { _ in
+                    ProgressHUD.success("清空成功".innerLocalized())
+                })
+            }
         case .quitGroup:
+            if !_viewModel.isInGroupRelay.value {
+                ProgressHUD.animate()
+                
+                _viewModel.removeConversation { [weak self] r in
+                    if r {
+                        ProgressHUD.animate()
+                        self?.navigationController?.popToRootViewController(animated: true)
+                    } else {
+                        ProgressHUD.error("networkError".innerLocalized())
+                    }
+                }
+                return
+            }
             if let role = _viewModel.myInfoInGroup.value?.roleLevel, role == .owner {
-                presentAlert(title: "解散群聊后，将失去和群成员的联系。".innerLocalized()) {
-                    self._viewModel.dismissGroup(onSuccess: {
+                presentAlert(title: "解散群聊后，将失去和群成员的联系。".innerLocalized()) { [weak self] in
+                    guard let self else { return }
+                    
+                    _viewModel.dismissGroup(onSuccess: { [self] in
                         self.navigationController?.popToRootViewController(animated: true)
                     })
                 }
             } else {
-                presentAlert(title: "退出群聊后，将不再接收此群聊信息。".innerLocalized()) {
-                    self._viewModel.quitGroup(onSuccess: {
+                presentAlert(title: "退出群聊后，将不再接收此群聊信息。".innerLocalized()) { [weak self] in
+                    guard let self else { return }
+                    
+                    _viewModel.quitGroup(onSuccess: { [self] in
                         self.navigationController?.popToRootViewController(animated: true)
                     })
                 }
@@ -234,6 +403,9 @@ class GroupChatSettingTableViewController: UITableViewController {
     enum RowType {
         case header
         case members
+        case manage
+        case setDisturbOn
+        case clearRecord
         case quitGroup
         
         var title: String {
@@ -242,6 +414,12 @@ class GroupChatSettingTableViewController: UITableViewController {
                 return ""
             case .members:
                 return "查看全部群成员".innerLocalized()
+            case .manage:
+                return "群管理".innerLocalized()
+            case .setDisturbOn:
+                return "消息免打扰".innerLocalized()
+            case .clearRecord:
+                return "清空聊天记录".innerLocalized()
             case .quitGroup:
                 return "退出群聊".innerLocalized()
             }

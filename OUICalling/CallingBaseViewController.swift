@@ -33,8 +33,6 @@ public class CallingBaseViewController: CallingBaseController {
     var inviter: UserInfoHandler!
     var users: UserInfoHandler!
     var isVideo: Bool = true
-    var groupID: String?
-    var isJoinRoom: Bool = false
     
     internal let disposeBag = DisposeBag()
     internal var room: Room = Room()
@@ -50,18 +48,26 @@ public class CallingBaseViewController: CallingBaseController {
     internal var minimizeButton: UIButton = .init()
     internal var linkedTimer: Timer? // 通话时间
     
-    private var audioPlayer: AVAudioPlayer!
+    private var audioPlayer: AVAudioPlayer?
+    
+    internal var poorNetwork = false 
     
     public var linkingDuration: Int = 0 // 通话时长
-
+    
+    /**
+     链接房间
+     */
     public override func connectRoom(liveURL: String, token: String) {
         connectRoom(url: liveURL, token: token)
     }
-
+    /**
+     挂断、拒绝等关闭界面
+     */
     public override func dismiss() {
         linkedTimer?.invalidate()
         linkedTimer = nil
         stopSounds()
+        room.removeAllDelegates()
         
         Task {
             await room.disconnect()
@@ -72,10 +78,14 @@ public class CallingBaseViewController: CallingBaseController {
         }
     }
     
-    var isSignal: Bool {
-        return groupID == nil || groupID!.isEmpty
+    public override func isConnected() -> Bool {
+        room.connectionState == .connected
     }
     
+    var isSignal: Bool {
+        true
+    }
+
     private let linkingView: AnimationView = {
         let bundle = Bundle.callingBundle()
         let v = AnimationView(name: "linking", bundle: bundle)
@@ -118,6 +128,7 @@ public class CallingBaseViewController: CallingBaseController {
         
         if let avatar = user.faceURL, !avatar.isEmpty {
             smallDisableVideoImageView.setImage(with: avatar)
+            smallContentView.bringSubviewToFront(smallDisableVideoImageView)
         } else {
             let nickname = user.nickname
             smallAvatarView.setAvatar(url: nil, text: nickname)
@@ -133,13 +144,14 @@ public class CallingBaseViewController: CallingBaseController {
         
         if let avatar = user.faceURL, !avatar.isEmpty {
             bigDisableVideoImageView.setImage(with: avatar)
+            bigContentView.bringSubviewToFront(bigDisableVideoImageView)
         } else {
             let nickname = user.nickname
             bigAvatarView.setAvatar(url: nil, text: nickname)
             bigAvatarView.isHidden = false
         }
     }
-    
+
     internal let tipsLabel: UILabel = {
         let t = UILabel()
         t.layer.cornerRadius = 6
@@ -149,7 +161,7 @@ public class CallingBaseViewController: CallingBaseController {
         t.textColor = .white
         return t
     }()
-    
+
     internal let linkedTimeLabel: UILabel = {
         let t = UILabel()
         t.layer.cornerRadius = 6
@@ -229,13 +241,15 @@ public class CallingBaseViewController: CallingBaseController {
         let moveState = gesture.state
         switch moveState {
         case .changed:
+
             let point = gesture.translation(in: smallContentView.superview)
             smallContentView.center = CGPoint(x: smallContentView.center.x + point.x, y: smallContentView.center.y + point.y)
             break
         case .ended:
+
             let point = gesture.translation(in: smallContentView.superview)
             let newPoint = CGPoint(x: smallContentView.center.x + point.x, y: smallContentView.center.y + point.y)
-            
+
             UIView.animate(withDuration: 0.1) { [self] in
                 self.smallContentView.center = self.resetPosition(point: newPoint)
             }
@@ -256,7 +270,7 @@ public class CallingBaseViewController: CallingBaseController {
         } else {
             newPoint.x = CGRectGetWidth(smallContentView.superview!.frame) - (CGRectGetWidth(smallContentView.frame) / 2) - limitMargin
         }
-        
+
         if point.y <= localViewTopInset {
             newPoint.y = localViewTopInset
         } else if point.y > bottomMargin {
@@ -324,6 +338,25 @@ public class CallingBaseViewController: CallingBaseController {
         return v
     }()
     
+    private let acceptButtonCoverView: UIView = {
+        let v = UIView()
+        v.backgroundColor = .c00D66A
+        v.layer.cornerRadius = 24
+        v.isHidden = true
+        v.layer.masksToBounds = true
+        
+        let i = UIActivityIndicatorView(style: .large)
+        i.color = .white
+        i.startAnimating()
+        v.addSubview(i)
+        
+        i.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+        }
+        
+        return v
+    }()
+    
     override open func viewDidLoad() {
         view.backgroundColor = .init(red: 38 / 255, green: 38 / 255, blue: 38 / 255, alpha: 1)
         setupTopFuncButtons()
@@ -332,6 +365,27 @@ public class CallingBaseViewController: CallingBaseController {
         
         view.insertSubview(bigContentView, belowSubview: minimizeButton)
         view.insertSubview(smallContentView, belowSubview: minimizeButton)
+
+        if !isSignal {
+            NotificationCenter.default.addObserver(
+                self,
+                selector: #selector(handleAudioRouteChange),
+                name: AVAudioSession.routeChangeNotification,
+                object: nil
+            )
+        }
+    }
+    
+    @objc func handleAudioRouteChange(notification: Notification) {
+        guard let userInfo = notification.userInfo,
+              let reasonValue = userInfo[AVAudioSessionRouteChangeReasonKey] as? UInt,
+              let reason = AVAudioSession.RouteChangeReason(rawValue: reasonValue) else {
+            return
+        }
+        
+        if reason == .categoryChange || reason == .newDeviceAvailable {
+            audioPlayer?.volume = 0.4
+        }
     }
     
     deinit {
@@ -347,7 +401,8 @@ public class CallingBaseViewController: CallingBaseController {
     }
     
     @objc func scale() {
-        self.suspend(coverImageName: "contact_my_friend_icon", tips: self.linkingDuration > 0 ? "calling".innerLocalized() : nil)
+        print("缩放到小窗口：\(self.linkingDuration)")
+        self.suspend(coverImageName: "contact_my_friend_icon", tips: self.linkingDuration > 0 ? "通话中".innerLocalized() : nil)
     }
     
     private lazy var micButton: UIButton = {
@@ -440,12 +495,12 @@ public class CallingBaseViewController: CallingBaseController {
         print("\(#function)")
 
         sender.isSelected = !sender.isSelected
-        ProgressHUD.animate(interaction: false)
+        acceptButtonCoverView.isHidden = false
         self.onAccepted?()
         self.stopSounds()
         self.onTapAccepted()
     }
-    
+
     private lazy var cameraEnabledButton: UIButton = {
         let v = UIButton(type: .custom)
         v.setImage(UIImage(nameInBundle: "video_close"), for: .normal)
@@ -473,7 +528,7 @@ public class CallingBaseViewController: CallingBaseController {
             sender.isEnabled = true
         }
     }
-    
+
     private lazy var switchCameraButton: UIButton = {
         let v = UIButton(type: .custom)
         v.setImage(UIImage(nameInBundle: "trun_camera_flag"), for: .normal)
@@ -512,6 +567,26 @@ public class CallingBaseViewController: CallingBaseController {
             make.width.equalTo(33)
             make.height.equalTo(30)
         }
+
+        if !isSignal {
+            view.addSubview(linkedTimeLabel)
+            linkedTimeLabel.snp.makeConstraints { make in
+                make.centerX.equalToSuperview()
+                make.centerY.equalTo(minimizeButton)
+            }
+        } else {
+            if isVideo {
+                view.addSubview(linkedTimeLabel)
+                linkedTimeLabel.snp.makeConstraints { make in
+                    make.centerX.equalToSuperview()
+                    
+                    funcBttonsView != nil ?
+                    make.centerY.equalTo(funcBttonsView!.snp.top).inset(48) :
+                    make.centerY.equalTo(view.safeAreaLayoutGuide.snp.bottom).inset(134)
+
+                }
+            }
+        }
     }
     
     func onlineTopMoreFuncButtons() {
@@ -533,15 +608,16 @@ public class CallingBaseViewController: CallingBaseController {
             make.width.height.equalTo(minimizeButton)
         }
     }
-    
+
     internal func onlineFuncButtons() {
+
         funcBttonsView?.removeFromSuperview()
         funcBttonsView = UIStackView(arrangedSubviews: [micButton, cancelButton, thirdButton])
         funcBttonsView!.axis = .horizontal
         funcBttonsView!.distribution = .fillEqually
         view.addSubview(funcBttonsView!)
         
-        funcBttonsView!.snp.makeConstraints { make in
+        funcBttonsView!.snp.remakeConstraints { make in
             make.bottom.equalTo(view.safeAreaLayoutGuide.snp.bottom).offset(-48)
             make.leading.trailing.equalToSuperview()
         }
@@ -552,6 +628,7 @@ public class CallingBaseViewController: CallingBaseController {
     }
     
     internal func previewFuncButtons() {
+
         let cancelButton = UIButton()
         cancelButton.setImage(UIImage(nameInBundle: "hang_up"), for: .normal)
         cancelButton.addTarget(self, action: #selector(rejectButtonAction), for: .touchUpInside)
@@ -560,10 +637,16 @@ public class CallingBaseViewController: CallingBaseController {
         pickUpButton.setImage(.init(nameInBundle: "pick_up"), for: .normal)
         pickUpButton.addTarget(self, action: #selector(acceptButtonAction), for: .touchUpInside)
         
+        pickUpButton.addSubview(acceptButtonCoverView)
+        acceptButtonCoverView.snp.makeConstraints { make in
+            make.center.equalToSuperview()
+            make.height.width.equalTo(pickUpButton.imageView!)
+        }
+        
         funcBttonsView?.removeFromSuperview()
         funcBttonsView = UIStackView(arrangedSubviews: [cancelButton, pickUpButton])
         funcBttonsView!.axis = .horizontal
-        funcBttonsView!.distribution = .fillEqually
+        funcBttonsView?.distribution = .fillEqually
         view.addSubview(funcBttonsView!)
         
         funcBttonsView!.snp.makeConstraints { make in
@@ -580,7 +663,7 @@ public class CallingBaseViewController: CallingBaseController {
             if let path = Bundle.callingBundle().path(forResource: "call_ring", ofType: "mp3") {
                 do {
                     let session = AVAudioSession.sharedInstance()
-                    try session.setCategory(.playback)
+                    try session.setCategory(.playback, options: [.mixWithOthers, .duckOthers])
                     try session.setActive(true)
                     
                     let url = URL(fileURLWithPath: path)
@@ -597,7 +680,9 @@ public class CallingBaseViewController: CallingBaseController {
     
     internal func stopSounds() {
         ringToneQueue.addOperation { [self] in
-            audioPlayer?.pause()
+            if audioPlayer?.isPlaying == true {
+                audioPlayer?.pause()
+            }
         }
     }
     
@@ -614,7 +699,7 @@ public class CallingBaseViewController: CallingBaseController {
             }
         }
     }
-    
+
     internal func toggleMicrophoneEnabled(forceEnable: Bool? = nil) async -> Bool {
         let enable = forceEnable ?? !room.localParticipant.isMicrophoneEnabled()
         
@@ -625,7 +710,7 @@ public class CallingBaseViewController: CallingBaseController {
             return false
         }
     }
-    
+
     internal func switchCameraPosition() async -> Bool {
         
         guard let track = room.localParticipant.firstCameraPublication?.track as? LocalVideoTrack,
@@ -643,7 +728,7 @@ public class CallingBaseViewController: CallingBaseController {
             return false
         }
     }
-    
+
     internal func toggleCameraEnabled() async -> Bool  {
         let enable = !room.localParticipant.isCameraEnabled()
         
@@ -654,7 +739,7 @@ public class CallingBaseViewController: CallingBaseController {
             return false
         }
     }
-    
+
     internal func toggleSpeakerphoneEnabled(enabled: Bool = true) {
         print("toggleSpeakerphoneEnabled:\(enabled)")
         do {
@@ -672,26 +757,30 @@ public class CallingBaseViewController: CallingBaseController {
             print(error.localizedDescription)
         }
     }
-    
+
     private func connectRoom(url: String, token: String) {
         showLinkingView()
-        stopSounds()
-        
-        let roomOptions = RoomOptions(
-            defaultCameraCaptureOptions: CameraCaptureOptions(
-                position: .front,
-                dimensions: .h720_169,
-                fps: 30
-            ),
-            adaptiveStream: true,
-            dynacast: true
-        )
+        if isSignal {
+            stopSounds()
+        }
         
         Task {
             do {
-                try await room.connect(url: url, token: token, roomOptions: roomOptions)
+                let roomOptions = RoomOptions(
+                    defaultCameraCaptureOptions: CameraCaptureOptions(
+                        position: .front,
+                        dimensions: .h720_169,
+                        fps: 30
+                    ),
+                    defaultVideoPublishOptions: VideoPublishOptions(preferredCodec: .vp8),
+                    adaptiveStream: true,
+                    dynacast: true
+                )
                 
-                ProgressHUD.dismiss()
+                iLogger.print("connect live kit room, url: \(url), token: \(token)")
+                
+                try await room.connect(url: url, token: token, roomOptions: roomOptions)
+                showLinkingView(show: false)
                 
                 if !isSignal {
                     onlineFuncButtons()
@@ -707,14 +796,13 @@ public class CallingBaseViewController: CallingBaseController {
             } catch (let error) {
                 onConnectFailure?()
                 showLinkingView(show: false)
-                ProgressHUD.dismiss()
-                print("\(#function) throw an error: \(error)")
+                iLogger.print("connect livekit throw an error: \(error)", functionName: "\(#function)")
                 
                 return false
             }
         }
     }
-    
+
     internal func insertLinkingViewAbove(aboveView: UIView) {
         view.insertSubview(linkingView, aboveSubview: aboveView)
         
@@ -723,7 +811,7 @@ public class CallingBaseViewController: CallingBaseController {
             make.width.equalTo(50)
         }
     }
-    
+
     internal func showLinkingView(show: Bool = true) {
         if show {
             linkingView.isHidden = false
@@ -733,7 +821,7 @@ public class CallingBaseViewController: CallingBaseController {
             linkingView.stop()
         }
     }
-    
+
     internal func linkingTimer(fire: Bool = true) {
         if linkedTimer != nil {
             return
@@ -758,10 +846,11 @@ public class CallingBaseViewController: CallingBaseController {
             
             wself.tipsLabel.text = timeline
             wself.linkedTimeLabel.text = timeline
+
             wself.updateSuspendTips(text: timeline)
         }
     }
-    
+
     internal func onTapAccepted() {}
 }
 

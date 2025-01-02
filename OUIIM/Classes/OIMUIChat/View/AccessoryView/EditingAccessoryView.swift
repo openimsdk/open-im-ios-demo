@@ -41,9 +41,14 @@ final class EditingAccessoryView: UIView, StaticViewFactory {
         button.addTarget(self, action: #selector(buttonTapped), for: .touchUpInside)
     }
 
-    func setup(with controller: EditingAccessoryController, isSelected: Bool) {
+    func setup(with controller: EditingAccessoryController, isSelected: Bool, enableSelected: Bool = true) {
         self.controller = controller
         button.isSelected = isSelected
+        button.isHidden = !enableSelected
+    }
+    
+    func toggleState() {
+        button.isSelected = !button.isSelected
     }
 
     @objc private func buttonTapped() {

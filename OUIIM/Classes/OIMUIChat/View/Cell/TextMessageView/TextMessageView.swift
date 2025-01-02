@@ -3,16 +3,33 @@ import ChatLayout
 import Foundation
 import UIKit
 import OUICore
+import YYText
 
-final class TextMessageView: UIView, ContainerCollectionViewCellDelegate {
+class TextMessageView: UIView, ContainerCollectionViewCellDelegate {
 
-    private var viewPortWidth: CGFloat = 300
+    private lazy var textView: YYLabel = {
+        let v = YYLabel()
+        
+        v.translatesAutoresizingMaskIntoConstraints = false
+        v.numberOfLines = 0
+        v.backgroundColor = .clear
+        v.setContentCompressionResistancePriority(UILayoutPriority(999), for: .vertical)
+        v.setContentHuggingPriority(UILayoutPriority(rawValue: 999), for: .horizontal)
+        v.textContainerInset = UIEdgeInsets(top: 8, left: 13, bottom: 8, right: 13)
+        v.preferredMaxLayoutWidth = viewPortWidth * StandardUI.maxWidthRate
 
-    private lazy var textView = MessageTextView()
+        v.textTapAction = { [weak self] view, text, subRange, rect in
+            self?.controller?.action(url: nil)
+        }
+        return v
+    }()
 
-    private var controller: TextMessageController?
+    var controller: TextMessageController?
 
     private var textViewWidthConstraint: NSLayoutConstraint?
+    private var textViewHeightConstraint: NSLayoutConstraint?
+    
+    internal var viewPortWidth: CGFloat = 300.w
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -24,71 +41,79 @@ final class TextMessageView: UIView, ContainerCollectionViewCellDelegate {
         setupSubviews()
     }
 
-    func prepareForReuse() {
-        textView.resignFirstResponder()
-    }
-
-    // Uncomment this method to test the performance without calculating text cell size using autolayout
-    // For the better illustration set DefaultRandomDataProvider.enableRichContent/enableNewMessages/enableRichContent
-    // to false
-//    func preferredLayoutAttributesFitting(_ layoutAttributes: ChatLayoutAttributes) -> ChatLayoutAttributes? {
-//        viewPortWidth = layoutAttributes.layoutFrame.width
-//        guard let text = controller?.text as NSString? else {
-//            return layoutAttributes
-//        }
-//        let maxWidth = viewPortWidth * Constants.maxWidth
-//        var rect = text.boundingRect(with: CGSize(width: maxWidth, height: CGFloat.greatestFiniteMagnitude),
-//            options: [.usesLineFragmentOrigin, .usesFontLeading],
-//            attributes: [NSAttributedString.Key.font: textView.font as Any], context: nil)
-//        rect = rect.insetBy(dx: 0, dy: -8)
-//        layoutAttributes.size = CGSize(width: layoutAttributes.layoutFrame.width, height: rect.height)
-//        setupSize()
-//        return layoutAttributes
-//    }
-
     func apply(_ layoutAttributes: ChatLayoutAttributes) {
         viewPortWidth = layoutAttributes.layoutFrame.width
         setupSize()
-    }
-
-    public override func layoutSubviews() {
-        super.layoutSubviews()
     }
 
     func setup(with controller: TextMessageController) {
         self.controller = controller
         reloadData()
     }
-
+    
+    func prepareForReuse() {
+        textView.attributedText = nil
+        textView.text = nil
+        controller?.highlight = false
+        textView.backgroundColor = .clear
+    }
+    
     func reloadData() {
         guard let controller else {
             return
         }
-        if controller.text != nil {
-            textView.text = controller.text
+                
+        var attr: NSMutableAttributedString!
+        
+        if let attributedString = controller.attributedString {
+            attr = NSMutableAttributedString(attributedString: attributedString)
         } else {
-            var str = NSAttributedString(string: controller.attributedString!.string, attributes: [.font: UIFont.preferredFont(forTextStyle: .body)])
-
-            textView.attributedText = str
+            attr = NSMutableAttributedString(string: controller.text!)
         }
-        UIView.performWithoutAnimation {
-            if #available(iOS 13.0, *) {
-                textView.textColor = .c0C1C33
-                textView.linkTextAttributes = [.foregroundColor: controller.type.isIncoming ? UIColor.systemBlue : .systemGray6,
-                                               .underlineStyle: 1]
-            } else {
-                let color = controller.type.isIncoming ? UIColor.black : .white
-                textView.textColor = color
-                textView.linkTextAttributes = [.foregroundColor: color,
-                                               .underlineStyle: 1]
+        
+        attr.addAttributes([.font: UIFont.f17, .foregroundColor: UIColor.c0C1C33], range: NSMakeRange(0, attr.length))
+
+        let pattern = #"https?://(\d{1,3}\.){3}\d{1,3}"#
+
+        do {
+            let text = attr.string
+            let regex = try NSRegularExpression(pattern: pattern, options: [])
+            let matches = regex.matches(in: text, options: [], range: NSRange(location: 0, length: text.utf16.count))
+            for match in matches {
+                let range = match.range
+                let value = (text as NSString).substring(with: range)
+                
+                attr.yy_setTextHighlight(range, color: UIColor.c0089FF, backgroundColor: nil) { view, text, subRange, rect in
+                    
+                    if let url = URL(string: value) {
+                        controller.action(url: url)
+                    }
+                }
+            }
+        } catch {
+            print("Invalid regex pattern: \(error.localizedDescription)")
+        }
+
+        attr.enumerateAttribute(.link,
+                                in: NSRange(location: 0, length: attr.length),
+                                options: []) { value, range, _ in
+            guard let value = value as? String else { return }
+            
+            attr.yy_setTextHighlight(range, color: UIColor.c0089FF, backgroundColor: nil) { view, text, subRange, rect in
+                
+                if let url = URL(string: value) {
+                    controller.action(url: url)
+                }
             }
         }
+        
+        textView.attributedText = attr
         
         if controller.highlight {
             UIView.animate(withDuration: 1, animations: { [self] in
                 self.textView.backgroundColor = .systemRed
             }) { _ in
-                UIView.animate(withDuration: 0.5) { [self] in
+                UIView.animate(withDuration: 1) { [self] in
                     self.textView.backgroundColor = .clear
                 }
             }
@@ -99,60 +124,51 @@ final class TextMessageView: UIView, ContainerCollectionViewCellDelegate {
         layoutMargins = .zero
         translatesAutoresizingMaskIntoConstraints = false
         insetsLayoutMarginsFromSafeArea = false
-
-        textView.translatesAutoresizingMaskIntoConstraints = false
-        textView.isScrollEnabled = false
-        textView.isEditable = false
-        textView.spellCheckingType = .no
-        textView.backgroundColor = .clear
-        textView.textContainerInset = .zero
-        textView.textContainer.lineFragmentPadding = 0
-        textView.dataDetectorTypes = .all
-        textView.font = .preferredFont(forTextStyle: .body)
-        textView.scrollsToTop = false
-        textView.bounces = false
-        textView.bouncesZoom = false
-        textView.showsHorizontalScrollIndicator = false
-        textView.showsVerticalScrollIndicator = false
-        textView.isExclusiveTouch = true
-
-        addSubview(textView)
+        
+        let hStack = UIStackView(arrangedSubviews: [textView])
+        hStack.alignment = .center
+        hStack.translatesAutoresizingMaskIntoConstraints = false
+        
+        addSubview(hStack)
         NSLayoutConstraint.activate([
-            textView.topAnchor.constraint(equalTo: layoutMarginsGuide.topAnchor),
-            textView.bottomAnchor.constraint(equalTo: layoutMarginsGuide.bottomAnchor),
-            textView.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
-            textView.trailingAnchor.constraint(equalTo: layoutMarginsGuide.trailingAnchor)
+            hStack.topAnchor.constraint(equalTo: layoutMarginsGuide.topAnchor),
+            hStack.bottomAnchor.constraint(equalTo: layoutMarginsGuide.bottomAnchor),
+            hStack.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
+            hStack.trailingAnchor.constraint(equalTo: layoutMarginsGuide.trailingAnchor)
         ])
         textViewWidthConstraint = textView.widthAnchor.constraint(lessThanOrEqualToConstant: viewPortWidth)
         textViewWidthConstraint?.isActive = true
-    }
+        textView.heightAnchor.constraint(greaterThanOrEqualToConstant: 30).isActive = true
 
-    private func setupSize() {
-        UIView.performWithoutAnimation {
-            self.textViewWidthConstraint?.constant = viewPortWidth * StandardUI.maxWidth
-            setNeedsLayout()
+
+
+
+
+
+
+
+        
+        let longPressGesture = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
+        longPressGesture.minimumPressDuration = 0.3
+        textView.addGestureRecognizer(longPressGesture)
+        
+        if let gestureRecognizers = textView.gestureRecognizers {
+            for gesture in gestureRecognizers {
+                gesture.require(toFail: longPressGesture)
+            }
+        }
+    }
+    
+    @objc private func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
+        if gesture.state == .began {
+            controller?.longPress?(self, gesture.location(in: self))
         }
     }
 
-}
-
-/// UITextView with hacks to avoid selection
-private final class MessageTextView: UITextView {
-
-    override var isFocused: Bool {
-        false
+    private func setupSize() {
+        UIView.performWithoutAnimation { [self] in
+            self.textViewWidthConstraint?.constant = viewPortWidth * StandardUI.maxWidthRate
+            setNeedsLayout()
+        }
     }
-
-    override var canBecomeFirstResponder: Bool {
-        false
-    }
-
-    override var canBecomeFocused: Bool {
-        false
-    }
-
-    override func canPerformAction(_ action: Selector, withSender sender: Any?) -> Bool {
-        false
-    }
-
 }

@@ -24,7 +24,10 @@ public class SearchResultViewController: UIViewController, UISearchResultsUpdati
         let v = UIView()
         let label: UILabel = {
             let v = UILabel()
-            v.text = "无法找到该".innerLocalized() + _searchType.title
+            v.text = "noFoundX".innerLocalizedFormat(arguments: _searchType.title)
+            v.textColor = .c8E9AB0
+            v.font = .f17
+            
             return v
         }()
         v.addSubview(label)
@@ -57,7 +60,6 @@ public class SearchResultViewController: UIViewController, UISearchResultsUpdati
     
     public override func viewDidLoad() {
         super.viewDidLoad()
-        edgesForExtendedLayout = [UIRectEdge.left, .right, .bottom]
         view.backgroundColor = .viewBackgroundColor
         
         initView()
@@ -66,15 +68,17 @@ public class SearchResultViewController: UIViewController, UISearchResultsUpdati
     
     private func initView() {
         view.backgroundColor = .groupTableViewBackground
-        
+        definesPresentationContext = true
+
         view.addSubview(tableView)
         tableView.snp.makeConstraints { make in
-            make.edges.equalToSuperview()
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top)
+            make.leading.bottom.trailing.equalToSuperview()
         }
         
         view.addSubview(searchResultEmptyView)
         searchResultEmptyView.snp.makeConstraints { make in
-            make.top.equalToSuperview()
+            make.top.equalTo(view.safeAreaLayoutGuide.snp.top).offset(38.h)
             make.left.right.equalToSuperview()
             make.height.equalTo(60)
         }
@@ -84,9 +88,9 @@ public class SearchResultViewController: UIViewController, UISearchResultsUpdati
     }
     
     public enum SearchType {
-        /// 群组
+
         case group
-        /// 用户
+
         case user
         
         var title: String {
@@ -128,7 +132,7 @@ public class SearchResultViewController: UIViewController, UISearchResultsUpdati
                 }
             }).disposed(by: _disposebag)
         case .user:
-            // 业务层有搜索数据
+
             if let handler = OIMApi.queryFriendsWithCompletionHandler {
                 handler([keyword], {res in
                     let shouldHideEmptyView = !res.isEmpty
@@ -137,22 +141,22 @@ public class SearchResultViewController: UIViewController, UISearchResultsUpdati
                         guard let `self` = self else { return }
                         self.searchResultEmptyView.isHidden = shouldHideEmptyView
                         self.tableView.isHidden = shouldHideResultView
-                        // 输入的类型
-                        let isNumber = keyword.trimmingCharacters(in: .decimalDigits).length == 0
+
+                        let isNumber = keyword.trimmingCharacters(in: .decimalDigits).count == 0
                         let isPhone = self.isPhoneNumber(keyword)
                         let isEmail = self.isEmail(keyword)
                         
                         self.dataList = res.map { elem in
                             if isNumber {
                                 if isPhone {
-                                    return [elem.userID : "手机号:" + elem.phoneNumber!]
+                                    return [elem.userID : "手机号".innerLocalized() + ":" + elem.phoneNumber!]
                                 } else {
                                     return [elem.userID : "ID:" + elem.userID]
                                 }
                             } else if isEmail {
-                                return [elem.userID : "邮箱:" + elem.email!]
+                                return [elem.userID : "邮箱".innerLocalized() + ":" + elem.email!]
                             } else {
-                                return [elem.userID : "昵称:" + elem.nickname!]
+                                return [elem.userID : "昵称".innerLocalized() + ":" + elem.nickname!]
                             }
                         }
                     }
@@ -179,8 +183,7 @@ public class SearchResultViewController: UIViewController, UISearchResultsUpdati
     deinit {
         debounceTimer = nil
     }
-    
-    // 验证邮箱
+
     func isEmail(_ email: String) -> Bool {
         if email.count == 0 {
             return false
@@ -189,8 +192,7 @@ public class SearchResultViewController: UIViewController, UISearchResultsUpdati
         let emailTest:NSPredicate = NSPredicate(format: "SELF MATCHES %@", emailRegex)
         return emailTest.evaluate(with: email)
     }
-    
-    // 验证手机号
+
     func isPhoneNumber(_ phoneNumber: String) -> Bool {
         if phoneNumber.count == 0 {
             return false
@@ -221,6 +223,8 @@ extension SearchResultViewController: UITableViewDelegate, UITableViewDataSource
     }
     
     public func tableView(_: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+        
         let info = dataList[indexPath.row]
         if let id = info.keys.first {
             didSelectedItem?(id)

@@ -20,12 +20,12 @@ public class CallingReceiverController: CallingBaseController {
     public override func connectRoom(liveURL: String, token: String) {
         signal?.connectRoom(liveURL: liveURL, token: token)
     }
-    
+
     public override func dismiss() {
         isPresented = false
         signal?.dismiss()
     }
-    
+
     public override func startLiveChat(inviter: @escaping UserInfoHandler,
                                        others: @escaping UserInfoHandler,
                                        isVideo: Bool = true) {
@@ -43,7 +43,6 @@ public class CallingReceiverController: CallingBaseController {
         signal!.onHungup = onHungup
         signal!.onDisconnect = onDisconnect
         signal!.onConnectFailure = onConnectFailure
-        signal!.onBeHungup = onBeHungup
         
         signal!.modalPresentationStyle = .overCurrentContext
         UIViewController.currentViewController().present(signal!, animated: true)
@@ -62,7 +61,6 @@ class ReceiverSignalViewController: CallingBaseViewController {
     
     func setupView() {
         let inviter = inviter().first
-
         let avatarView = AvatarView()
         avatarView.setAvatar(url: inviter?.faceURL, text: inviter?.nickname)
         avatarView.snp.makeConstraints { make in
@@ -110,21 +108,19 @@ class ReceiverSignalViewController: CallingBaseViewController {
         }
         
         insertLinkingViewAbove(aboveView: verStackView!)
-        
-        if !isJoinRoom {
-            previewFuncButtons()
-        }
+        previewFuncButtons()
     }
 }
 
 extension ReceiverSignalViewController: RoomDelegate {
     func room(_ room: Room, didFailToConnectWithError error: LiveKitError?) {
+        iLogger.print("\(#function): \(error?.message)")
         onConnectFailure?()
         dismiss()
     }
     
     func room(_ room: Room, didUpdateConnectionState connectionState: ConnectionState, from oldValue: ConnectionState) {
-        print("connection state did update")
+        iLogger.print("\(#function): \(connectionState)")
         DispatchQueue.main.async { [self] in
             if case .disconnected = connectionState {
                 onDisconnect?()
@@ -134,62 +130,94 @@ extension ReceiverSignalViewController: RoomDelegate {
         }
     }
     
-    func room(_ room: Room, participantDidDisconnect participant: RemoteParticipant) {
-        print("\(#function)")
+    func roomIsReconnecting(_ room: Room) {
+        iLogger.print("\(#function)")
+        poorNetwork = true
     }
     
-    func room(_ room: Room, participant localParticipant: LocalParticipant, didPublishTrack publication: LocalTrackPublication) {
-        print("\(#function)")
-        DispatchQueue.main.async { [self] in
-            onlineFuncButtons()
-            linkingTimer()
-            showLinkingView(show: false)
-        }
-        guard let track = localParticipant.firstCameraVideoTrack else {
-            print("receiver did publish track return")
-            return
-        }
-        
-        DispatchQueue.main.async { [self] in
-            self.smallTrack = track
-//            self.smallVideoView.track = track
-        }
+    func roomDidReconnect(_ room: Room) {
+        iLogger.print("\(#function)")
+        poorNetwork = false
     }
     
     func room(_ room: Room, participantDidConnect participant: RemoteParticipant) {
-        print("\(#function)")
+        iLogger.print("\(#function): \(participant.metadata)")
+    }
+    
+    func room(_ room: Room, participantDidDisconnect participant: RemoteParticipant) {
+        iLogger.print("\(#function): \(participant.metadata)")
+        
+        let identityString = participant.identityString
+        
+        if poorNetwork {
+            ProgressHUD.text("callingInterruption".localized())
+        }
+    }
+    
+    func room(_ room: Room, participant: Participant, didUpdateConnectionQuality quality: ConnectionQuality) {
+        iLogger.print("\(#function): participant: \(participant.metadata) quality: \(quality)")
+        guard room.connectionState != .disconnected else { return }
+        
+        if quality == .lost || quality == .poor {
+            poorNetwork = true
+            
+            let isMine = participant.identity == room.localParticipant.identity
+            
+            ProgressHUD.text(isMine ? "networkNotStable".localized() : "otherNetworkNotStableHint".localized())
+        } else {
+            poorNetwork = false
+        }
+    }
+    
+    func room(_ room: Room, participant localParticipant: LocalParticipant, didPublishTrack publication: LocalTrackPublication) {
+        iLogger.print("\(#function)")
+        DispatchQueue.main.async { [self] in
+            onlineFuncButtons()
+            showLinkingView(show: false)
+        }
+        guard let track = localParticipant.firstCameraVideoTrack else {
+            iLogger.print("receiver did publish track return")
+            return
+        }
+        
+        DispatchQueue.main.async { [self, track] in
+            self.smallTrack = track
+
+        }
     }
     
     func room(_ room: Room, participant: RemoteParticipant, didSubscribeTrack publication: RemoteTrackPublication) {
-        print("\(#function)")
-        DispatchQueue.main.async { [self] in
+        iLogger.print("\(#function) participant: \(participant.metadata) subscribe \(publication.name)")
+        DispatchQueue.main.async { [self, participant] in
             if isVideo {
                 if let track = participant.firstCameraVideoTrack {
-//                    bigVideoView.track = track
+
                     self.bigTrack = track
                 }
                 verStackView?.isHidden = true
             }
+            linkingTimer()
         }
     }
     
     func room(_ room: Room, participant: RemoteParticipant, didUnsubscribeTrack publication: RemoteTrackPublication) {
-        if linkedTimer != nil, participant.identity?.stringValue == inviter().first?.userID {
+        iLogger.print("\(#function) participant: \(participant.metadata) subscribe \(publication.name)")
+        if linkedTimer != nil, participant.identityString == inviter().first?.userID {
             linkedTimer = nil
             DispatchQueue.main.async { [self] in
                 if !room.allParticipants.isEmpty {
-                     onBeHungup?(linkingDuration)
+
                 }
             }
         }
     }
     
-    func room(_ room: Room, participant: Participant, trackPublication publication: TrackPublication, didUpdateIsMuted muted: Bool) {        
+    func room(_ room: Room, participant: Participant, trackPublication publication: TrackPublication, didUpdateIsMuted muted: Bool) {
         if publication.kind == .video, publication.source != .microphone {
             DispatchQueue.main.async { [self] in
-                let participantUser = CallingUserInfo(userID: participant.identity?.stringValue, nickname: participant.showName, faceURL: participant.faceURL)
+                let participantUser = CallingUserInfo(userID: participant.identityString, nickname: participant.showName, faceURL: participant.faceURL)
 
-                if let user = inviter().first, participant.identity?.stringValue == user.userID {
+                if let user = inviter().first, participant.identityString == user.userID {
                     remoteMuted = muted
                     
                     if smallViewIsMe {
@@ -199,7 +227,7 @@ extension ReceiverSignalViewController: RoomDelegate {
                         smallDisableVideoImageView.isHidden = !muted
                         setupSmallPlaceholerView(user: participantUser)
                     }
-                } else if let user = users().first, participant.identity?.stringValue == user.userID {
+                } else if let user = users().first, participant.identityString == user.userID {
                     localMuted = muted
                     
                     if smallViewIsMe {
@@ -214,4 +242,3 @@ extension ReceiverSignalViewController: RoomDelegate {
         }
     }
 }
-

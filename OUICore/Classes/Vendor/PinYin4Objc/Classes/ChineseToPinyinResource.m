@@ -70,7 +70,7 @@ static inline NSString* cachePathForKey(NSString* directory, NSString* key) {
 {
     NSError *error=nil;
     NSData *data = [NSData dataWithContentsOfFile:cachePathForKey(_directory, key) options:0 error:&error];
-   // NSAssert4((!error), @"Error, s is %@, %s, %s, %d",error.description, __FILE__ ,__FUNCTION__, __LINE__);
+
     if (!error) {
         if (data) {
             return [NSKeyedUnarchiver unarchiveObjectWithData:data];

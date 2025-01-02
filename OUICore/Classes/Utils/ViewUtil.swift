@@ -5,11 +5,11 @@ public class ViewUtil {
     public static func createSectionHeaderWith(text: String) -> UIView {
         let container: UIView = {
             let v = UIView()
-            v.backgroundColor = StandardUI.color_F1F1F1
+            v.backgroundColor = .sepratorColor
             let label: UILabel = {
                 let v = UILabel()
-                v.font = .systemFont(ofSize: 12)
-                v.textColor = StandardUI.color_999999
+                v.font = .f12
+                v.textColor = .c8E9AB0
                 v.text = text
                 return v
             }()
@@ -26,14 +26,13 @@ public class ViewUtil {
     static func createSpacer(height: CGFloat) -> UIView {
         let container: UIView = {
             let v = UIView(frame: CGRect(x: 0, y: 0, width: kScreenWidth, height: height))
-            v.backgroundColor = StandardUI.color_F1F1F1
+            v.backgroundColor = .sepratorColor
             return v
         }()
         return container
     }
 }
 
-// 空隙站位
 public class SizeBox: UIView {
     public init(width: CGFloat = 0, height: CGFloat = 0) {
         super.init(frame: .zero)
