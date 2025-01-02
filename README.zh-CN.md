@@ -11,7 +11,7 @@
   •
   <a href="https://github.com/openimsdk/open-im-server">OpenIM Server</a>
   •
-  <a href="https://github.com/openimsdk/open-im-sdk-flutter">openim-sdk-flutter</a>
+  <a href="https://github.com/openimsdk/open-im-sdk-flutter">openim-sdk-ios</a>
   •
   <a href="https://github.com/openimsdk/openim-sdk-core">openim-sdk-core</a>
 </p>
@@ -74,7 +74,7 @@ OpenIM 为开发者提供开源即时通讯 SDK，作为 Twilio、Sendbird 等�
 
 3. 修改配置
 
-  > 如果没有修改过服务端默认端口，则只需要修改[defaultHost](https://github.com/openimsdk/open-im-ios-demo/blob/c5efbe18c864adc4bcd5bb1e38a8d06b276b7da6/Example/OpenIMSDKUIKit/AppDelegate.swift#L21)为您的服务器 ip 即可。
+  > 如果没有修改过服务端默认端口，则只需要修改[defaultHost](https://github.com/openimsdk/open-im-ios-demo/blob/948cb89c11e046a2928708d6f22e5ff213deb2fe/Example/OpenIMSDKUIKit/AppDelegate.swift#L21)为您的服务器 ip 即可。
 
   ```swift
     let defaultHost = "your-server-ip or your-domain";

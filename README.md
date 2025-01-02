@@ -75,7 +75,7 @@ Follow the steps below to set up your local development environment:
 
 3. Modify the configuration
 
-     > If you have not changed the default server ports, update only the [defaultHost](https://github.com/openimsdk/open-im-ios-demo/blob/c5efbe18c864adc4bcd5bb1e38a8d06b276b7da6/Example/OpenIMSDKUIKit/AppDelegate.swift#L21) to your server IP.
+     > If you have not changed the default server ports, update only the [defaultHost](https://github.com/openimsdk/open-im-ios-demo/blob/948cb89c11e046a2928708d6f22e5ff213deb2fe/Example/OpenIMSDKUIKit/AppDelegate.swift#L21) to your server IP.
 
    ```swift
    let defaultHost = "your-server-ip or your-domain";
