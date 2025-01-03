@@ -46,9 +46,9 @@ final class ChatAvatarView: UIView, StaticViewFactory {
     func reloadData() {
         guard let controller else { return }
 
-        avatarView.customView.setAvatar(url: controller.faceURL, text: controller.name) { [weak controller] in
+        avatarView.customView.setAvatar(url: controller.faceURL, text: controller.name, onTap: { [weak controller] in
             controller?.action()
-        }
+        })
     }
 
     func setup(with controller: AvatarViewController) {

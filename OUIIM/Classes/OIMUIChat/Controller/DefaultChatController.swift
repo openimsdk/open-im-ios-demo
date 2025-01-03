@@ -195,6 +195,10 @@ final class DefaultChatController: ChatController {
         messages.forEach { $0.isSelected = false }
     }
     
+    func deleteMessage(completion: (() -> Void)?) {
+        deleteMessage(requiresIsolatedProcess: true, completion: completion)
+    }
+    
     func deleteMessage(requiresIsolatedProcess: Bool = true, completion: (() -> Void)?) {
 
         let temp = selecteMessages

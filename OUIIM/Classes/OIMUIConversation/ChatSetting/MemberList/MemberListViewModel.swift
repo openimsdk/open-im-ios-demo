@@ -72,34 +72,36 @@ class MemberListViewModel {
         self.offset = 0
         self.membersRelay.accept([])
     }
-    
-    func getOwnerAndAdmin() {
-        IMController.shared.getGroupMemberList(groupId: groupInfo.groupID, filter: .superAndAdmin, offset: 0, count: limit) { [weak self] infos in
-            self?.ownerAndAdminRelay.accept(infos)
-        }
-    }
 
     func getMoreMembers(completion: ((Bool) -> Void)? = nil) {
-        IMController.shared.getGroupMemberList(groupId: groupInfo.groupID, filter: .member, offset: offset, count: limit) { [weak self] (ms: [GroupMemberInfo]) in
+        IMController.shared.getGroupMemberList(groupId: groupInfo.groupID, filter: offset == 0 ? .all : .member, offset: offset, count: limit) { [weak self] (ms: [GroupMemberInfo]) in
             guard let self else { return }
 
+            var tempResult = ms.sorted(by: { $0.isOwnerOrAdmin && !$1.isOwnerOrAdmin })
+            
+            if offset == 0 {
+                let oa = Array(tempResult.prefix(while: { $0.isOwnerOrAdmin }))
+                ownerAndAdminRelay.accept(oa)
+                tempResult = Array(tempResult.suffix(from: oa.count))
+            }
+            
             if !ms.isEmpty {
                 offset += min(limit, ms.count)
             }
             
             var temp = membersRelay.value
-            temp.append(contentsOf: ms)
+            temp.append(contentsOf: tempResult)
 
             temp.reduce([], { (partialResult: [GroupMemberInfo], m) in
                 partialResult.contains(where: { $0.userID == m.userID }) ? partialResult : partialResult + [m]
             })
             
-            if ms.isEmpty, completion != nil {
+            if tempResult.isEmpty, completion != nil {
                 completion?(true)
                 return
             }
             membersRelay.accept(temp)
-            completion?(ms.count < limit ? true : false)
+            completion?(tempResult.count < limit ? true : false)
             limit = 100
 
         }
@@ -146,7 +148,7 @@ class MemberListViewModel {
                 sections.append(sectionArr)
             }
             self?.contactSections = sections
-            DispatchQueue.main.async {
+            DispatchQueue.main.async { [self] in
                 completion?(false)
                 self?.lettersRelay.accept(ret)
                 var indexPath: IndexPath?

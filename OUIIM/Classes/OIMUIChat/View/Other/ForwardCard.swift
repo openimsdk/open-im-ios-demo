@@ -105,7 +105,10 @@ class ForwardCard: UIView {
         let v = UIButton(type: .system)
         v.setTitle("determine".innerLocalized(), for: .normal)
         v.setTitleColor(UIColor.c0089FF, for: .normal)
-   
+        v.rx.tap.subscribe { [weak self] _ in
+            self?.confirmHandler?(nil)
+        }.disposed(by: disposeBag)
+        
         return v
     }()
     

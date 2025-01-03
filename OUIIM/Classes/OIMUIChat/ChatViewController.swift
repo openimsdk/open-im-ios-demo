@@ -118,6 +118,7 @@ final class ChatViewController: UIViewController {
     private var scrollToTop: Bool = false
     
     private var titleView = ChatTitleView()
+    private var bottomTipsView: EditingBottomTipsView?
     private var inputBarViewBottomAnchor: NSLayoutConstraint!
     private var contentStackViewBottomAnchor: NSLayoutConstraint?
     private var contentStackView: UIStackView!
@@ -916,12 +917,23 @@ extension ChatViewController: ChatControllerDelegate {
         inputBarView.isHidden = !isIn
         
         if isIn {
+            bottomTipsView?.removeFromSuperview()
+            bottomTipsView = nil
             setRightButtons(show: true)
         } else {
+            if bottomTipsView == nil {
+                bottomTipsView = EditingBottomTipsView()
+                view.addSubview(bottomTipsView!)
+
+                NSLayoutConstraint.activate([
+                    bottomTipsView!.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                    bottomTipsView!.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                    bottomTipsView!.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+                ])
+            }
             setRightButtons(show: false)
         }
     }
-
     
     func update(with sections: [Section], requiresIsolatedProcess: Bool) {
         processUpdates(with: sections, animated: true, requiresIsolatedProcess: requiresIsolatedProcess)

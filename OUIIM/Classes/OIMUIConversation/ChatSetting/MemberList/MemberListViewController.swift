@@ -10,20 +10,7 @@ class MemberListViewController: UIViewController {
     
     private lazy var _tableView: UITableView = {
         let v = UITableView()
-
-
-
-
-
-
-
-
-
-
-
         v.register(FriendListUserTableViewCell.self, forCellReuseIdentifier: FriendListUserTableViewCell.className)
-
-
         v.rowHeight = 64.h
         v.separatorColor = .clear
         v.tableFooterView = UIView()
@@ -150,11 +137,6 @@ class MemberListViewController: UIViewController {
         fatalError("init(coder:) has not been implemented")
     }
     
-    override open func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        _viewModel.getOwnerAndAdmin()
-    }
-    
     override open func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.title = "groupMember".innerLocalized()
@@ -257,23 +239,6 @@ class MemberListViewController: UIViewController {
                 navigationController?.pushViewController(vc, animated: true)
             }
         }).disposed(by: _disposeBag)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     }
     
     private func imageWithUIView(view: UIView) -> UIImage {
@@ -297,44 +262,6 @@ extension MemberListViewController: UISearchControllerDelegate {
         
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 extension MemberListViewController: UISearchResultsUpdating {
     public func updateSearchResults(for searchController: UISearchController) {
